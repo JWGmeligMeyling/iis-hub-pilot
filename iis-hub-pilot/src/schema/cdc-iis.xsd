@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+    elementFormDefault="qualified"
+    targetNamespace="urn:cdc:iisb:2014"
+    xmlns="urn:cdc:iisb:2014"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    
+    <!--====================================================================================================
+    = TYPES: FAULTS
+    =====================================================================================================-->
+    <xsd:complexType name="soapFaultType">
+        <xsd:sequence>
+            <xsd:element name="code" type="xsd:int"/>
+            <xsd:element name="reason" type="xsd:string"/>
+            <xsd:element name="detail" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="messageTooLargeFaultType">
+        <xsd:complexContent>
+            <xsd:restriction base="soapFaultType">
+                <xsd:sequence>
+                    <xsd:element name="code" type="xsd:int"/>
+                    <xsd:element name="reason" type="xsd:string" fixed="MessageTooLarge"/>
+                    <xsd:element name="detail" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:restriction>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="securityFaultType">
+        <xsd:complexContent>
+            <xsd:restriction base="soapFaultType">
+                <xsd:sequence>
+                    <xsd:element name="code" type="xsd:int"/>
+                    <xsd:element name="reason" type="xsd:string" fixed="Security"/>
+                    <xsd:element name="detail" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:restriction>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="unsupportedOperationFaultType">
+        <xsd:complexContent>
+            <xsd:restriction base="soapFaultType">
+                <xsd:sequence>
+                    <xsd:element name="code" type="xsd:int"/>
+                    <xsd:element name="reason" type="xsd:string" fixed="UnsupportedOperation"/>
+                    <xsd:element name="detail" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:restriction>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <!--====================================================================================================
+    = TYPES: CONNECTIVITY TEST
+    =====================================================================================================-->
+    <xsd:complexType name="connectivityTestRequestType">
+        <xsd:sequence>
+            <xsd:element name="echoBack" type="xsd:string" nillable="true"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="connectivityTestResponseType">
+        <xsd:sequence>
+            <xsd:element name="return" type="xsd:string" nillable="true"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <!--====================================================================================================
+    = TYPES: SUBMIT SINGLE MESSAGE
+    =====================================================================================================-->
+    <xsd:complexType name="submitSingleMessageRequestType">
+        <xsd:sequence>
+            <xsd:element name="username" type="xsd:string" minOccurs="0" nillable="true"/>
+            <xsd:element name="password" type="xsd:string" minOccurs="0" nillable="true"/>
+            <xsd:element name="facilityID" type="xsd:string" minOccurs="0" nillable="true"/>
+            <xsd:element name="hl7Message" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="submitSingleMessageResponseType">
+        <xsd:sequence>
+            <xsd:element name="return" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <!--====================================================================================================
+    = ELEMENTS: CONNECTIVITY TEST
+    =====================================================================================================-->
+    <xsd:element name="connectivityTest" type="connectivityTestRequestType"/>
+    
+    <xsd:element name="connectivityTestResponse" type="connectivityTestResponseType"/>
+    
+    <!--====================================================================================================
+    = ELEMENTS: SUBMIT SINGLE MESSAGE
+    =====================================================================================================-->
+    <xsd:element name="submitSingleMessage" type="submitSingleMessageRequestType"/>
+    
+    <xsd:element name="submitSingleMessageResponse" type="submitSingleMessageResponseType"/>
+    
+    <!--====================================================================================================
+    = ELEMENTS: FAULTS
+    =====================================================================================================-->
+    <xsd:element name="messageTooLargeFault" type="messageTooLargeFaultType"/>
+    
+    <xsd:element name="securityFault" type="securityFaultType"/>
+    
+    <xsd:element name="unknownFault" type="soapFaultType"/>
+    
+    <xsd:element name="unsupportedOperationFault" type="unsupportedOperationFaultType"/>
+</xsd:schema>

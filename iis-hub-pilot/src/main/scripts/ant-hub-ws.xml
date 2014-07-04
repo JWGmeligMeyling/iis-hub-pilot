@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+    name="hub-ws"
+    xmlns:hub="antlib:gov.hhs.onc.iishubpilot.ant"
+    xmlns:hub-ws="antlib:gov.hhs.onc.iishubpilot.ant.ws">
+    
+    <description>Ant project for Immunization Information Services (IIS) Hub Pilot web service related components.</description>
+    
+    <import file="ant-hub.xml" as="" prefixSeparator=""/>
+    
+    <taskdef file="antlib-hub-ws.xml" uri="antlib:gov.hhs.onc.iishubpilot.ant.ws"/>
+    
+    <target name="hub-ws-process-sources" description="Processes Java source files generated from the web service definitions." depends="hub-init">
+        
+    </target>
+</project>

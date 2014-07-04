@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration
+    debug="false"
+    scan="true"
+    scanPeriod="30 seconds"
+    xmlns="ch.qos.logback">
+    
+    <contextName>${hub.log.context.name:-%{project.artifactId}}</contextName>
+    
+    <include resource="META-INF/logback/logback-hub-include.xml"/>
+</configuration>

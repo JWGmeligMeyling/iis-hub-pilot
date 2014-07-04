@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+    name="hub"
+    xmlns:hub="antlib:gov.hhs.onc.iishubpilot.ant">
+    
+    <description>Ant project for common components of Immunization Information Services (IIS) Hub Pilot Ant projects.</description>
+    
+    <taskdef resource="net/sf/antcontrib/antlib.xml" classpath="${maven.classpath}"/>
+    <!-- Defining missing Ant-Contrib condition types -->
+    <typedef name="islessthan" classname="net.sf.antcontrib.logic.condition.IsLessThan" classpath="${maven.classpath}"/>
+    <typedef name="isgreaterthan" classname="net.sf.antcontrib.logic.condition.IsGreaterThan" classpath="${maven.classpath}"/>
+    <typedef name="ispropertyfalse" classname="net.sf.antcontrib.logic.condition.IsPropertyFalse" classpath="${maven.classpath}"/>
+    <typedef name="ispropertytrue" classname="net.sf.antcontrib.logic.condition.IsPropertyTrue" classpath="${maven.classpath}"/>
+    
+    <taskdef file="antlib-hub.xml" uri="antlib:gov.hhs.onc.iishubpilot.ant"/>
+    
+    <target name="hub-init" description="Initializes Ant project variable(s).">
+        <!-- String variable(s) -->
+        <var name="n" value="${line.separator}"/>
+        
+        <!-- Patternset(s) -->
+        <patternset id="patternset.java.files">
+            <include name="**/*.java"/>
+        </patternset>
+        <patternset id="patternset.java.pkg.info.files">
+            <include name="**/package-info.java"/>
+        </patternset>
+    </target>
+</project>

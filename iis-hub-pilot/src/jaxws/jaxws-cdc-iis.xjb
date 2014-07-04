@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxws:bindings
+    jaxb:extensionBindingPrefixes="annox inherit xjc"
+    version="2.0"
+    wsdlLocation="../wsdl/cdc-iis.wsdl"
+    xmlns:annox="http://annox.dev.java.net"
+    xmlns:inherit="http://jaxb2-commons.dev.java.net/basic/inheritance"
+    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+    xmlns:jaxws="http://java.sun.com/xml/ns/jaxws"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    
+    <!--====================================================================================================
+    = JAXWS BINDINGS: GLOBAL
+    =====================================================================================================-->
+    <jaxws:bindings node="/wsdl:definitions">
+        <jaxws:enableWrapperStyle>false</jaxws:enableWrapperStyle>
+        <jaxws:package name="gov.hhs.onc.iishubpilot.ws"/>
+    </jaxws:bindings>
+    
+    <!--====================================================================================================
+    = JAXWS BINDINGS: PORT TYPES
+    =====================================================================================================-->
+    <jaxws:bindings node="/wsdl:definitions/wsdl:portType[@name='IIS_PortType']">
+        <jaxws:class name="gov.hhs.onc.iishubpilot.ws.IisPortType"/>
+    </jaxws:bindings>
+    
+    <!--====================================================================================================
+    = JAXWS BINDINGS: FAULTS
+    =====================================================================================================-->
+    <jaxws:bindings node="/wsdl:definitions/wsdl:portType[@name='IIS_PortType']/wsdl:operation/wsdl:fault[@name='messageTooLargeFault']">
+        <jaxws:class name="gov.hhs.onc.iishubpilot.ws.MessageTooLargeFaultException"/>
+    </jaxws:bindings>
+    
+    <jaxws:bindings node="/wsdl:definitions/wsdl:portType[@name='IIS_PortType']/wsdl:operation/wsdl:fault[@name='securityFault']">
+        <jaxws:class name="gov.hhs.onc.iishubpilot.ws.SecurityFaultException"/>
+    </jaxws:bindings>
+    
+    <jaxws:bindings node="/wsdl:definitions/wsdl:portType[@name='IIS_PortType']/wsdl:operation/wsdl:fault[@name='unknownFault']">
+        <jaxws:class name="gov.hhs.onc.iishubpilot.ws.UnknownFaultException"/>
+    </jaxws:bindings>
+    
+    <jaxws:bindings node="/wsdl:definitions/wsdl:portType[@name='IIS_PortType']/wsdl:operation/wsdl:fault[@name='unsupportedOperationFault']">
+        <jaxws:class name="gov.hhs.onc.iishubpilot.ws.UnsupportedOperationFaultException"/>
+    </jaxws:bindings>
+    
+    <!--====================================================================================================
+    = JAXWS BINDINGS: SERVICES
+    =====================================================================================================-->
+    <jaxws:bindings node="/wsdl:definitions/wsdl:service[@name='IIS_Service']">
+        <jaxws:class name="gov.hhs.onc.iishubpilot.ws.impl.IisClientService"/>
+    </jaxws:bindings>
+</jaxws:bindings>

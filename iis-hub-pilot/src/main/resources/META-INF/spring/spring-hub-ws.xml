@@ -32,20 +32,22 @@
         http://www.springframework.org/schema/web-services http://www.springframework.org/schema/web-services/web-services.xsd">
     
     <!--====================================================================================================
-    = OBJECT FACTORIES
+    = FEATURES
     =====================================================================================================-->
-    <beans:bean id="objFactory" class="gov.hhs.onc.iishubpilot.ws.impl.ObjectFactory"/>
-    
-    <beans:bean id="objFactoryHub" class="gov.hhs.onc.iishubpilot.ws.hub.impl.ObjectFactory"/>
+    <beans:bean id="feature" class="org.apache.cxf.feature.AbstractFeature" abstract="true"/>
     
     <!--====================================================================================================
     = BUS
     =====================================================================================================-->
-    <cxf:bus id="busHub" bus="busHub">
-        <cxf:features>
-            <cxf:logging/>
-        </cxf:features>
-    </cxf:bus>
+    <beans:bean id="bus" class="org.apache.cxf.Bus" abstract="true"/>
+    
+    <beans:bean id="busHub" class="org.apache.cxf.bus.spring.SpringBus" parent="bus">
+        <beans:property name="features">
+            <util:list>
+                <beans:bean class="org.apache.cxf.feature.LoggingFeature" parent="feature"/>
+            </util:list>
+        </beans:property>
+    </beans:bean>
     
     <!--====================================================================================================
     = SOAP VERSIONS
@@ -80,24 +82,53 @@
     </beans:bean>
     
     <!--====================================================================================================
+    = INTERCEPTORS
+    =====================================================================================================-->
+    <beans:bean id="interceptor" class="org.apache.cxf.interceptor.Interceptor" abstract="true"/>
+    
+    <!--====================================================================================================
+    = PHASE INTERCEPTORS
+    =====================================================================================================-->
+    <beans:bean id="interceptorPhase" class="org.apache.cxf.phase.PhaseInterceptor" parent="interceptor" abstract="true"/>
+    
+    <beans:bean id="interceptorPhaseXmlCdata" class="gov.hhs.onc.iishubpilot.interceptor.impl.CdataAwareXmlInterceptor" parent="interceptorPhase">
+        <beans:constructor-arg name="cdataElemQnames">
+            <util:set>
+                <beans:bean parent="qnameWs"
+                    c:localPart="Hl7Message"/>
+            </util:set>
+        </beans:constructor-arg>
+    </beans:bean>
+    
+    <!--====================================================================================================
     = SERVERS
     =====================================================================================================-->
-    <!--suppress XmlPathReference -->
-    <cxf-jaxws:server id="serverHub" address="/IISHubService" bus="busHub" wsdlLocation="/META-INF/wsdl/cdc-iis-hub.wsdl">
-        <cxf-jaxws:binding>
-            <beans:ref bean="soapBinding12"/>
-        </cxf-jaxws:binding>
-        <cxf-jaxws:dataBinding>
-            <beans:ref bean="dataBindingJaxb"/>
-        </cxf-jaxws:dataBinding>
-        <cxf-jaxws:properties>
-            <beans:entry key="#{ T(org.apache.cxf.message.Message).EXCEPTION_MESSAGE_CAUSE_ENABLED }" value="true"/>
-            <beans:entry key="#{ T(org.apache.cxf.message.Message).FAULT_STACKTRACE_ENABLED }" value="true"/>
-            <beans:entry key="#{ T(org.apache.cxf.message.Message).SCHEMA_VALIDATION_ENABLED }"
-                value="#{ T(org.apache.cxf.annotations.SchemaValidation.SchemaValidationType).BOTH }"/>
-        </cxf-jaxws:properties>
-        <cxf-jaxws:serviceBean>
-            <beans:ref bean="iisServiceHub"/>
-        </cxf-jaxws:serviceBean>
-    </cxf-jaxws:server>
+    <beans:bean id="server" class="org.apache.cxf.endpoint.Server" abstract="true"/>
+    
+    <beans:bean id="serverHub" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean" parent="server"
+        p:targetMethod="create">
+        <beans:property name="targetObject">
+            <beans:bean class="org.apache.cxf.jaxws.JaxWsServerFactoryBean" parent="server"
+                p:address="/IISHubService"
+                p:bindingConfig-ref="soapBinding12"
+                p:bus-ref="busHub"
+                p:dataBinding-ref="dataBindingJaxb"
+                p:serviceBean-ref="iisServiceHub"
+                p:wsdlLocation="/META-INF/wsdl/cdc-iis-hub.wsdl">
+                <beans:property name="outInterceptors">
+                    <util:list>
+                        <!--<beans:ref bean="interceptorPhaseXmlCdata"/>-->
+                    </util:list>
+                </beans:property>
+                <beans:property name="properties">
+                    <util:map>
+                        <beans:entry key="#{ T(org.apache.cxf.message.Message).EXCEPTION_MESSAGE_CAUSE_ENABLED }" value="true"/>
+                        <beans:entry key="#{ T(org.apache.cxf.message.Message).FAULT_STACKTRACE_ENABLED }" value="true"/>
+                        <beans:entry key="#{ T(org.apache.cxf.message.Message).SCHEMA_VALIDATION_ENABLED }"
+                            value="#{ T(org.apache.cxf.annotations.SchemaValidation.SchemaValidationType).BOTH }"/>
+                    </util:map>
+                </beans:property>
+            </beans:bean>
+        </beans:property>
+    </beans:bean>
 </beans:beans>

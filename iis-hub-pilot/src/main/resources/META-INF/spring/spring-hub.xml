@@ -28,4 +28,56 @@
     <beans:bean id="charsetUtf8" parent="charset" factory-method="forName">
         <beans:constructor-arg index="0" value="UTF-8"/>
     </beans:bean>
+    
+    <!--====================================================================================================
+    = PROPERTY SOURCES PLACEHOLDER CONFIGURER
+    =====================================================================================================-->
+    <beans:bean id="propSourcesPlaceholderConfigurer" class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer"
+        p:fileEncoding="#{ charsetUtf8.name() }"
+        p:localOverride="true">
+        <beans:property name="locations">
+            <util:list>
+                <beans:value>classpath*:hub/hub.properties</beans:value>
+            </util:list>
+        </beans:property>
+    </beans:bean>
+    
+    <!--====================================================================================================
+    = MESSAGE SOURCES
+    =====================================================================================================-->
+    <beans:bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource" primary="true"
+        p:cacheSeconds="30"
+        p:defaultEncoding="#{ charsetUtf8.name() }"
+        p:fallbackToSystemLocale="false">
+        <beans:property name="basenames">
+            <util:list>
+                <beans:value>hub/hub-messages</beans:value>
+            </util:list>
+        </beans:property>
+    </beans:bean>
+    
+    <!--====================================================================================================
+    = CONVERSION SERVICE
+    =====================================================================================================-->
+    <beans:bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean" primary="true"/>
+    
+    <!--====================================================================================================
+    = XML QUALIFIED NAMES
+    =====================================================================================================-->
+    <beans:bean id="qname" class="javax.xml.namespace.QName" abstract="true"/>
+    
+    <beans:bean id="qnameWs" parent="qname" abstract="true"
+        c:namespaceURI="#{ T(gov.hhs.onc.iishubpilot.HubXmlNs).IIS }"
+        c:prefix="#{ T(gov.hhs.onc.iishubpilot.HubXmlNs).IIS_PREFIX }"/>
+    
+    <beans:bean id="qnameWsHub" parent="qname" abstract="true"
+        c:namespaceURI="#{ T(gov.hhs.onc.iishubpilot.HubXmlNs).IIS_HUB }"
+        c:prefix="#{ T(gov.hhs.onc.iishubpilot.HubXmlNs).IIS_HUB_PREFIX }"/>
+    
+    <!--====================================================================================================
+    = OBJECT FACTORIES
+    =====================================================================================================-->
+    <beans:bean id="objFactoryWs" class="gov.hhs.onc.iishubpilot.ws.impl.ObjectFactory"/>
+    
+    <beans:bean id="objFactoryWsHub" class="gov.hhs.onc.iishubpilot.ws.hub.impl.ObjectFactory"/>
 </beans:beans>

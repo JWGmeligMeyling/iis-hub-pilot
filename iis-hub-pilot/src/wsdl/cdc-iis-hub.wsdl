@@ -6,8 +6,10 @@
     xmlns:iis="urn:cdc:iisb:2014"
     xmlns:iis-hub="urn:cdc:iisb:hub:2014"
     xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+    xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"
     xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsp="http://www.w3.org/ns/ws-policy"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema">
     
     <wsdl:documentation>CDC Immunization Information Systems (IIS) Hub SOAP web service.</wsdl:documentation>
@@ -166,6 +168,9 @@
     =====================================================================================================-->
     <wsdl:service name="IISHubService">
         <wsdl:port name="IISHubPortSoap12" binding="iis-hub:IISHubBindingSoap12">
+            <wsp:Policy>
+                <wsam:Addressing wsp:Optional="true"/>
+            </wsp:Policy>
             <soap12:address location="http://localhost/IISHubService"/>
         </wsdl:port>
     </wsdl:service>

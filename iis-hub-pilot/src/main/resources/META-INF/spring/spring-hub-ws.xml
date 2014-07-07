@@ -32,6 +32,13 @@
         http://www.springframework.org/schema/web-services http://www.springframework.org/schema/web-services/web-services.xsd">
     
     <!--====================================================================================================
+    = OBJECT FACTORIES
+    =====================================================================================================-->
+    <beans:bean id="objFactory" class="gov.hhs.onc.iishubpilot.ws.impl.ObjectFactory"/>
+    
+    <beans:bean id="objFactoryHub" class="gov.hhs.onc.iishubpilot.ws.hub.impl.ObjectFactory"/>
+    
+    <!--====================================================================================================
     = BUS
     =====================================================================================================-->
     <cxf:bus id="busHub" bus="busHub">
@@ -63,7 +70,7 @@
         <beans:property name="marshallerProperties">
             <util:map>
                 <beans:entry key="#{ T(javax.xml.bind.Marshaller).JAXB_ENCODING }" value="#{ charsetUtf8.name() }"/>
-                <beans:entry key="#{ T(javax.xml.bind.Marshaller).JAXB_FORMATTED_OUTPUT }" value="true"/>
+                <beans:entry key="#{ T(javax.xml.bind.Marshaller).JAXB_FORMATTED_OUTPUT }" value="#{ true }"/>
             </util:map>
         </beans:property>
     </beans:bean>
@@ -72,8 +79,6 @@
     = ENDPOINTS
     =====================================================================================================-->
     <!--suppress XmlPathReference -->
-    <!-- TEMP: dev -->
-    <!--
     <cxf-jaxws:endpoint id="endpointHub" address="/IISHubService" bus="busHub" wsdlLocation="/META-INF/wsdl/cdc-iis-hub.wsdl">
         <cxf-jaxws:binding>
             <beans:ref bean="soapBinding12"/>
@@ -82,7 +87,7 @@
             <beans:ref bean="dataBindingJaxb"/>
         </cxf-jaxws:dataBinding>
         <cxf-jaxws:implementor>
-            <beans:ref bean="serviceHub"/>
+            <beans:ref bean="iisServiceHub"/>
         </cxf-jaxws:implementor>
         <cxf-jaxws:properties>
             <beans:entry key="#{ T(org.apache.cxf.message.Message).EXCEPTION_MESSAGE_CAUSE_ENABLED }" value="true"/>
@@ -91,5 +96,4 @@
                 value="#{ T(org.apache.cxf.annotations.SchemaValidation.SchemaValidationType).BOTH }"/>
         </cxf-jaxws:properties>
     </cxf-jaxws:endpoint>
-    -->
 </beans:beans>

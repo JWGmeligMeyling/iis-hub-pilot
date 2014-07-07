@@ -2,71 +2,98 @@
 <xsd:schema
     elementFormDefault="qualified"
     targetNamespace="urn:cdc:iisb:hub:2014"
-    xmlns="urn:cdc:iisb:hub:2014"
     xmlns:iis="urn:cdc:iisb:2014"
+    xmlns:iis-hub="urn:cdc:iisb:hub:2014"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema">
     
     <xsd:import namespace="urn:cdc:iisb:2014" schemaLocation="../schema/cdc-iis.xsd"/>
     
     <!--====================================================================================================
-    = TYPES: HEADERS
+    = TYPES: HUB
     =====================================================================================================-->
-    <xsd:simpleType name="destinationType">
+    <xsd:simpleType name="DestinationIdType">
         <xsd:restriction base="xsd:string">
             <xsd:pattern value="[\w\-]+"/>
         </xsd:restriction>
     </xsd:simpleType>
     
     <!--====================================================================================================
-    = TYPES: FAULTS
+    = GROUPS: HUB
     =====================================================================================================-->
-    <xsd:complexType name="destinationConnectionFaultType">
+    <xsd:group name="DestinationInfoGroup">
+        <xsd:sequence>
+            <xsd:element name="DestinationId" type="iis-hub:DestinationIdType"/>
+        </xsd:sequence>
+    </xsd:group>
+    
+    <xsd:group name="DestinationConnectionInfoGroup">
+        <xsd:sequence>
+            <xsd:group ref="iis-hub:DestinationInfoGroup"/>
+            <xsd:element name="DestinationUri" type="xsd:anyURI"/>
+        </xsd:sequence>
+    </xsd:group>
+    
+    <!--====================================================================================================
+    = HEADER PART TYPES: HUB
+    =====================================================================================================-->
+    <xsd:complexType name="HubRequestHeaderType">
+        <xsd:sequence>
+            <xsd:group ref="iis-hub:DestinationInfoGroup"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="HubResponseHeaderType">
+        <xsd:sequence>
+            <xsd:group ref="iis-hub:DestinationConnectionInfoGroup"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <!--====================================================================================================
+    = FAULT PART TYPES: HUB
+    =====================================================================================================-->
+    <xsd:complexType name="DestinationConnectionFaultType">
         <xsd:complexContent>
-            <xsd:restriction base="iis:soapFaultType">
+            <xsd:extension base="iis:FaultType">
                 <xsd:sequence>
-                    <xsd:element name="code" type="xsd:int"/>
-                    <xsd:element name="reason" type="xsd:string" fixed="DestinationConnection"/>
-                    <xsd:element name="detail" type="xsd:string"/>
+                    <xsd:group ref="iis-hub:DestinationConnectionInfoGroup"/>
                 </xsd:sequence>
-            </xsd:restriction>
+            </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
     
-    <xsd:complexType name="hubClientFaultType">
+    <xsd:complexType name="HubClientFaultType">
         <xsd:complexContent>
-            <xsd:restriction base="iis:soapFaultType">
+            <xsd:extension base="iis:FaultType">
                 <xsd:sequence>
-                    <xsd:element name="code" type="xsd:int"/>
-                    <xsd:element name="reason" type="xsd:string" fixed="HubClient"/>
-                    <xsd:element name="detail" type="xsd:string"/>
+                    <xsd:group ref="iis-hub:DestinationConnectionInfoGroup"/>
                 </xsd:sequence>
-            </xsd:restriction>
+            </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
     
-    <xsd:complexType name="unknownDestinationFaultType">
+    <xsd:complexType name="UnknownDestinationFaultType">
         <xsd:complexContent>
-            <xsd:restriction base="iis:soapFaultType">
+            <xsd:extension base="iis:FaultType">
                 <xsd:sequence>
-                    <xsd:element name="code" type="xsd:int"/>
-                    <xsd:element name="reason" type="xsd:string" fixed="UnknownDestination"/>
-                    <xsd:element name="detail" type="xsd:string"/>
+                    <xsd:group ref="iis-hub:DestinationInfoGroup"/>
                 </xsd:sequence>
-            </xsd:restriction>
+            </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
     
     <!--====================================================================================================
-    = ELEMENTS: HEADERS
+    = HEADER PART ELEMENTS: HUB
     =====================================================================================================-->
-    <xsd:element name="destination" type="destinationType"/>
+    <xsd:element name="HubRequestHeader" type="iis-hub:HubRequestHeaderType"/>
+    
+    <xsd:element name="HubResponseHeader" type="iis-hub:HubResponseHeaderType"/>
     
     <!--====================================================================================================
-    = ELEMENTS: FAULTS
+    = FAULT PART ELEMENTS: HUB
     =====================================================================================================-->
-    <xsd:element name="destinationConnectionFault" type="destinationConnectionFaultType"/>
+    <xsd:element name="DestinationConnectionFault" type="iis-hub:DestinationConnectionFaultType"/>
     
-    <xsd:element name="hubClientFault" type="hubClientFaultType"/>
+    <xsd:element name="HubClientFault" type="iis-hub:HubClientFaultType"/>
     
-    <xsd:element name="unknownDestinationFault" type="unknownDestinationFaultType"/>
+    <xsd:element name="UnknownDestinationFault" type="iis-hub:UnknownDestinationFaultType"/>
 </xsd:schema>

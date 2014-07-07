@@ -1,0 +1,29 @@
+package gov.hhs.onc.iishubpilot.ws.hub.impl;
+
+import gov.hhs.onc.iishubpilot.HubXmlNs;
+import gov.hhs.onc.iishubpilot.ws.MessageTooLargeFault;
+import gov.hhs.onc.iishubpilot.ws.SecurityFault;
+import gov.hhs.onc.iishubpilot.ws.SubmitSingleMessageRequestType;
+import gov.hhs.onc.iishubpilot.ws.SubmitSingleMessageResponseType;
+import gov.hhs.onc.iishubpilot.ws.hub.DestinationConnectionFault;
+import gov.hhs.onc.iishubpilot.ws.hub.HubClientFault;
+import gov.hhs.onc.iishubpilot.ws.hub.IisHubPortType;
+import gov.hhs.onc.iishubpilot.ws.hub.IisHubService;
+import gov.hhs.onc.iishubpilot.ws.hub.UnknownDestinationFault;
+import gov.hhs.onc.iishubpilot.ws.impl.AbstractIisService;
+import javax.jws.WebService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service("iisServiceHub")
+@WebService(portName = "IISHubPortSoap12", serviceName = "IISHubService", targetNamespace = HubXmlNs.IIS_HUB)
+public class IisHubServiceImpl extends AbstractIisService implements IisHubService, IisHubPortType {
+    @Autowired
+    protected ObjectFactory objFactoryHub;
+
+    @Override
+    public SubmitSingleMessageResponseType submitSingleMessage(SubmitSingleMessageRequestType parameters) throws DestinationConnectionFault, HubClientFault,
+        MessageTooLargeFault, SecurityFault, UnknownDestinationFault {
+        return this.submitSingleMessageInternal(parameters);
+    }
+}

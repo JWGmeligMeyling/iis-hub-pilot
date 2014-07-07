@@ -34,6 +34,10 @@
             <artifactId>logback-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.github.sebhoss</groupId>
+            <artifactId>suppress-warnings</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>
         </dependency>
@@ -240,6 +244,48 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-codegen-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>wsdl2java</goal>
+                        </goals>
+                        <configuration>
+                            <defaultOptions>
+                                <bindingFiles>
+                                    <bindingFile>${project.basedir}/src/jaxws/jaxb.xjb</bindingFile>
+                                    <bindingFile>${project.basedir}/src/jaxws/jaxb-cdc-iis.xjb</bindingFile>
+                                </bindingFiles>
+                            </defaultOptions>
+                            <wsdlOptions>
+                                <wsdlOption>
+                                    <bindingFiles>
+                                        <bindingFile>${project.basedir}/src/jaxws/jaxws-cdc-iis.xjb</bindingFile>
+                                    </bindingFiles>
+                                    <extraargs>
+                                        <extraarg>-wsdlLocation</extraarg>
+                                        <extraarg>META-INF/wsdl/cdc-iis.wsdl</extraarg>
+                                    </extraargs>
+                                    <wsdl>${project.basedir}/src/wsdl/cdc-iis.wsdl</wsdl>
+                                </wsdlOption>
+                                <wsdlOption>
+                                    <bindingFiles>
+                                        <bindingFile>${project.basedir}/src/jaxws/jaxb-cdc-iis-hub.xjb</bindingFile>
+                                        <bindingFile>${project.basedir}/src/jaxws/jaxws-cdc-iis-hub.xjb</bindingFile>
+                                    </bindingFiles>
+                                    <extraargs>
+                                        <extraarg>-wsdlLocation</extraarg>
+                                        <extraarg>META-INF/wsdl/cdc-iis-hub.wsdl</extraarg>
+                                    </extraargs>
+                                    <wsdl>${project.basedir}/src/wsdl/cdc-iis-hub.wsdl</wsdl>
+                                </wsdlOption>
+                            </wsdlOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -478,62 +524,6 @@
                     </execution>
                     <execution>
                         <id>war-test</id>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.jvnet.jax-ws-commons</groupId>
-                <artifactId>jaxws-maven-plugin</artifactId>
-                <configuration>
-                    <bindingDirectory>${project.basedir}/src/jaxws</bindingDirectory>
-                    <wsdlDirectory>${project.basedir}/src/wsdl</wsdlDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>wsimport-hub</id>
-                        <goals>
-                            <goal>wsimport</goal>
-                        </goals>
-                        <configuration>
-                            <args>
-                                <arg>-b</arg>
-                                <arg>file:${project.basedir}/src/schema/cdc-iis.xsd</arg>
-                                <arg>-b</arg>
-                                <arg>file:${project.basedir}/src/schema/cdc-iis-hub.xsd</arg>
-                            </args>
-                            <bindingFiles>
-                                <bindingFile>jaxb.xjb</bindingFile>
-                                <bindingFile>jaxb-cdc-iis.xjb</bindingFile>
-                                <bindingFile>jaxb-cdc-iis-hub.xjb</bindingFile>
-                                <bindingFile>jaxws-cdc-iis.xjb</bindingFile>
-                                <bindingFile>jaxws-cdc-iis-hub.xjb</bindingFile>
-                            </bindingFiles>
-                            <wsdlFiles>
-                                <wsdlFile>cdc-iis-hub.wsdl</wsdlFile>
-                            </wsdlFiles>
-                            <wsdlLocation>META-INF/wsdl/cdc-iis-hub.wsdl</wsdlLocation>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>wsimport</id>
-                        <goals>
-                            <goal>wsimport</goal>
-                        </goals>
-                        <configuration>
-                            <args>
-                                <arg>-b</arg>
-                                <arg>file:${project.basedir}/src/schema/cdc-iis.xsd</arg>
-                            </args>
-                            <bindingFiles>
-                                <bindingFile>jaxb.xjb</bindingFile>
-                                <bindingFile>jaxb-cdc-iis.xjb</bindingFile>
-                                <bindingFile>jaxws-cdc-iis.xjb</bindingFile>
-                            </bindingFiles>
-                            <wsdlFiles>
-                                <wsdlFile>cdc-iis.wsdl</wsdlFile>
-                            </wsdlFiles>
-                            <wsdlLocation>META-INF/wsdl/cdc-iis.wsdl</wsdlLocation>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>

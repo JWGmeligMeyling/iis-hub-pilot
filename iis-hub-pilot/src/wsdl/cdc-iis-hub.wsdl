@@ -13,11 +13,6 @@
     <wsdl:documentation>CDC Immunization Information Systems (IIS) Hub SOAP web service.</wsdl:documentation>
     
     <!--====================================================================================================
-    = IMPORTS
-    =====================================================================================================-->
-    <wsdl:import namespace="urn:cdc:iisb:2014" location="../wsdl/cdc-iis.wsdl"/>
-    
-    <!--====================================================================================================
     = TYPES
     =====================================================================================================-->
     <wsdl:types>
@@ -28,113 +23,160 @@
     </wsdl:types>
     
     <!--====================================================================================================
-    = HEADER MESSAGES: SUBMIT SINGLE MESSAGE
+    = HEADER MESSAGES: HUB
     =====================================================================================================-->
-    <wsdl:message name="submitSingleMessageHeader_Message">
-        <wsdl:part name="headerParameters" element="iis-hub:destination"/>
+    <wsdl:message name="HubHeaderRequestMessage">
+        <wsdl:documentation>Hub header request message.</wsdl:documentation>
+        <wsdl:part name="header" element="iis-hub:HubRequestHeader"/>
+    </wsdl:message>
+    
+    <wsdl:message name="HubHeaderResponseMessage">
+        <wsdl:documentation>Hub header response message.</wsdl:documentation>
+        <wsdl:part name="header" element="iis-hub:HubResponseHeader"/>
+    </wsdl:message>
+    
+    <!--====================================================================================================
+    = OPERATION MESSAGES: HUB CONNECTIVITY TEST
+    =====================================================================================================-->
+    <wsdl:message name="ConnectivityTestRequestMessage">
+        <wsdl:documentation>Hub connectivity test request message.</wsdl:documentation>
+        <wsdl:part name="parameters" element="iis:ConnectivityTestRequest"/>
+    </wsdl:message>
+    
+    <wsdl:message name="ConnectivityTestResponseMessage">
+        <wsdl:documentation>Hub connectivity test response message.</wsdl:documentation>
+        <wsdl:part name="parameters" element="iis:ConnectivityTestResponse"/>
+    </wsdl:message>
+    
+    <!--====================================================================================================
+    = OPERATION MESSAGES: HUB SUBMIT SINGLE MESSAGE
+    =====================================================================================================-->
+    <wsdl:message name="SubmitSingleMessageRequestMessage">
+        <wsdl:documentation>Hub submit single message request message.</wsdl:documentation>
+        <wsdl:part name="parameters" element="iis:SubmitSingleMessageRequest"/>
+    </wsdl:message>
+    
+    <wsdl:message name="SubmitSingleMessageResponseMessage">
+        <wsdl:documentation>Hub submit single message response message.</wsdl:documentation>
+        <wsdl:part name="parameters" element="iis:SubmitSingleMessageResponse"/>
     </wsdl:message>
     
     <!--====================================================================================================
     = FAULT MESSAGES
     =====================================================================================================-->
-    <wsdl:message name="destinationConnectionFault_Message">
-        <wsdl:part name="fault" element="iis-hub:destinationConnectionFault"/>
+    <wsdl:message name="MessageTooLargeFaultMessage">
+        <wsdl:part name="fault" element="iis:MessageTooLargeFault"/>
     </wsdl:message>
     
-    <wsdl:message name="hubClientFault_Message">
-        <wsdl:part name="fault" element="iis-hub:hubClientFault"/>
+    <wsdl:message name="SecurityFaultMessage">
+        <wsdl:part name="fault" element="iis:SecurityFault"/>
     </wsdl:message>
     
-    <wsdl:message name="unknownDestinationFault_Message">
-        <wsdl:part name="fault" element="iis-hub:unknownDestinationFault"/>
+    <wsdl:message name="UnsupportedOperationFaultMessage">
+        <wsdl:part name="fault" element="iis:UnsupportedOperationFault"/>
     </wsdl:message>
     
     <!--====================================================================================================
-    = PORT TYPES
+    = FAULT MESSAGES: HUB
     =====================================================================================================-->
-    <wsdl:portType name="IIS_Hub_PortType">
-        <wsdl:operation name="connectivityTest">
+    <wsdl:message name="DestinationConnectionFaultMessage">
+        <wsdl:part name="fault" element="iis-hub:DestinationConnectionFault"/>
+    </wsdl:message>
+    
+    <wsdl:message name="HubClientFaultMessage">
+        <wsdl:part name="fault" element="iis-hub:HubClientFault"/>
+    </wsdl:message>
+    
+    <wsdl:message name="UnknownDestinationFaultMessage">
+        <wsdl:part name="fault" element="iis-hub:UnknownDestinationFault"/>
+    </wsdl:message>
+    
+    <!--====================================================================================================
+    = PORT TYPES: HUB
+    =====================================================================================================-->
+    <wsdl:portType name="IISHubPortType">
+        <wsdl:operation name="ConnectivityTest">
             <wsdl:documentation>Hub connectivity test operation.</wsdl:documentation>
-            <wsdl:input name="connectivityTest_Message" message="iis:connectivityTest_Message" wsaw:Action="urn:cdc:iisb:hub:2014:connectivityTest"/>
-            <wsdl:output name="connectivityTestResponse_Message" message="iis:connectivityTestResponse_Message"
-                wsaw:Action="urn:cdc:iisb:hub:2014:connectivityTestResponse"/>
-            <wsdl:fault name="unknownFault" message="iis:unknownFault_Message"/>
-            <wsdl:fault name="unsupportedOperationFault" message="iis:unsupportedOperationFault_Message"/>
+            <wsdl:input name="ConnectivityTestRequest" message="iis-hub:ConnectivityTestRequestMessage"
+                wsaw:Action="urn:cdc:iisb:hub:2014:IISHubPortType:ConnectivityTestRequest"/>
+            <wsdl:output name="ConnectivityTestResponse" message="iis-hub:ConnectivityTestResponseMessage"
+                wsaw:Action="urn:cdc:iisb:hub:2014:IISHubPortType:ConnectivityTestResponse"/>
+            <wsdl:fault name="UnsupportedOperationFault" message="iis-hub:UnsupportedOperationFaultMessage"
+                wsaw:Action="urn:cdc:iisb:hub:2014:IISHubPortType:ConnectivityTest:Fault:UnsupportedOperationFault"/>
         </wsdl:operation>
         
-        <wsdl:operation name="submitSingleMessage">
-            <wsdl:documentation>Submit single hub message operation.</wsdl:documentation>
-            <wsdl:input name="submitSingleMessage_Message" message="iis:submitSingleMessage_Message" wsaw:Action="urn:cdc:iisb:hub:2014:submitSingleMessage"/>
-            <wsdl:output name="submitSingleMessageResponse_Message" message="iis:submitSingleMessageResponse_Message"
-                wsaw:Action="urn:cdc:iisb:hub:2014:submitSingleMessageResponse"/>
-            <wsdl:fault name="messageTooLargeFault" message="iis:messageTooLargeFault_Message"/>
-            <wsdl:fault name="securityFault" message="iis:securityFault_Message"/>
-            <wsdl:fault name="unknownFault" message="iis:unknownFault_Message"/>
-            <wsdl:fault name="destinationConnectionFault" message="iis-hub:destinationConnectionFault_Message"/>
-            <wsdl:fault name="hubClientFault" message="iis-hub:hubClientFault_Message"/>
-            <wsdl:fault name="unknownDestinationFault" message="iis-hub:unknownDestinationFault_Message"/>
+        <wsdl:operation name="SubmitSingleMessage">
+            <wsdl:documentation>Hub submit single message operation.</wsdl:documentation>
+            <wsdl:input name="SubmitSingleMessageRequest" message="iis-hub:SubmitSingleMessageRequestMessage"
+                wsaw:Action="urn:cdc:iisb:hub:2014:IISHubPortType:SubmitSingleMessageRequest"/>
+            <wsdl:output name="SubmitSingleMessageResponse" message="iis-hub:SubmitSingleMessageResponseMessage"
+                wsaw:Action="urn:cdc:iisb:2014:IISHubPortType:SubmitSingleMessageResponse"/>
+            <wsdl:fault name="DestinationConnectionFault" message="iis-hub:DestinationConnectionFaultMessage"
+                wsaw:Action="urn:cdc:iisb:hub:2014:IISHubPortType:SubmitSingleMessage:Fault:DestinationConnectionFault"/>
+            <wsdl:fault name="HubClientFault" message="iis-hub:HubClientFaultMessage"
+                wsaw:Action="urn:cdc:iisb:hub:2014:IISHubPortType:SubmitSingleMessage:Fault:HubClientFault"/>
+            <wsdl:fault name="MessageTooLargeFault" message="iis-hub:MessageTooLargeFaultMessage"
+                wsaw:Action="urn:cdc:iisb:hub:2014:IISHubPortType:SubmitSingleMessage:Fault:MessageTooLargeFault"/>
+            <wsdl:fault name="SecurityFault" message="iis-hub:SecurityFaultMessage"
+                wsaw:Action="urn:cdc:iisb:hub:2014:IISHubPortType:SubmitSingleMessage:Fault:SecurityFault"/>
+            <wsdl:fault name="UnknownDestinationFault" message="iis-hub:UnknownDestinationFaultMessage"
+                wsaw:Action="urn:cdc:iisb:hub:2014:IISHubPortType:SubmitSingleMessage:Fault:UnknownDestinationFault"/>
         </wsdl:operation>
     </wsdl:portType>
     
     <!--====================================================================================================
-    = BINDINGS
+    = BINDINGS: HUB
     =====================================================================================================-->
-    <wsdl:binding name="IIS_Hub_Binding_Soap12" type="iis-hub:IIS_Hub_PortType">
+    <wsdl:binding name="IISHubBindingSoap12" type="iis-hub:IISHubPortType">
         <wsaw:UsingAddressing wsdl:required="false"/>
-        
         <soap12:binding style="document" transport="http://www.w3.org/2003/05/soap/bindings/HTTP/"/>
         
-        <wsdl:operation name="connectivityTest">
-            <soap12:operation soapAction="urn:cdc:iisb:hub:2014:connectivityTest"/>
+        <wsdl:operation name="ConnectivityTest">
+            <soap12:operation style="document" soapAction="urn:cdc:iisb:hub:2014:IISHubPortType:ConnectivityTest"/>
             <wsdl:input>
                 <soap12:body use="literal"/>
             </wsdl:input>
             <wsdl:output>
                 <soap12:body use="literal"/>
             </wsdl:output>
-            <wsdl:fault name="unknownFault">
-                <soap12:fault name="unknownFault" use="literal"/>
-            </wsdl:fault>
-            <wsdl:fault name="unsupportedOperationFault">
-                <soap12:fault name="unsupportedOperationFault" use="literal"/>
+            <wsdl:fault name="UnsupportedOperationFault">
+                <soap12:fault name="UnsupportedOperationFault" use="literal"/>
             </wsdl:fault>
         </wsdl:operation>
         
-        <wsdl:operation name="submitSingleMessage">
-            <soap12:operation soapAction="urn:cdc:iisb:hub:2014:submitSingleMessage"/>
+        <wsdl:operation name="SubmitSingleMessage">
+            <soap12:operation style="document" soapAction="urn:cdc:iisb:hub:2014:IISHubPortType:SubmitSingleMessage"/>
             <wsdl:input>
-                <soap12:header message="iis-hub:submitSingleMessageHeader_Message" part="headerParameters" use="literal"/>
+                <soap12:header message="iis-hub:HubHeaderRequestMessage" part="header" use="literal"/>
                 <soap12:body use="literal"/>
             </wsdl:input>
             <wsdl:output>
+                <soap12:header message="iis-hub:HubHeaderResponseMessage" part="header" use="literal"/>
                 <soap12:body use="literal"/>
             </wsdl:output>
-            <wsdl:fault name="messageTooLargeFault">
-                <soap12:fault name="messageTooLargeFault" use="literal"/>
+            <wsdl:fault name="DestinationConnectionFault">
+                <soap12:fault name="DestinationConnectionFault" use="literal"/>
             </wsdl:fault>
-            <wsdl:fault name="securityFault">
-                <soap12:fault name="securityFault" use="literal"/>
+            <wsdl:fault name="HubClientFault">
+                <soap12:fault name="HubClientFault" use="literal"/>
             </wsdl:fault>
-            <wsdl:fault name="unknownFault">
-                <soap12:fault name="unknownFault" use="literal"/>
+            <wsdl:fault name="MessageTooLargeFault">
+                <soap12:fault name="MessageTooLargeFault" use="literal"/>
             </wsdl:fault>
-            <wsdl:fault name="destinationConnectionFault">
-                <soap12:fault name="destinationConnectionFault" use="literal"/>
+            <wsdl:fault name="SecurityFault">
+                <soap12:fault name="SecurityFault" use="literal"/>
             </wsdl:fault>
-            <wsdl:fault name="hubClientFault">
-                <soap12:fault name="hubClientFault" use="literal"/>
-            </wsdl:fault>
-            <wsdl:fault name="unknownDestinationFault">
-                <soap12:fault name="unknownDestinationFault" use="literal"/>
+            <wsdl:fault name="UnknownDestinationFault">
+                <soap12:fault name="UnknownDestinationFault" use="literal"/>
             </wsdl:fault>
         </wsdl:operation>
     </wsdl:binding>
     
     <!--====================================================================================================
-    = SERVICES
+    = SERVICES: HUB
     =====================================================================================================-->
-    <wsdl:service name="IIS_Hub_Service">
-        <wsdl:port binding="iis-hub:IIS_Hub_Binding_Soap12" name="IIS_Hub_Port_Soap12">
+    <wsdl:service name="IISHubService">
+        <wsdl:port name="IISHubPortSoap12" binding="iis-hub:IISHubBindingSoap12">
             <soap12:address location="http://localhost/IISHubService"/>
         </wsdl:port>
     </wsdl:service>

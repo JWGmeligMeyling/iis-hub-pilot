@@ -15,15 +15,6 @@
     <taskdef file="antlib-hub.xml" uri="antlib:gov.hhs.onc.iishubpilot.ant"/>
     
     <target name="hub-init" description="Initializes Ant project variable(s).">
-        <!-- String variable(s) -->
         <var name="n" value="${line.separator}"/>
-        
-        <!-- Patternset(s) -->
-        <patternset id="patternset.java.files">
-            <include name="**/*.java"/>
-        </patternset>
-        <patternset id="patternset.java.pkg.info.files">
-            <include name="**/package-info.java"/>
-        </patternset>
     </target>
 </project>

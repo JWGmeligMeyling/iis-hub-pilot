@@ -12,43 +12,39 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema">
     
     <!--====================================================================================================
-    = JAXWS BINDINGS: GLOBAL
+    = GLOBAL
     =====================================================================================================-->
-    <jaxws:bindings node="/wsdl:definitions">
+    <jaxws:bindings node="wsdl:definitions">
         <jaxws:enableWrapperStyle>false</jaxws:enableWrapperStyle>
         <jaxws:package name="gov.hhs.onc.iishubpilot.ws"/>
     </jaxws:bindings>
     
     <!--====================================================================================================
-    = JAXWS BINDINGS: PORT TYPES
+    = PORT TYPES
     =====================================================================================================-->
-    <jaxws:bindings node="/wsdl:definitions/wsdl:portType[@name='IIS_PortType']">
+    <jaxws:bindings node="wsdl:definitions/wsdl:portType[@name='IISPortType']">
         <jaxws:class name="gov.hhs.onc.iishubpilot.ws.IisPortType"/>
     </jaxws:bindings>
     
     <!--====================================================================================================
-    = JAXWS BINDINGS: FAULTS
+    = FAULTS
     =====================================================================================================-->
-    <jaxws:bindings node="/wsdl:definitions/wsdl:portType[@name='IIS_PortType']/wsdl:operation/wsdl:fault[@name='messageTooLargeFault']">
-        <jaxws:class name="gov.hhs.onc.iishubpilot.ws.MessageTooLargeFaultException"/>
+    <jaxws:bindings node="wsdl:definitions/wsdl:portType[@name='IISPortType']/wsdl:operation/wsdl:fault[@name='MessageTooLargeFault']">
+        <jaxws:class name="gov.hhs.onc.iishubpilot.ws.MessageTooLargeFault"/>
     </jaxws:bindings>
     
-    <jaxws:bindings node="/wsdl:definitions/wsdl:portType[@name='IIS_PortType']/wsdl:operation/wsdl:fault[@name='securityFault']">
-        <jaxws:class name="gov.hhs.onc.iishubpilot.ws.SecurityFaultException"/>
+    <jaxws:bindings node="wsdl:definitions/wsdl:portType[@name='IISPortType']/wsdl:operation/wsdl:fault[@name='SecurityFault']">
+        <jaxws:class name="gov.hhs.onc.iishubpilot.ws.SecurityFault"/>
     </jaxws:bindings>
     
-    <jaxws:bindings node="/wsdl:definitions/wsdl:portType[@name='IIS_PortType']/wsdl:operation/wsdl:fault[@name='unknownFault']">
-        <jaxws:class name="gov.hhs.onc.iishubpilot.ws.UnknownFaultException"/>
-    </jaxws:bindings>
-    
-    <jaxws:bindings node="/wsdl:definitions/wsdl:portType[@name='IIS_PortType']/wsdl:operation/wsdl:fault[@name='unsupportedOperationFault']">
-        <jaxws:class name="gov.hhs.onc.iishubpilot.ws.UnsupportedOperationFaultException"/>
+    <jaxws:bindings node="wsdl:definitions/wsdl:portType[@name='IISPortType']/wsdl:operation/wsdl:fault[@name='UnsupportedOperationFault']">
+        <jaxws:class name="gov.hhs.onc.iishubpilot.ws.UnsupportedOperationFault"/>
     </jaxws:bindings>
     
     <!--====================================================================================================
-    = JAXWS BINDINGS: SERVICES
+    = SERVICES
     =====================================================================================================-->
-    <jaxws:bindings node="/wsdl:definitions/wsdl:service[@name='IIS_Service']">
+    <jaxws:bindings node="wsdl:definitions/wsdl:service[@name='IISService']">
         <jaxws:class name="gov.hhs.onc.iishubpilot.ws.impl.IisClientService"/>
     </jaxws:bindings>
 </jaxws:bindings>

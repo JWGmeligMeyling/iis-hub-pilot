@@ -28,9 +28,4 @@
     <beans:bean id="charsetUtf8" parent="charset" factory-method="forName">
         <beans:constructor-arg index="0" value="UTF-8"/>
     </beans:bean>
-    
-    <!--====================================================================================================
-    = OBJECT FACTORIES
-    =====================================================================================================-->
-    <beans:bean id="objFactoryWs" class="gov.hhs.onc.iishubpilot.ws.ObjectFactory"/>
 </beans:beans>

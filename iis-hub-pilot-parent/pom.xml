@@ -30,6 +30,8 @@
         <project.basedir>${project.basedir}</project.basedir>
         <project.basedir.all>${project.basedir}/..</project.basedir.all>
         <project.basedir.parent>${project.basedir}/${project.parent.relativePath}</project.basedir.parent>
+        <!-- Project build CXF source properties -->
+        <project.build.cxfSourceDirectory>${project.build.directory}/generated-sources/cxf</project.build.cxfSourceDirectory>
         <!-- Project build source properties -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -46,6 +48,11 @@
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-core</artifactId>
                 <version>1.1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.sebhoss</groupId>
+                <artifactId>suppress-warnings</artifactId>
+                <version>1.0.0</version>
             </dependency>
             <dependency>
                 <groupId>com.google.code.findbugs</groupId>
@@ -376,6 +383,91 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.cxf</groupId>
+                    <artifactId>cxf-codegen-plugin</artifactId>
+                    <version>3.0.0</version>
+                    <inherited>true</inherited>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.btmatthews.jaxb2_commons</groupId>
+                            <artifactId>jaxb2-commons-lang3</artifactId>
+                            <version>1.0.0</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.sun.xml.bind</groupId>
+                            <artifactId>jaxb-impl</artifactId>
+                            <version>2.2.7</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.sun.xml.bind</groupId>
+                            <artifactId>jaxb-xjc</artifactId>
+                            <version>2.2.7</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.sun.xml.ws</groupId>
+                            <artifactId>jaxws-tools</artifactId>
+                            <version>2.2.8</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.commons</groupId>
+                            <artifactId>commons-lang3</artifactId>
+                            <version>3.3.2</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.cxf.xjcplugins</groupId>
+                            <artifactId>cxf-xjc-dv</artifactId>
+                            <version>3.0.0</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.jvnet.annox</groupId>
+                            <artifactId>annox</artifactId>
+                            <version>0.5.1</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.jvnet.jaxb2_commons</groupId>
+                            <artifactId>jaxb2-basics</artifactId>
+                            <version>0.6.5</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.jvnet.jaxb2_commons</groupId>
+                            <artifactId>jaxb2-basics-annotate</artifactId>
+                            <version>0.6.5</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.jvnet.jaxb2_commons</groupId>
+                            <artifactId>jaxb2-value-constructor</artifactId>
+                            <version>3.0</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <additionalJvmArgs>
+                            -Xms128m -Xmx256m -XX:PermSize=64m -XX:MaxPermSize=128m -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -XX:ParallelGCThreads=4 \
+                            -XX:ConcGCThreads=4 -Dorg.apache.cxf.Logger=org.apache.cxf.common.logging.Slf4jLogger \
+                            -Dlogback.configurationFile="${project.basedir}/src/cxf/logback-hub-cxf-codegen.xml"
+                        </additionalJvmArgs>
+                        <defaultOptions>
+                            <extraargs combine.children="append">
+                                <extraarg>-exceptionSuper</extraarg>
+                                <extraarg>java.lang.RuntimeException</extraarg>
+                                <extraarg>-faultSerialVersionUID</extraarg>
+                                <extraarg>1</extraarg>
+                                <extraarg>-validate</extraarg>
+                                <extraarg>-verbose</extraarg>
+                                <extraarg>-xjc-Xannotate</extraarg>
+                                <extraarg>-xjc-Xcommons-lang3</extraarg>
+                                <extraarg>-xjc-Xcommons-lang3:ToStringStyle=DEFAULT_STYLE</extraarg>
+                                <extraarg>-xjc-Xdv</extraarg>
+                                <extraarg>-xjc-Xinheritance</extraarg>
+                                <extraarg>-xjc-Xvalue-constructor</extraarg>
+                            </extraargs>
+                        </defaultOptions>
+                        <disableDependencyScan>true</disableDependencyScan>
+                        <disableDirectoryScan>true</disableDirectoryScan>
+                        <fork>once</fork>
+                        <sourceRoot>${project.build.cxfSourceDirectory}</sourceRoot>
+                    </configuration>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
                     <version>1.7</version>
@@ -396,6 +488,11 @@
                             <groupId>org.apache.ant</groupId>
                             <artifactId>ant</artifactId>
                             <version>1.9.4</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.mozilla</groupId>
+                            <artifactId>rhino</artifactId>
+                            <version>1.7R4</version>
                         </dependency>
                     </dependencies>
                     <configuration>
@@ -427,10 +524,6 @@
                             <arg>-Werror</arg>
                             <arg>-Xlint</arg>
                             <arg>-Xlint:-path</arg>
-                            <!-- TEMP: dev -->
-                            <arg>-Xlint:-rawtypes</arg>
-                            <arg>-Xlint:-serial</arg>
-                            <arg>-Xlint:-unchecked</arg>
                         </compilerArgs>
                         <fork>true</fork>
                         <maxmem>256m</maxmem>
@@ -591,82 +684,6 @@
                     <inherited>true</inherited>
                 </plugin>
                 <plugin>
-                    <groupId>org.jvnet.jax-ws-commons</groupId>
-                    <artifactId>jaxws-maven-plugin</artifactId>
-                    <version>2.3</version>
-                    <inherited>true</inherited>
-                    <dependencies>
-                        <dependency>
-                            <groupId>com.btmatthews.jaxb2_commons</groupId>
-                            <artifactId>jaxb2-commons-lang3</artifactId>
-                            <version>1.0.0</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.sun.xml.bind</groupId>
-                            <artifactId>jaxb-impl</artifactId>
-                            <version>2.2.7</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.sun.xml.bind</groupId>
-                            <artifactId>jaxb-xjc</artifactId>
-                            <version>2.2.7</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>com.sun.xml.ws</groupId>
-                            <artifactId>jaxws-tools</artifactId>
-                            <version>2.2.8</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.apache.commons</groupId>
-                            <artifactId>commons-lang3</artifactId>
-                            <version>3.3.2</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.jvnet.annox</groupId>
-                            <artifactId>annox</artifactId>
-                            <version>0.5.1</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.jvnet.jaxb2_commons</groupId>
-                            <artifactId>jaxb2-basics</artifactId>
-                            <version>0.6.5</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.jvnet.jaxb2_commons</groupId>
-                            <artifactId>jaxb2-basics-annotate</artifactId>
-                            <version>0.6.5</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.jvnet.jaxb2_commons</groupId>
-                            <artifactId>jaxb2-value-constructor</artifactId>
-                            <version>3.0</version>
-                        </dependency>
-                    </dependencies>
-                    <configuration>
-                        <extension>true</extension>
-                        <quiet>true</quiet>
-                        <target>2.2</target>
-                        <vmArgs>
-                            <vmArg>-Xms128m</vmArg>
-                            <vmArg>-Xmx256m</vmArg>
-                            <vmArg>-XX:PermSize=64m</vmArg>
-                            <vmArg>-XX:MaxPermSize=128m</vmArg>
-                            <vmArg>-XX:+UseG1GC</vmArg>
-                            <vmArg>-XX:MaxGCPauseMillis=50</vmArg>
-                            <vmArg>-XX:ParallelGCThreads=4</vmArg>
-                            <vmArg>-XX:ConcGCThreads=4</vmArg>
-                        </vmArgs>
-                        <xadditionalHeaders>true</xadditionalHeaders>
-                        <xjcArgs>
-                            <xjcArg>-Xannotate</xjcArg>
-                            <xjcArg>-Xcommons-lang3</xjcArg>
-                            <xjcArg>-Xcommons-lang3:ToStringStyle=DEFAULT_STYLE</xjcArg>
-                            <xjcArg>-Xinheritance</xjcArg>
-                            <xjcArg>-Xvalue-constructor</xjcArg>
-                        </xjcArgs>
-                    </configuration>
-                </plugin>
-                <plugin>
                     <groupId>org.kuali.maven.plugins</groupId>
                     <artifactId>properties-maven-plugin</artifactId>
                     <version>2.0.1</version>
@@ -744,22 +761,6 @@
             <properties>
                 <tomcat.manager.password/>
             </properties>
-        </profile>
-        <profile>
-            <id>wsimport-debug</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.jvnet.jax-ws-commons</groupId>
-                        <artifactId>jaxws-maven-plugin</artifactId>
-                        <configuration>
-                            <quiet>false</quiet>
-                            <verbose>true</verbose>
-                            <xdebug>true</xdebug>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
     </profiles>
 </project>

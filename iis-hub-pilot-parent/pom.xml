@@ -451,6 +451,8 @@
                                 <extraarg>java.lang.RuntimeException</extraarg>
                                 <extraarg>-faultSerialVersionUID</extraarg>
                                 <extraarg>1</extraarg>
+                                <extraarg>-nexclude</extraarg>
+                                <extraarg>http://www.w3.org/2003/05/soap-envelope</extraarg>
                                 <extraarg>-validate</extraarg>
                                 <extraarg>-verbose</extraarg>
                                 <extraarg>-xjc-Xannotate</extraarg>

@@ -17,6 +17,13 @@
         </xsd:restriction>
     </xsd:simpleType>
     
+    <xsd:simpleType name="DestinationUriType">
+        <xsd:restriction base="xsd:anyURI">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="1024"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
     <!--====================================================================================================
     = GROUPS: HUB
     =====================================================================================================-->
@@ -29,7 +36,7 @@
     <xsd:group name="DestinationConnectionInfoGroup">
         <xsd:sequence>
             <xsd:group ref="iis-hub:DestinationInfoGroup"/>
-            <xsd:element name="DestinationUri" type="xsd:anyURI"/>
+            <xsd:element name="DestinationUri" type="iis-hub:DestinationUriType"/>
         </xsd:sequence>
     </xsd:group>
     

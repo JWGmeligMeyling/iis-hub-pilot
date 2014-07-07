@@ -25,12 +25,12 @@
     =====================================================================================================-->
     <wsdl:message name="ConnectivityTestRequestMessage">
         <wsdl:documentation>Connectivity test request message.</wsdl:documentation>
-        <wsdl:part name="parameters" element="iis:ConnectivityTestRequest"/>
+        <wsdl:part name="requestParameters" element="iis:ConnectivityTestRequest"/>
     </wsdl:message>
     
     <wsdl:message name="ConnectivityTestResponseMessage">
         <wsdl:documentation>Connectivity test response message.</wsdl:documentation>
-        <wsdl:part name="parameters" element="iis:ConnectivityTestResponse"/>
+        <wsdl:part name="responseParameters" element="iis:ConnectivityTestResponse"/>
     </wsdl:message>
     
     <!--====================================================================================================
@@ -38,12 +38,12 @@
     =====================================================================================================-->
     <wsdl:message name="SubmitSingleMessageRequestMessage">
         <wsdl:documentation>Submit single message request message.</wsdl:documentation>
-        <wsdl:part name="parameters" element="iis:SubmitSingleMessageRequest"/>
+        <wsdl:part name="requestParameters" element="iis:SubmitSingleMessageRequest"/>
     </wsdl:message>
     
     <wsdl:message name="SubmitSingleMessageResponseMessage">
         <wsdl:documentation>Submit single message response message.</wsdl:documentation>
-        <wsdl:part name="parameters" element="iis:SubmitSingleMessageResponse"/>
+        <wsdl:part name="responseParameters" element="iis:SubmitSingleMessageResponse"/>
     </wsdl:message>
     
     <!--====================================================================================================
@@ -98,10 +98,10 @@
         <wsdl:operation name="ConnectivityTest">
             <soap12:operation style="document" soapAction="urn:cdc:iisb:2014:IISPortType:ConnectivityTest"/>
             <wsdl:input>
-                <soap12:body use="literal"/>
+                <soap12:body parts="requestParameters" use="literal"/>
             </wsdl:input>
             <wsdl:output>
-                <soap12:body use="literal"/>
+                <soap12:body parts="responseParameters" use="literal"/>
             </wsdl:output>
             <wsdl:fault name="UnsupportedOperationFault">
                 <soap12:fault name="UnsupportedOperationFault" use="literal"/>
@@ -111,10 +111,10 @@
         <wsdl:operation name="SubmitSingleMessage">
             <soap12:operation style="document" soapAction="urn:cdc:iisb:2014:IISPortType:SubmitSingleMessage"/>
             <wsdl:input>
-                <soap12:body use="literal"/>
+                <soap12:body parts="requestParameters" use="literal"/>
             </wsdl:input>
             <wsdl:output>
-                <soap12:body use="literal"/>
+                <soap12:body parts="responseParameters" use="literal"/>
             </wsdl:output>
             <wsdl:fault name="MessageTooLargeFault">
                 <soap12:fault name="MessageTooLargeFault" use="literal"/>

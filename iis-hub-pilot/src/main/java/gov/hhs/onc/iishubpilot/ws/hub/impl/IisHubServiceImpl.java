@@ -7,11 +7,15 @@ import gov.hhs.onc.iishubpilot.ws.SubmitSingleMessageRequestType;
 import gov.hhs.onc.iishubpilot.ws.SubmitSingleMessageResponseType;
 import gov.hhs.onc.iishubpilot.ws.hub.DestinationConnectionFault;
 import gov.hhs.onc.iishubpilot.ws.hub.HubClientFault;
+import gov.hhs.onc.iishubpilot.ws.hub.HubRequestHeaderType;
+import gov.hhs.onc.iishubpilot.ws.hub.HubResponseHeaderType;
 import gov.hhs.onc.iishubpilot.ws.hub.IisHubPortType;
 import gov.hhs.onc.iishubpilot.ws.hub.IisHubService;
 import gov.hhs.onc.iishubpilot.ws.hub.UnknownDestinationFault;
 import gov.hhs.onc.iishubpilot.ws.impl.AbstractIisService;
+import gov.hhs.onc.iishubpilot.ws.impl.SubmitSingleMessageResponseTypeImpl;
 import javax.jws.WebService;
+import javax.xml.ws.Holder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +26,10 @@ public class IisHubServiceImpl extends AbstractIisService implements IisHubServi
     protected ObjectFactory objFactoryHub;
 
     @Override
-    public SubmitSingleMessageResponseType submitSingleMessage(SubmitSingleMessageRequestType parameters) throws DestinationConnectionFault, HubClientFault,
-        MessageTooLargeFault, SecurityFault, UnknownDestinationFault {
-        return this.submitSingleMessageInternal(parameters);
+    public void submitSingleMessage(SubmitSingleMessageRequestType requestParameters, HubRequestHeaderType hubRequestHeader,
+        Holder<SubmitSingleMessageResponseType> responseParameters, Holder<HubResponseHeaderType> hubResponseHeader) throws DestinationConnectionFault,
+        HubClientFault, MessageTooLargeFault, SecurityFault, UnknownDestinationFault {
+        responseParameters.value = new SubmitSingleMessageResponseTypeImpl(requestParameters.getHl7Message());
+        hubResponseHeader.value = new HubResponseHeaderTypeImpl(hubRequestHeader.getDestinationId(), "https://test1.tld/IISService");
     }
 }

@@ -5,8 +5,10 @@ import gov.hhs.onc.iishubpilot.ws.MessageTooLargeFault;
 import gov.hhs.onc.iishubpilot.ws.SecurityFault;
 import gov.hhs.onc.iishubpilot.ws.SubmitSingleMessageRequestType;
 import gov.hhs.onc.iishubpilot.ws.SubmitSingleMessageResponseType;
+import javax.xml.ws.Holder;
 
 public interface IisHubService extends IisService {
-    public SubmitSingleMessageResponseType submitSingleMessage(SubmitSingleMessageRequestType parameters) throws DestinationConnectionFault, HubClientFault,
-        MessageTooLargeFault, SecurityFault, UnknownDestinationFault;
+    public void submitSingleMessage(SubmitSingleMessageRequestType requestParameters, HubRequestHeaderType hubRequestHeader,
+        Holder<SubmitSingleMessageResponseType> responseParameters, Holder<HubResponseHeaderType> hubResponseHeader) throws DestinationConnectionFault,
+        HubClientFault, MessageTooLargeFault, SecurityFault, UnknownDestinationFault;
 }

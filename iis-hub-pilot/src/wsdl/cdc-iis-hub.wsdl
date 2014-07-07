@@ -23,29 +23,16 @@
     </wsdl:types>
     
     <!--====================================================================================================
-    = HEADER MESSAGES: HUB
-    =====================================================================================================-->
-    <wsdl:message name="HubHeaderRequestMessage">
-        <wsdl:documentation>Hub header request message.</wsdl:documentation>
-        <wsdl:part name="header" element="iis-hub:HubRequestHeader"/>
-    </wsdl:message>
-    
-    <wsdl:message name="HubHeaderResponseMessage">
-        <wsdl:documentation>Hub header response message.</wsdl:documentation>
-        <wsdl:part name="header" element="iis-hub:HubResponseHeader"/>
-    </wsdl:message>
-    
-    <!--====================================================================================================
     = OPERATION MESSAGES: HUB CONNECTIVITY TEST
     =====================================================================================================-->
     <wsdl:message name="ConnectivityTestRequestMessage">
         <wsdl:documentation>Hub connectivity test request message.</wsdl:documentation>
-        <wsdl:part name="parameters" element="iis:ConnectivityTestRequest"/>
+        <wsdl:part name="requestParameters" element="iis:ConnectivityTestRequest"/>
     </wsdl:message>
     
     <wsdl:message name="ConnectivityTestResponseMessage">
         <wsdl:documentation>Hub connectivity test response message.</wsdl:documentation>
-        <wsdl:part name="parameters" element="iis:ConnectivityTestResponse"/>
+        <wsdl:part name="responseParameters" element="iis:ConnectivityTestResponse"/>
     </wsdl:message>
     
     <!--====================================================================================================
@@ -53,12 +40,14 @@
     =====================================================================================================-->
     <wsdl:message name="SubmitSingleMessageRequestMessage">
         <wsdl:documentation>Hub submit single message request message.</wsdl:documentation>
-        <wsdl:part name="parameters" element="iis:SubmitSingleMessageRequest"/>
+        <wsdl:part name="requestParameters" element="iis:SubmitSingleMessageRequest"/>
+        <wsdl:part name="hubRequestHeader" element="iis-hub:HubRequestHeader"/>
     </wsdl:message>
     
     <wsdl:message name="SubmitSingleMessageResponseMessage">
         <wsdl:documentation>Hub submit single message response message.</wsdl:documentation>
-        <wsdl:part name="parameters" element="iis:SubmitSingleMessageResponse"/>
+        <wsdl:part name="responseParameters" element="iis:SubmitSingleMessageResponse"/>
+        <wsdl:part name="hubResponseHeader" element="iis-hub:HubResponseHeader"/>
     </wsdl:message>
     
     <!--====================================================================================================
@@ -134,10 +123,10 @@
         <wsdl:operation name="ConnectivityTest">
             <soap12:operation style="document" soapAction="urn:cdc:iisb:hub:2014:IISHubPortType:ConnectivityTest"/>
             <wsdl:input>
-                <soap12:body use="literal"/>
+                <soap12:body parts="requestParameters" use="literal"/>
             </wsdl:input>
             <wsdl:output>
-                <soap12:body use="literal"/>
+                <soap12:body parts="responseParameters" use="literal"/>
             </wsdl:output>
             <wsdl:fault name="UnsupportedOperationFault">
                 <soap12:fault name="UnsupportedOperationFault" use="literal"/>
@@ -147,12 +136,12 @@
         <wsdl:operation name="SubmitSingleMessage">
             <soap12:operation style="document" soapAction="urn:cdc:iisb:hub:2014:IISHubPortType:SubmitSingleMessage"/>
             <wsdl:input>
-                <soap12:header message="iis-hub:HubHeaderRequestMessage" part="header" use="literal"/>
-                <soap12:body use="literal"/>
+                <soap12:header message="iis-hub:SubmitSingleMessageRequestMessage" part="hubRequestHeader" use="literal"/>
+                <soap12:body parts="requestParameters" use="literal"/>
             </wsdl:input>
             <wsdl:output>
-                <soap12:header message="iis-hub:HubHeaderResponseMessage" part="header" use="literal"/>
-                <soap12:body use="literal"/>
+                <soap12:header message="iis-hub:SubmitSingleMessageResponseMessage" part="hubResponseHeader" use="literal"/>
+                <soap12:body parts="responseParameters" use="literal"/>
             </wsdl:output>
             <wsdl:fault name="DestinationConnectionFault">
                 <soap12:fault name="DestinationConnectionFault" use="literal"/>

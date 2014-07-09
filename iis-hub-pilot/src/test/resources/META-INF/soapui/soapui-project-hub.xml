@@ -27,12 +27,9 @@
         <con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           <con:interface>IISHubBindingSoap12</con:interface>
           <con:operation>ConnectivityTest</con:operation>
-          <con:request name="ConnectivityTest" outgoingWss="" incomingWss="" timeout="${#Project#project.test.server.service.hub.req.timeout}" sslKeystore="" useWsAddressing="true" useWsReliableMessaging="false" wssPasswordType="">
+          <con:request name="ConnectivityTest" outgoingWss="" incomingWss="" timeout="${#Project#project.test.server.service.req.timeout}" sslKeystore="" useWsAddressing="true" useWsReliableMessaging="false" wssPasswordType="">
             <con:description/>
-            <con:settings>
-              <con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting>
-              <con:setting id="com.eviware.soapui.impl.support.AbstractHttpRequest@follow-redirects">true</con:setting>
-            </con:settings>
+            <con:settings/>
             <con:encoding>UTF-8</con:encoding>
             <con:endpoint>${#Project#project.test.server.service.hub.url}</con:endpoint>
             <con:request><![CDATA[<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:iis="urn:cdc:iisb:2014">
@@ -78,7 +75,7 @@ empty(//iis:EchoBack)</path>
             </con:assertion>
             <con:assertion type="GroovyScriptAssertion" name="Script Assertion">
               <con:configuration>
-                <scriptText>messageExchange.requestContent == messageExchange.responseContent;</scriptText>
+                <scriptText>messageExchange.requestContent == messageExchange.responseContent</scriptText>
               </con:configuration>
             </con:assertion>
             <con:credentials>
@@ -94,7 +91,7 @@ empty(//iis:EchoBack)</path>
       </con:testStep>
       <con:properties/>
     </con:testCase>
-    <con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="SubmitSingleMessage_1" searchProperties="true" id="a939d910-1200-4e23-9160-c2a1a699baf1">
+    <con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="SubmitSingleMessage_1" searchProperties="true" id="a939d910-1200-4e23-9160-c2a1a699baf1" wsrmEnabled="false" wsrmVersion="1.0" wsrmAckTo="" amfAuthorisation="false" amfEndpoint="" amfLogin="" amfPassword="">
       <con:description>SubmitSingleMessage test case 1.</con:description>
       <con:settings/>
       <con:testStep type="request" name="SubmitSingleMessage">
@@ -102,11 +99,9 @@ empty(//iis:EchoBack)</path>
         <con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           <con:interface>IISHubBindingSoap12</con:interface>
           <con:operation>SubmitSingleMessage</con:operation>
-          <con:request name="SubmitSingleMessage" outgoingWss="" incomingWss="" timeout="${#Project#project.test.server.service.hub.req.timeout}" sslKeystore="" useWsAddressing="true" useWsReliableMessaging="false" wssPasswordType="">
+          <con:request name="SubmitSingleMessage" outgoingWss="" incomingWss="" timeout="${#Project#project.test.server.service.req.timeout}" sslKeystore="" useWsAddressing="true" useWsReliableMessaging="false" wssPasswordType="">
             <con:description/>
-            <con:settings>
-              <con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting>
-            </con:settings>
+            <con:settings/>
             <con:encoding>UTF-8</con:encoding>
             <con:endpoint>${#Project#project.test.server.service.hub.url}</con:endpoint>
             <con:request><![CDATA[<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:iis="urn:cdc:iisb:2014" xmlns:iis-hub="urn:cdc:iisb:hub:2014">
@@ -117,20 +112,7 @@ empty(//iis:EchoBack)</path>
    </soap:Header>
    <soap:Body>
       <iis:SubmitSingleMessageRequest>
-         <iis:Hl7Message><![CDATA[MSH|^~\&|MYEHR|DCS|||20090531145259||VXU^V04^VXU_V04|3533469|P|2.5.1||||AL
-PID|1||432155^^^DCS^MR||Patient^Johnny^New^^^^L||20090414150308|M|||123 Any St^^Somewhere^WI^54000^^L
-PD1||||||||||||N|20090531
-NK1|1|Patient^Sally|MTH^mother^HL70063|123 Any St^^Somewhere^WI^54000^^L
-PV1|1|R||||||||||||||||||V02^20090531
-ORC|RE||197023^DCS|||||||^Clerk^Myron|||||||DCS^Dabig Clinical System^StateIIS
-RXA|0|1|20090415132511|20090415132511|31^Hep B Peds NOS^CVX|999|||01^historical record^NIP0001|||||||| 
-ORC|RE||197027^DCS|||||||^Clerk^Myron||^Pediatric^MARY^^^^^^^L^^^^^^^^^^^MD
-RXA|0|1|20090531132511|20090531132511|48^HIB PRP-T^CVX|999|||00^new immunization record^NIP0001|^Sticker^Nurse|^^^DCS_DC||||33k2a||PMC^sanofi^MVX
-RXR|C28161^IM^NCIT^IM^IM^HL70162|
-ORC|RE||197028^DCS|||||||^Clerk^Myron||^Pediatric^MARY^^^^^^^L^^^^^^^^^^^MD
-RXA|0|1|20090531132511|20090531132511|110^DTAP-Hep B-IPV^CVX|999|||00^new immunization record^NIP0001|^Sticker^Nurse|^^^DCS_DC||||xy3939||SKB^GSK^MVX
-RXR|IM^IM^HL70162^C28161^IM^NCIT|
-]]]]>><![CDATA[</iis:Hl7Message>
+         <iis:Hl7Message><![CDATA[${=new File(new com.eviware.soapui.support.GroovyUtils(context).projectPath + "/data/vxu-1.hl7").text}]]]]>><![CDATA[</iis:Hl7Message>
       </iis:SubmitSingleMessageRequest>
    </soap:Body>
 </soap:Envelope>]]></con:request>
@@ -169,7 +151,7 @@ empty(//iis:Hl7Message)</path>
             </con:assertion>
             <con:assertion type="GroovyScriptAssertion" name="Script Assertion">
               <con:configuration>
-                <scriptText>messageExchange.requestContent == messageExchange.responseContent;</scriptText>
+                <scriptText>messageExchange.requestContent == messageExchange.responseContent</scriptText>
               </con:configuration>
             </con:assertion>
             <con:credentials>
@@ -177,7 +159,7 @@ empty(//iis:Hl7Message)</path>
             </con:credentials>
             <con:jmsConfig JMSDeliveryMode="PERSISTENT"/>
             <con:jmsPropertyConfig/>
-            <con:wsaConfig mustUnderstand="TRUE" version="200508" action="urn:cdc:iisb:hub:2014:IISHubPortType:SubmitSingleMessageRequest" generateMessageId="true" addDefaultAction="true"/>
+            <con:wsaConfig mustUnderstand="TRUE" version="200508" action="urn:cdc:iisb:hub:2014:IISHubPortType:SubmitSingleMessageRequest" generateMessageId="true" addDefaultAction="true" addDefaultTo="false" from="" replyTo="" to=""/>
             <con:wsrmConfig version="1.2"/>
           </con:request>
         </con:config>
@@ -194,6 +176,10 @@ empty(//iis:Hl7Message)</path>
     <con:property>
       <con:name>project.test.server.service.hub.url.wsdl</con:name>
       <con:value>${#Project#project.test.server.service.hub.url}?wsdl</con:value>
+    </con:property>
+    <con:property>
+      <con:name>project.test.server.service.req.timeout</con:name>
+      <con:value>5000</con:value>
     </con:property>
   </con:properties>
   <con:wssContainer/>

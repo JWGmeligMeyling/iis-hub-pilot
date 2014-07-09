@@ -589,7 +589,7 @@
                                     <outputFolder>${project.build.directory}/surefire-reports</outputFolder>
                                     <projectFile>${project.build.directory}/soapui/soapui-project-hub.xml</projectFile>
                                     <projectProperties>
-                                        <value>project.test.server.service.hub.req.timeout=${project.test.server.service.hub.req.timeout}</value>
+                                        <value>project.test.server.service.req.timeout=${project.test.server.service.req.timeout}</value>
                                         <value>project.test.server.service.hub.url=${project.test.server.service.hub.url}</value>
                                         <value>project.test.server.service.hub.url.wsdl=${project.test.server.service.hub.url.wsdl}</value>
                                     </projectProperties>

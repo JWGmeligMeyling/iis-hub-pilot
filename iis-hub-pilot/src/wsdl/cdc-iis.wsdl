@@ -94,7 +94,12 @@
     = BINDINGS
     =====================================================================================================-->
     <wsdl:binding name="IISBindingSoap12" type="iis:IISPortType">
-        <wsaw:UsingAddressing wsdl:required="true"/>
+        <wsp:Policy>
+            <wsam:Addressing>
+                <wsp:Policy/>
+            </wsam:Addressing>
+        </wsp:Policy>
+        
         <soap12:binding style="document" transport="http://www.w3.org/2003/05/soap/bindings/HTTP/"/>
         
         <wsdl:operation name="ConnectivityTest">
@@ -133,8 +138,11 @@
     <wsdl:service name="IISService">
         <wsdl:port name="IISPortSoap12" binding="iis:IISBindingSoap12">
             <wsp:Policy>
-                <wsam:Addressing wsp:Optional="false"/>
+                <wsam:Addressing>
+                    <wsp:Policy/>
+                </wsam:Addressing>
             </wsp:Policy>
+            
             <soap12:address location="http://localhost/IISService"/>
         </wsdl:port>
     </wsdl:service>

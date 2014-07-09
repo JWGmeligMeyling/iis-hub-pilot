@@ -1,6 +1,8 @@
-package gov.hhs.onc.iishubpilot;
+package gov.hhs.onc.iishubpilot.xml;
 
 public final class HubXmlNs {
+    public final static String CXF_FAULT_PREFIX = "cxf-fault";
+
     public final static String IIS_PREFIX = "iis";
     public final static String IIS_HUB_PREFIX = IIS_PREFIX + "-hub";
 

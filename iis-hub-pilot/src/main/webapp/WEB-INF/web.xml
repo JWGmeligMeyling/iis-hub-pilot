@@ -34,20 +34,21 @@
     = SERVLETS
     =====================================================================================================-->
     <servlet>
-        <servlet-name>cxfServlet</servlet-name>
-        <servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
+        <servlet-name>hubCxfServlet</servlet-name>
+        <servlet-class>gov.hhs.onc.iishubpilot.servlet.impl.HubCxfServlet</servlet-class>
         <init-param>
-            <param-name>bus</param-name>
-            <param-value>busHub</param-value>
+            <param-name>contextConfigLocation</param-name>
+            <!--suppress XmlPathReference -->
+            <param-value>/WEB-INF/spring/spring-*.xml</param-value>
         </init-param>
         <init-param>
-            <param-name>config-location</param-name>
-            <param-value>/WEB-INF/spring/spring-*.xml</param-value>
+            <param-name>contextInitializerClasses</param-name>
+            <param-value>gov.hhs.onc.iishubpilot.context.impl.HubApplicationContextInitializer</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
-        <servlet-name>cxfServlet</servlet-name>
+        <servlet-name>hubCxfServlet</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
     

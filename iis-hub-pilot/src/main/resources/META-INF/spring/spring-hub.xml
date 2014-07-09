@@ -60,24 +60,4 @@
     = CONVERSION SERVICE
     =====================================================================================================-->
     <beans:bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean" primary="true"/>
-    
-    <!--====================================================================================================
-    = XML QUALIFIED NAMES
-    =====================================================================================================-->
-    <beans:bean id="qname" class="javax.xml.namespace.QName" abstract="true"/>
-    
-    <beans:bean id="qnameWs" parent="qname" abstract="true"
-        c:namespaceURI="#{ T(gov.hhs.onc.iishubpilot.HubXmlNs).IIS }"
-        c:prefix="#{ T(gov.hhs.onc.iishubpilot.HubXmlNs).IIS_PREFIX }"/>
-    
-    <beans:bean id="qnameWsHub" parent="qname" abstract="true"
-        c:namespaceURI="#{ T(gov.hhs.onc.iishubpilot.HubXmlNs).IIS_HUB }"
-        c:prefix="#{ T(gov.hhs.onc.iishubpilot.HubXmlNs).IIS_HUB_PREFIX }"/>
-    
-    <!--====================================================================================================
-    = OBJECT FACTORIES
-    =====================================================================================================-->
-    <beans:bean id="objFactoryWs" class="gov.hhs.onc.iishubpilot.ws.impl.ObjectFactory"/>
-    
-    <beans:bean id="objFactoryWsHub" class="gov.hhs.onc.iishubpilot.ws.hub.impl.ObjectFactory"/>
 </beans:beans>

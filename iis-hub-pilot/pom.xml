@@ -467,6 +467,31 @@
                             </resources>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>copy-test-resources-soapui</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/soapui</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src/test/resources/META-INF/soapui</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>**/*.xml</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>${project.basedir}/src/test/resources/META-INF/soapui</directory>
+                                    <excludes>
+                                        <exclude>**/*.xml</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -492,6 +517,7 @@
                         <additionalClasspathElement>${project.build.directory}/${project.artifactId}/WEB-INF/classes</additionalClasspathElement>
                     </additionalClasspathElements>
                     <systemPropertyVariables>
+                        <hub.mode>dev</hub.mode>
                         <logback.configurationFile>classpath:META-INF/logback/logback-hub.xml</logback.configurationFile>
                     </systemPropertyVariables>
                     <workingDirectory>${project.build.directory}/${project.artifactId}-test</workingDirectory>
@@ -550,6 +576,36 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>com.github.redfish4ktc.soapui</groupId>
+                        <artifactId>maven-soapui-extension-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>integration-test</id>
+                                <phase>integration-test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <outputFolder>${project.build.directory}/surefire-reports</outputFolder>
+                                    <projectFile>${project.build.directory}/soapui/soapui-project-hub.xml</projectFile>
+                                    <projectProperties>
+                                        <value>project.test.server.service.hub.req.timeout=${project.test.server.service.hub.req.timeout}</value>
+                                        <value>project.test.server.service.hub.url=${project.test.server.service.hub.url}</value>
+                                        <value>project.test.server.service.hub.url.wsdl=${project.test.server.service.hub.url.wsdl}</value>
+                                    </projectProperties>
+                                    <settingsFile>${project.build.directory}/soapui/soapui-settings-hub.xml</settingsFile>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>test-verify</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>test-verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>org.apache.tomcat.maven</groupId>
                         <artifactId>tomcat7-maven-plugin</artifactId>
                         <executions>
@@ -562,10 +618,13 @@
                                 <configuration>
                                     <contextReloadable>true</contextReloadable>
                                     <fork>true</fork>
-                                    <hostName>localhost</hostName>
+                                    <hostName>${project.test.server.host}</hostName>
                                     <jarScanAllDirectories>false</jarScanAllDirectories>
                                     <path>/</path>
-                                    <port>18080</port>
+                                    <port>${project.test.server.port}</port>
+                                    <systemProperties>
+                                        <hub.mode>dev</hub.mode>
+                                    </systemProperties>
                                     <webapps>
                                         <webapp>
                                             <asWebapp>true</asWebapp>

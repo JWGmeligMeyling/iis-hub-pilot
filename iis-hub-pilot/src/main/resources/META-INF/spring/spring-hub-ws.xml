@@ -41,45 +41,7 @@
     =====================================================================================================-->
     <beans:bean id="bus" class="org.apache.cxf.Bus" abstract="true"/>
     
-    <beans:bean id="busHub" class="org.apache.cxf.bus.spring.SpringBus" parent="bus">
-        <beans:property name="features">
-            <util:list>
-                <beans:bean class="org.apache.cxf.feature.LoggingFeature" parent="feature"/>
-            </util:list>
-        </beans:property>
-    </beans:bean>
-    
-    <!--====================================================================================================
-    = SOAP VERSIONS
-    =====================================================================================================-->
-    <beans:bean id="soapVersion" class="org.apache.cxf.binding.soap.SoapVersion" abstract="true"/>
-    
-    <beans:bean id="soapVersion12" class="org.apache.cxf.binding.soap.Soap12" parent="soapVersion" factory-method="getInstance"/>
-    
-    <!--====================================================================================================
-    = SOAP BINDINGS
-    =====================================================================================================-->
-    <beans:bean id="soapBinding" class="org.apache.cxf.binding.soap.SoapBindingConfiguration" abstract="true"
-        p:style="#{ T(org.apache.cxf.binding.soap.SoapBindingConstants).PARAMETER_STYLE_BARE }"/>
-    
-    <beans:bean id="soapBinding12" parent="soapBinding"
-        p:transportURI="#{ T(org.apache.cxf.wsdl.WSDLConstants).NS_SOAP12_HTTP_BINDING }"
-        p:version-ref="soapVersion12"/>
-    
-    <!--====================================================================================================
-    = DATA BINDINGS
-    =====================================================================================================-->
-    <beans:bean id="dataBinding" class="org.apache.cxf.databinding.DataBinding" abstract="true"/>
-    
-    <beans:bean id="dataBindingJaxb" class="org.apache.cxf.jaxb.JAXBDataBinding" parent="dataBinding"
-        p:bus-ref="busHub">
-        <beans:property name="marshallerProperties">
-            <util:map>
-                <beans:entry key="#{ T(javax.xml.bind.Marshaller).JAXB_ENCODING }" value="#{ charsetUtf8.name() }"/>
-                <beans:entry key="#{ T(javax.xml.bind.Marshaller).JAXB_FORMATTED_OUTPUT }" value="#{ true }"/>
-            </util:map>
-        </beans:property>
-    </beans:bean>
+    <beans:bean id="busSpring" class="org.apache.cxf.bus.spring.SpringBus" parent="bus" abstract="true"/>
     
     <!--====================================================================================================
     = INTERCEPTORS
@@ -91,11 +53,12 @@
     =====================================================================================================-->
     <beans:bean id="interceptorPhase" class="org.apache.cxf.phase.PhaseInterceptor" parent="interceptor" abstract="true"/>
     
-    <beans:bean id="interceptorPhaseXmlCdata" class="gov.hhs.onc.iishubpilot.interceptor.impl.CdataAwareXmlInterceptor" parent="interceptorPhase">
+    <beans:bean id="interceptorXmlCdata" class="gov.hhs.onc.iishubpilot.interceptor.impl.CdataAwareXmlInterceptor" parent="interceptorPhase">
         <beans:constructor-arg name="cdataElemQnames">
             <util:set>
-                <beans:bean parent="qnameWs"
-                    c:localPart="Hl7Message"/>
+                <beans:bean class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean"
+                    p:targetClass="gov.hhs.onc.iishubpilot.xml.HubXmlQnames"
+                    p:targetField="CXF_FAULT_STACKTRACE"/>
             </util:set>
         </beans:constructor-arg>
     </beans:bean>
@@ -115,15 +78,22 @@
                 p:dataBinding-ref="dataBindingJaxb"
                 p:serviceBean-ref="iisServiceHub"
                 p:wsdlLocation="/META-INF/wsdl/cdc-iis-hub.wsdl">
+                <beans:property name="outFaultInterceptors">
+                    <util:list>
+                        <beans:ref bean="interceptorFaultStacktrace"/>
+                        <beans:ref bean="interceptorXmlCdata"/>
+                    </util:list>
+                </beans:property>
                 <beans:property name="outInterceptors">
                     <util:list>
-                        <!--<beans:ref bean="interceptorPhaseXmlCdata"/>-->
+                        <beans:ref bean="interceptorXmlCdata"/>
                     </util:list>
                 </beans:property>
                 <beans:property name="properties">
-                    <util:map>
-                        <beans:entry key="#{ T(org.apache.cxf.message.Message).EXCEPTION_MESSAGE_CAUSE_ENABLED }" value="true"/>
-                        <beans:entry key="#{ T(org.apache.cxf.message.Message).FAULT_STACKTRACE_ENABLED }" value="true"/>
+                    <util:map id="serverHubProps">
+                        <!--suppress SpringPlaceholdersInspection -->
+                        <beans:entry key="#{ T(gov.hhs.onc.iishubpilot.ws.HubMessageContextProperties).FAULT_STACKTRACE_ENABLED }"
+                            value="${hub.mode.dev.active}"/>
                         <beans:entry key="#{ T(org.apache.cxf.message.Message).SCHEMA_VALIDATION_ENABLED }"
                             value="#{ T(org.apache.cxf.annotations.SchemaValidation.SchemaValidationType).BOTH }"/>
                     </util:map>
@@ -131,4 +101,26 @@
             </beans:bean>
         </beans:property>
     </beans:bean>
+    
+    <beans:beans profile="!hub.mode.dev">
+        <!--====================================================================================================
+        = BUS
+        =====================================================================================================-->
+        <!--suppress DuplicatedBeanNamesInspection -->
+        <beans:bean id="busHub" parent="busSpring"/>
+    </beans:beans>
+    
+    <beans:beans profile="hub.mode.dev">
+        <!--====================================================================================================
+        = BUS
+        =====================================================================================================-->
+        <!--suppress DuplicatedBeanNamesInspection -->
+        <beans:bean id="busHub" parent="busSpring">
+            <beans:property name="features">
+                <beans:list merge="true">
+                    <beans:bean class="org.apache.cxf.feature.LoggingFeature" parent="feature"/>
+                </beans:list>
+            </beans:property>
+        </beans:bean>
+    </beans:beans>
 </beans:beans>

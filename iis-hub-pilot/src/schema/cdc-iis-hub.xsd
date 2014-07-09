@@ -13,7 +13,7 @@
     =====================================================================================================-->
     <xsd:simpleType name="DestinationIdType">
         <xsd:restriction base="xsd:string">
-            <xsd:pattern value="[\w\-]+"/>
+            <xsd:pattern value="[\w_\-]+"/>
         </xsd:restriction>
     </xsd:simpleType>
     
@@ -82,7 +82,7 @@
         <xsd:complexContent>
             <xsd:extension base="iis:FaultType">
                 <xsd:sequence>
-                    <xsd:group ref="iis-hub:DestinationInfoGroup"/>
+                    <xsd:element name="DestinationId" type="xsd:string"/>
                 </xsd:sequence>
             </xsd:extension>
         </xsd:complexContent>

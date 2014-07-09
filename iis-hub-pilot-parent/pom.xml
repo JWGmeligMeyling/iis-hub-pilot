@@ -23,6 +23,58 @@
         <url>http://code.google.com/p/iis-hub-pilot/source/browse/${project.artifactId}/</url>
     </scm>
     
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Maven Repository Switchboard</name>
+            <url>http://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </repository>
+        <repository>
+            <id>eviware</id>
+            <name>SoapUI Repository</name>
+            <url>http://www.eviware.com/repository/maven2/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <checksumPolicy>ignore</checksumPolicy>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </repository>
+    </repositories>
+    
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <name>Maven Plugin Repository</name>
+            <url>http://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </pluginRepository>
+        <pluginRepository>
+            <id>eviware</id>
+            <name>SoapUI Plugin Repository</name>
+            <url>http://www.soapui.org/repository/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <checksumPolicy>ignore</checksumPolicy>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+    
     <properties>
         <!-- Java properties -->
         <java.version>1.7</java.version>
@@ -382,6 +434,48 @@
         
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>com.github.redfish4ktc.soapui</groupId>
+                    <artifactId>maven-soapui-extension-plugin</artifactId>
+                    <version>4.6.4.1</version>
+                    <inherited>true</inherited>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.smartbear.soapui</groupId>
+                            <artifactId>soapui-pro-maven-plugin</artifactId>
+                            <version>5.0.0</version>
+                            <exclusions>
+                                <exclusion>
+                                    <groupId>jasperreports</groupId>
+                                    <artifactId>jasperreports</artifactId>
+                                </exclusion>
+                            </exclusions>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <coverage>true</coverage>
+                        <exportAll>true</exportAll>
+                        <junitHtmlReport>false</junitHtmlReport>
+                        <junitReport>true</junitReport>
+                        <printReport>true</printReport>
+                        <saveAfterRun>true</saveAfterRun>
+                        <soapuiProperties>
+                            <property>
+                                <name>soapui.ext.libraries</name>
+                                <value>${project.build.directory}/soapui/ext</value>
+                            </property>
+                            <property>
+                                <name>soapui.logroot</name>
+                                <value>${project.build.directory}/surefire-logs/</value>
+                            </property>
+                            <property>
+                                <name>soapui.scripting.library</name>
+                                <value>${project.build.directory}/soapui/groovy</value>
+                            </property>
+                        </soapuiProperties>
+                        <testFailIgnore>true</testFailIgnore>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.cxf</groupId>
                     <artifactId>cxf-codegen-plugin</artifactId>

@@ -103,7 +103,7 @@
         <soap12:binding style="document" transport="http://www.w3.org/2003/05/soap/bindings/HTTP/"/>
         
         <wsdl:operation name="ConnectivityTest">
-            <soap12:operation style="document" soapAction="urn:cdc:iisb:2014:IISPortType:ConnectivityTest"/>
+            <soap12:operation style="document" soapAction="urn:cdc:iisb:2014:IISPortType:ConnectivityTestRequest"/>
             <wsdl:input>
                 <soap12:body parts="requestParameters" use="literal"/>
             </wsdl:input>
@@ -116,7 +116,7 @@
         </wsdl:operation>
         
         <wsdl:operation name="SubmitSingleMessage">
-            <soap12:operation style="document" soapAction="urn:cdc:iisb:2014:IISPortType:SubmitSingleMessage"/>
+            <soap12:operation style="document" soapAction="urn:cdc:iisb:2014:IISPortType:SubmitSingleMessageRequest"/>
             <wsdl:input>
                 <soap12:body parts="requestParameters" use="literal"/>
             </wsdl:input>

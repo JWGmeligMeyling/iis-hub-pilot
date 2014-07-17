@@ -16,22 +16,36 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
     
     <!--====================================================================================================
-    = XML QUALIFIED NAMES
-    =====================================================================================================-->
-    <beans:bean id="qname" class="javax.xml.namespace.QName" abstract="true"/>
-    
-    <beans:bean id="qnameWs" parent="qname" abstract="true"
-        c:namespaceURI="#{ T(gov.hhs.onc.iishubpilot.xml.HubXmlNs).IIS }"
-        c:prefix="#{ T(gov.hhs.onc.iishubpilot.xml.HubXmlNs).IIS_PREFIX }"/>
-    
-    <beans:bean id="qnameWsHub" parent="qname" abstract="true"
-        c:namespaceURI="#{ T(gov.hhs.onc.iishubpilot.xml.HubXmlNs).IIS_HUB }"
-        c:prefix="#{ T(gov.hhs.onc.iishubpilot.xml.HubXmlNs).IIS_HUB_PREFIX }"/>
-    
-    <!--====================================================================================================
     = OBJECT FACTORIES
     =====================================================================================================-->
-    <beans:bean id="objFactoryWs" class="gov.hhs.onc.iishubpilot.ws.impl.ObjectFactory"/>
+    <beans:bean id="objFactoryIis" class="gov.hhs.onc.iishubpilot.ws.impl.ObjectFactory"/>
     
-    <beans:bean id="objFactoryWsHub" class="gov.hhs.onc.iishubpilot.ws.hub.impl.ObjectFactory"/>
+    <beans:bean id="objFactoryIisHub" class="gov.hhs.onc.iishubpilot.ws.hub.impl.ObjectFactory"/>
+    
+    <!--====================================================================================================
+    = DATA BINDINGS
+    =====================================================================================================-->
+    <beans:bean id="dataBinding" class="org.apache.cxf.databinding.DataBinding" abstract="true"/>
+    
+    <beans:bean id="dataBindingJaxb" class="org.apache.cxf.jaxb.JAXBDataBinding" parent="dataBinding"
+        c:qualified="true"
+        p:bus-ref="busHub">
+        <beans:constructor-arg name="props">
+            <beans:map>
+                <beans:entry key="#{ T(org.apache.cxf.jaxb.JAXBDataBinding).JAXB_SCAN_PACKAGES }" value="false"/>
+            </beans:map>
+        </beans:constructor-arg>
+        <beans:property name="extraClass">
+            <beans:array>
+                <beans:value>#{ objFactoryIis.class }</beans:value>
+                <beans:value>#{ objFactoryIisHub.class }</beans:value>
+            </beans:array>
+        </beans:property>
+        <beans:property name="marshallerProperties">
+            <beans:map>
+                <beans:entry key="#{ T(javax.xml.bind.Marshaller).JAXB_ENCODING }" value="#{ charsetUtf8.name() }"/>
+                <beans:entry key="#{ T(javax.xml.bind.Marshaller).JAXB_FORMATTED_OUTPUT }" value="true" value-type="java.lang.Boolean"/>
+            </beans:map>
+        </beans:property>
+    </beans:bean>
 </beans:beans>

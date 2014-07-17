@@ -1,5 +1,7 @@
 package gov.hhs.onc.iishubpilot.ws;
 
-public interface IisService {
-    public ConnectivityTestResponseType connectivityTest(ConnectivityTestRequestType requestParameters) throws UnsupportedOperationFault;
+import org.springframework.context.ApplicationContextAware;
+
+public interface IisService extends ApplicationContextAware {
+    public ConnectivityTestResponseType connectivityTest(ConnectivityTestRequestType reqParams) throws UnsupportedOperationFault;
 }

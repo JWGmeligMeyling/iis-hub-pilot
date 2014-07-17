@@ -231,6 +231,16 @@
         </dependency>
         <!-- Test dependencies (inherited) -->
         <dependency>
+            <groupId>com.smartbear.soapui</groupId>
+            <artifactId>soapui</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <scope>test</scope>
@@ -314,6 +324,9 @@
                     </execution>
                     <execution>
                         <id>test-jar</id>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/${project.artifactId}-test/WEB-INF/lib</outputDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -477,6 +490,13 @@
                             <outputDirectory>${project.build.directory}/soapui</outputDirectory>
                             <resources>
                                 <resource>
+                                    <directory>${project.basedir}/src/test/groovy</directory>
+                                    <includes>
+                                        <include>**/*.groovy</include>
+                                    </includes>
+                                    <targetPath>groovy</targetPath>
+                                </resource>
+                                <resource>
                                     <directory>${project.basedir}/src/test/resources/META-INF/soapui</directory>
                                     <filtering>true</filtering>
                                     <includes>
@@ -488,6 +508,30 @@
                                     <excludes>
                                         <exclude>**/*.xml</exclude>
                                     </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-test-artifact-resources-soapui</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/soapui/ext</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/${project.artifactId}/WEB-INF/lib</directory>
+                                    <includes>
+                                        <include>${project.build.finalName}.jar</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>${project.build.directory}/${project.artifactId}-test/WEB-INF/lib</directory>
+                                    <includes>
+                                        <include>${project.build.finalName}-tests.jar</include>
+                                    </includes>
                                 </resource>
                             </resources>
                         </configuration>
@@ -516,7 +560,9 @@
                         <additionalClasspathElement>${project.build.directory}/${project.artifactId}-test/WEB-INF/classes</additionalClasspathElement>
                         <additionalClasspathElement>${project.build.directory}/${project.artifactId}/WEB-INF/classes</additionalClasspathElement>
                     </additionalClasspathElements>
-                    <systemPropertyVariables>
+                    <systemPropertyVariables combine.children="append">
+                        <hub.log.console.term>true</hub.log.console.term>
+                        <hub.log.dir>${project.build.directory}/surefire-logs</hub.log.dir>
                         <hub.mode>dev</hub.mode>
                         <logback.configurationFile>classpath:META-INF/logback/logback-hub.xml</logback.configurationFile>
                     </systemPropertyVariables>
@@ -529,6 +575,9 @@
                             <suiteXmlFiles>
                                 <suiteXmlFile>${project.build.directory}/testng/testng-hub.xml</suiteXmlFile>
                             </suiteXmlFiles>
+                            <systemPropertyVariables>
+                                <hub.log.context.name>${project.artifactId}-test</hub.log.context.name>
+                            </systemPropertyVariables>
                         </configuration>
                     </execution>
                     <execution>
@@ -537,6 +586,9 @@
                             <suiteXmlFiles>
                                 <suiteXmlFile>${project.build.directory}/testng/testng-hub-it.xml</suiteXmlFile>
                             </suiteXmlFiles>
+                            <systemPropertyVariables>
+                                <hub.log.context.name>${project.artifactId}-test-it</hub.log.context.name>
+                            </systemPropertyVariables>
                         </configuration>
                     </execution>
                 </executions>
@@ -623,6 +675,9 @@
                                     <path>/</path>
                                     <port>${project.test.server.port}</port>
                                     <systemProperties>
+                                        <hub.log.console.term>true</hub.log.console.term>
+                                        <hub.log.context.name>${project.artifactId}-test-it-tomcat</hub.log.context.name>
+                                        <hub.log.dir>${project.build.directory}/surefire-logs</hub.log.dir>
                                         <hub.mode>dev</hub.mode>
                                     </systemProperties>
                                     <webapps>

@@ -9,6 +9,8 @@
         <resetJUL>true</resetJUL>
     </contextListener>
     
+    <conversionRule conversionWord="hubp" converterClass="gov.hhs.onc.iishubpilot.logback.impl.HubPriorityConverter"/>
+    
     <if condition='!isDefined("hub.log.dir") &amp;&amp; isDefined("catalina.base")'>
         <then>
             <property name="hub.log.dir" value="${catalina.base}/logs" scope="context"/>
@@ -25,9 +27,9 @@
     
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%p - %m%n%ex</pattern>
+            <pattern>%hubp(%p){${hub.log.console.term:-false}} - %m%n%ex</pattern>
         </encoder>
-        <target>System.err</target>
+        <target>System.out</target>
         <withJansi>true</withJansi>
     </appender>
     
@@ -46,13 +48,21 @@
                 </encoder>
             </appender>
         </then>
+        <else>
+            <appender name="file" class="ch.qos.logback.core.helpers.NOPAppender"/>
+        </else>
     </if>
     
-    <logger name="gov.hhs.onc.iishubpilot" level="all" additivity="false">
+    <logger name="gov.hhs.onc.iishubpilot" level="${hub.log.logger.lvl:-all}" additivity="false">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
+    
     <logger name="org.apache" level="info" additivity="false">
+        <appender-ref ref="console"/>
+        <appender-ref ref="file"/>
+    </logger>
+    <logger name="org.apache.cxf" level="${hub.log.logger.cxf.lvl:-info}" additivity="false">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
@@ -64,10 +74,11 @@
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
-    <logger name="org.springframework" level="info" additivity="false">
+    <logger name="org.springframework" level="${hub.log.logger.spring.lvl:-info}" additivity="false">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
+    
     <root level="warn">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>

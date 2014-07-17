@@ -8,7 +8,7 @@ import gov.hhs.onc.iishubpilot.ws.SubmitSingleMessageResponseType;
 import javax.xml.ws.Holder;
 
 public interface IisHubService extends IisService {
-    public void submitSingleMessage(SubmitSingleMessageRequestType requestParameters, HubRequestHeaderType hubRequestHeader,
-        Holder<SubmitSingleMessageResponseType> responseParameters, Holder<HubResponseHeaderType> hubResponseHeader) throws DestinationConnectionFault,
-        HubClientFault, MessageTooLargeFault, SecurityFault, UnknownDestinationFault;
+    public void submitSingleMessage(SubmitSingleMessageRequestType reqParams, HubRequestHeaderType hubReqHeader,
+        Holder<SubmitSingleMessageResponseType> respParams, Holder<HubResponseHeaderType> hubRespHeader) throws DestinationConnectionFault, HubClientFault,
+        MessageTooLargeFault, SecurityFault, UnknownDestinationFault;
 }

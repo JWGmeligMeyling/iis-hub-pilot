@@ -27,6 +27,24 @@
     </jaxws:bindings>
     
     <!--====================================================================================================
+    = PARAMETERS
+    =====================================================================================================-->
+    <jaxws:bindings node="wsdl:definitions/wsdl:portType[@name='IISHubPortType']/wsdl:operation[@name='ConnectivityTest']">
+        <jaxws:parameter part="wsdl:definitions/wsdl:message[@name='ConnectivityTestRequestMessage']/wsdl:part[@name='requestParameters']" name="reqParams"/>
+        <jaxws:parameter part="wsdl:definitions/wsdl:message[@name='ConnectivityTestResponseMessage']/wsdl:part[@name='responseParameters']" name="respParams"/>
+    </jaxws:bindings>
+    
+    <jaxws:bindings node="wsdl:definitions/wsdl:portType[@name='IISHubPortType']/wsdl:operation[@name='SubmitSingleMessage']">
+        <jaxws:parameter part="wsdl:definitions/wsdl:message[@name='SubmitSingleMessageRequestMessage']/wsdl:part[@name='requestParameters']" name="reqParams"/>
+        <jaxws:parameter part="wsdl:definitions/wsdl:message[@name='SubmitSingleMessageRequestMessage']/wsdl:part[@name='hubRequestHeader']"
+            name="hubReqHeader"/>
+        <jaxws:parameter part="wsdl:definitions/wsdl:message[@name='SubmitSingleMessageResponseMessage']/wsdl:part[@name='responseParameters']"
+            name="respParams"/>
+        <jaxws:parameter part="wsdl:definitions/wsdl:message[@name='SubmitSingleMessageResponseMessage']/wsdl:part[@name='hubResponseHeader']"
+            name="hubRespHeader"/>
+    </jaxws:bindings>
+    
+    <!--====================================================================================================
     = FAULTS
     =====================================================================================================-->
     <jaxws:bindings node="wsdl:definitions/wsdl:portType[@name='IISHubPortType']/wsdl:operation/wsdl:fault[@name='DestinationConnectionFault']">
@@ -51,12 +69,5 @@
     
     <jaxws:bindings node="wsdl:definitions/wsdl:portType[@name='IISHubPortType']/wsdl:operation/wsdl:fault[@name='UnsupportedOperationFault']">
         <jaxws:class name="gov.hhs.onc.iishubpilot.ws.UnsupportedOperationFault"/>
-    </jaxws:bindings>
-    
-    <!--====================================================================================================
-    = SERVICES
-    =====================================================================================================-->
-    <jaxws:bindings node="wsdl:definitions/wsdl:service[@name='IISHubService']">
-        <jaxws:class name="gov.hhs.onc.iishubpilot.ws.hub.impl.IisHubClientService"/>
     </jaxws:bindings>
 </jaxws:bindings>

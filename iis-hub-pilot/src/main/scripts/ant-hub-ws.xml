@@ -14,6 +14,7 @@
         <delete quiet="true">
             <fileset dir="${project.build.cxfSourceDirectory}">
                 <patternset refid="patternset.java.pkgInfo.files"/>
+                <patternset refid="patternset.java.jaxws.service.files"/>
             </fileset>
         </delete>
         
@@ -89,6 +90,9 @@
         </patternset>
         <patternset id="patternset.java.jaxb.objFactory.files">
             <include name="**/ObjectFactory.java"/>
+        </patternset>
+        <patternset id="patternset.java.jaxws.service.files">
+            <include name="**/IIS*Service.java"/>
         </patternset>
     </target>
 </project>

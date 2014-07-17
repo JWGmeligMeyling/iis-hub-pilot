@@ -41,7 +41,7 @@
     =====================================================================================================-->
     <beans:bean id="bus" class="org.apache.cxf.Bus" abstract="true"/>
     
-    <beans:bean id="busSpring" class="org.apache.cxf.bus.spring.SpringBus" parent="bus" abstract="true"/>
+    <beans:bean id="busSpring" class="org.apache.cxf.bus.spring.SpringBus" parent="bus" abstract="true" destroy-method="shutdown"/>
     
     <!--====================================================================================================
     = INTERCEPTORS
@@ -49,7 +49,7 @@
     <beans:bean id="interceptor" class="org.apache.cxf.interceptor.Interceptor" abstract="true"/>
     
     <!--====================================================================================================
-    = PHASE INTERCEPTORS
+    = INTERCEPTORS: PHASE
     =====================================================================================================-->
     <beans:bean id="interceptorPhase" class="org.apache.cxf.phase.PhaseInterceptor" parent="interceptor" abstract="true"/>
     
@@ -64,52 +64,92 @@
     </beans:bean>
     
     <!--====================================================================================================
+    = PORT TYPES: IIS
+    =====================================================================================================-->
+    <beans:bean id="portTypeIis" class="gov.hhs.onc.iishubpilot.ws.IisPortType" abstract="true"/>
+    
+    <!--====================================================================================================
+    = PORT TYPES: IIS HUB
+    =====================================================================================================-->
+    <beans:bean id="portTypeIisHub" class="gov.hhs.onc.iishubpilot.ws.hub.IisHubPortType" abstract="true"/>
+    
+    <!--====================================================================================================
+    = CLIENTS: IIS
+    =====================================================================================================-->
+    <!--suppress SpringBeanConstructorArgInspection -->
+    <beans:bean id="clientIis" class="gov.hhs.onc.iishubpilot.jaxws.impl.HubJaxWsClientProxyFactoryBean" parent="portTypeIis" lazy-init="true"
+        scope="prototype"
+        p:bindingConfig-ref="soapBinding12"
+        p:bus-ref="busHub"
+        p:dataBinding-ref="dataBindingJaxb"
+        p:endpointName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).PORT }"
+        p:serviceClass="gov.hhs.onc.iishubpilot.ws.IisPortType"
+        p:serviceName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SERVICE }"
+        p:wsdlLocation="/META-INF/wsdl/cdc-iis.wsdl">
+        <beans:property name="properties">
+            <beans:map>
+                <beans:entry key="#{ T(org.apache.cxf.message.Message).SCHEMA_VALIDATION_ENABLED }"
+                    value="#{ T(org.apache.cxf.annotations.SchemaValidation.SchemaValidationType).BOTH }"/>
+            </beans:map>
+        </beans:property>
+    </beans:bean>
+    
+    <!--====================================================================================================
+    = SERVICES: IIS
+    =====================================================================================================-->
+    <beans:bean id="serviceIis" class="gov.hhs.onc.iishubpilot.ws.IisService" abstract="true"/>
+    
+    <!--====================================================================================================
+    = SERVICES: IIS HUB
+    =====================================================================================================-->
+    <beans:bean id="serviceIisHub" class="gov.hhs.onc.iishubpilot.ws.hub.IisHubService" parent="serviceIis" abstract="true"/>
+    
+    <beans:bean id="serviceIisHubImpl" class="gov.hhs.onc.iishubpilot.ws.hub.impl.IisHubServiceImpl" parent="serviceIisHub">
+        <beans:constructor-arg name="clientIisBeanName">
+            <beans:idref bean="clientIis"/>
+        </beans:constructor-arg>
+    </beans:bean>
+    
+    <!--====================================================================================================
     = SERVERS
     =====================================================================================================-->
     <beans:bean id="server" class="org.apache.cxf.endpoint.Server" abstract="true"/>
     
-    <beans:bean id="serverHub" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean" parent="server"
-        p:targetMethod="create">
-        <beans:property name="targetObject">
-            <beans:bean class="org.apache.cxf.jaxws.JaxWsServerFactoryBean" parent="server"
-                p:address="/IISHubService"
-                p:bindingConfig-ref="soapBinding12"
-                p:bus-ref="busHub"
-                p:dataBinding-ref="dataBindingJaxb"
-                p:serviceBean-ref="iisServiceHub"
-                p:wsdlLocation="/META-INF/wsdl/cdc-iis-hub.wsdl">
-                <beans:property name="outFaultInterceptors">
-                    <util:list>
-                        <beans:ref bean="interceptorFaultStacktrace"/>
-                        <beans:ref bean="interceptorXmlCdata"/>
-                    </util:list>
-                </beans:property>
-                <beans:property name="outInterceptors">
-                    <util:list>
-                        <beans:ref bean="interceptorXmlCdata"/>
-                    </util:list>
-                </beans:property>
-                <beans:property name="properties">
-                    <util:map id="serverHubProps">
-                        <!--suppress SpringPlaceholdersInspection -->
-                        <beans:entry key="#{ T(gov.hhs.onc.iishubpilot.ws.HubMessageContextProperties).FAULT_STACKTRACE_ENABLED }"
-                            value="${hub.mode.dev.active}"/>
-                        <beans:entry key="#{ T(org.apache.cxf.message.Message).SCHEMA_VALIDATION_ENABLED }"
-                            value="#{ T(org.apache.cxf.annotations.SchemaValidation.SchemaValidationType).BOTH }"/>
-                    </util:map>
-                </beans:property>
-            </beans:bean>
+    <!--====================================================================================================
+    = SERVERS: IIS HUB
+    =====================================================================================================-->
+    <beans:bean id="serverIisHub" class="gov.hhs.onc.iishubpilot.jaxws.impl.HubJaxWsServerFactoryBean" parent="server"
+        p:address="/#{ T(gov.hhs.onc.iishubpilot.ws.HubWsNames).SERVICE_HUB }"
+        p:bindingConfig-ref="soapBinding12"
+        p:bus-ref="busHub"
+        p:dataBinding-ref="dataBindingJaxb"
+        p:serviceBean-ref="serviceIisHubImpl"
+        p:wsdlLocation="/META-INF/wsdl/cdc-iis-hub.wsdl">
+        <beans:property name="outFaultInterceptors">
+            <beans:list>
+                <beans:ref bean="interceptorFaultStacktrace"/>
+                <beans:ref bean="interceptorXmlCdata"/>
+            </beans:list>
+        </beans:property>
+        <beans:property name="outInterceptors">
+            <beans:list>
+                <beans:ref bean="interceptorXmlCdata"/>
+            </beans:list>
+        </beans:property>
+        <beans:property name="properties">
+            <beans:map>
+                <!--suppress SpringPlaceholdersInspection -->
+                <beans:entry key="#{ T(gov.hhs.onc.iishubpilot.ws.HubMessageContextProperties).FAULT_STACKTRACE_ENABLED }"
+                    value="${hub.mode.dev.active}"/>
+                <beans:entry key="#{ T(org.apache.cxf.message.Message).SCHEMA_VALIDATION_ENABLED }"
+                    value="#{ T(org.apache.cxf.annotations.SchemaValidation.SchemaValidationType).BOTH }"/>
+            </beans:map>
         </beans:property>
     </beans:bean>
     
-    <beans:beans profile="!hub.mode.dev">
-        <!--====================================================================================================
-        = BUS
-        =====================================================================================================-->
-        <!--suppress DuplicatedBeanNamesInspection -->
-        <beans:bean id="busHub" parent="busSpring"/>
-    </beans:beans>
-    
+    <!--====================================================================================================
+    = PROFILE: DEVELOPMENT
+    =====================================================================================================-->
     <beans:beans profile="hub.mode.dev">
         <!--====================================================================================================
         = BUS
@@ -122,5 +162,16 @@
                 </beans:list>
             </beans:property>
         </beans:bean>
+    </beans:beans>
+    
+    <!--====================================================================================================
+    = PROFILE: PRODUCTION
+    =====================================================================================================-->
+    <beans:beans profile="hub.mode.prod">
+        <!--====================================================================================================
+        = BUS
+        =====================================================================================================-->
+        <!--suppress DuplicatedBeanNamesInspection -->
+        <beans:bean id="busHub" parent="busSpring"/>
     </beans:beans>
 </beans:beans>

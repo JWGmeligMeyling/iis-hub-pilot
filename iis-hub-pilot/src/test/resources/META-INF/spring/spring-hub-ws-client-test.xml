@@ -29,25 +29,5 @@
         http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
     
-    <!--====================================================================================================
-    = TEST OPERATION CALLBACKS
-    =====================================================================================================-->
-    <beans:bean id="testOpCallback" class="gov.hhs.onc.iishubpilot.ws.TestHubOperationCallback" abstract="true"/>
     
-    <!--====================================================================================================
-    = TEST OPERATION CALLBACKS: FAULTS
-    =====================================================================================================-->
-    <beans:bean id="testOpCallbackFault" class="gov.hhs.onc.iishubpilot.ws.TestHubOperationFaultCallback" parent="testOpCallback" abstract="true"/>
-    
-    <beans:bean id="testOpCallbackFaultMsgTooLarge" class="gov.hhs.onc.iishubpilot.ws.impl.MessageTooLargeFaultCallback" parent="testOpCallbackFault"
-        abstract="true">
-        <beans:constructor-arg name="maxSize" value="0"/>
-    </beans:bean>
-    
-    <!--====================================================================================================
-    = SERVICES: IIS
-    =====================================================================================================-->
-    <beans:bean id="iisServiceTest" class="gov.hhs.onc.iishubpilot.ws.TestIisService" parent="serviceIis" abstract="true"/>
-    
-    <beans:bean id="iisServiceTestImpl" class="gov.hhs.onc.iishubpilot.ws.impl.TestIisServiceImpl" parent="iisServiceTest" abstract="true"/>
 </beans:beans>

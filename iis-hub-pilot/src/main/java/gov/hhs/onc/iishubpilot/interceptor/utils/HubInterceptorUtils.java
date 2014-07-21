@@ -7,6 +7,9 @@ import org.apache.cxf.phase.PhaseInterceptor;
 import org.springframework.core.annotation.AnnotationUtils;
 
 public final class HubInterceptorUtils {
+    private HubInterceptorUtils() {
+    }
+
     public static String getPhase(Class<? extends PhaseInterceptor<? extends Message>> interceptorClass) {
         Intercept interceptAnno = AnnotationUtils.findAnnotation(interceptorClass, Intercept.class);
 
@@ -22,8 +25,5 @@ public final class HubInterceptorUtils {
         }
 
         return phase;
-    }
-
-    private HubInterceptorUtils() {
     }
 }

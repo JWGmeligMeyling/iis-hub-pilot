@@ -30,24 +30,61 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
     
     <!--====================================================================================================
-    = TEST OPERATION CALLBACKS
+    = TLS PARAMETERS: CLIENT
     =====================================================================================================-->
-    <beans:bean id="testOpCallback" class="gov.hhs.onc.iishubpilot.ws.TestHubOperationCallback" abstract="true"/>
+    <beans:bean id="paramsTlsClient" class="org.apache.cxf.configuration.jsse.TLSClientParameters" parent="paramsTls" abstract="true"/>
     
-    <!--====================================================================================================
-    = TEST OPERATION CALLBACKS: FAULTS
-    =====================================================================================================-->
-    <beans:bean id="testOpCallbackFault" class="gov.hhs.onc.iishubpilot.ws.TestHubOperationFaultCallback" parent="testOpCallback" abstract="true"/>
-    
-    <beans:bean id="testOpCallbackFaultMsgTooLarge" class="gov.hhs.onc.iishubpilot.ws.impl.MessageTooLargeFaultCallback" parent="testOpCallbackFault"
-        abstract="true">
-        <beans:constructor-arg name="maxSize" value="0"/>
+    <beans:bean id="paramsTlsClientHub" parent="paramsTlsClient"
+        p:disableCNCheck="true">
+        <beans:property name="keyManagers">
+            <beans:bean parent="keyMgrsHub"
+                c:entryAlias="dev.iis-hub-pilot.org_dest_echo"/>
+        </beans:property>
     </beans:bean>
     
     <!--====================================================================================================
-    = SERVICES: IIS
+    = CONDUITS
     =====================================================================================================-->
-    <beans:bean id="iisServiceTest" class="gov.hhs.onc.iishubpilot.ws.TestIisService" parent="serviceIis" abstract="true"/>
+    <beans:bean id="conduit" class="org.apache.cxf.transport.Conduit" abstract="true"/>
     
-    <beans:bean id="iisServiceTestImpl" class="gov.hhs.onc.iishubpilot.ws.impl.TestIisServiceImpl" parent="iisServiceTest" abstract="true"/>
+    <beans:bean id="conduitHttp" class="org.apache.cxf.transport.http.HTTPConduit" parent="conduit" abstract="true"
+        p:tlsClientParameters-ref="paramsTlsClientHub">
+        <beans:property name="client">
+            <beans:bean class="org.apache.cxf.transports.http.configuration.HTTPClientPolicy"
+                p:cacheControl="no-cache"/>
+        </beans:property>
+    </beans:bean>
+    
+    <beans:bean id="conduitHttpUrlConn" class="org.apache.cxf.transport.http.URLConnectionHTTPConduit" parent="conduitHttp" abstract="true">
+        <beans:constructor-arg name="b" ref="busHub"/>
+        <beans:constructor-arg name="ei">
+            <beans:bean class="org.apache.cxf.service.model.EndpointInfo"/>
+        </beans:constructor-arg>
+    </beans:bean>
+    
+    <beans:bean name="*.http-conduit" class="org.apache.cxf.transport.http.URLConnectionHTTPConduit" parent="conduitHttpUrlConn"/>
+    
+    <!--====================================================================================================
+    = CLIENTS: IIS
+    =====================================================================================================-->
+    <!--suppress SpringBeanConstructorArgInspection -->
+    <beans:bean id="clientIis" class="gov.hhs.onc.iishubpilot.jaxws.impl.HubJaxWsClientProxyFactoryBean" parent="portTypeIis" lazy-init="true" scope="prototype"
+        p:bindingConfig-ref="soapBinding12"
+        p:bus-ref="busHub"
+        p:dataBinding-ref="dataBindingJaxb"
+        p:endpointName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).PORT }"
+        p:serviceClass="gov.hhs.onc.iishubpilot.ws.IisPortType"
+        p:serviceName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SERVICE }"
+        p:wsdlLocation="/META-INF/wsdl/cdc-iis.wsdl">
+        <beans:property name="conduitSelector">
+            <beans:bean class="org.apache.cxf.endpoint.DeferredConduitSelector"/>
+        </beans:property>
+        <beans:property name="properties">
+            <beans:map>
+                <!--suppress SpringPlaceholdersInspection -->
+                <beans:entry key="#{ T(gov.hhs.onc.iishubpilot.ws.HubMessageContextProperties).FAULT_STACKTRACE_ENABLED }"
+                    value="${hub.mode.dev.active}"/>
+            </beans:map>
+        </beans:property>
+    </beans:bean>
 </beans:beans>

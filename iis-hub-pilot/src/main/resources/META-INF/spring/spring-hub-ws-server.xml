@@ -30,24 +30,56 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
     
     <!--====================================================================================================
-    = TEST OPERATION CALLBACKS
+    = TLS PARAMETERS: SERVER
     =====================================================================================================-->
-    <beans:bean id="testOpCallback" class="gov.hhs.onc.iishubpilot.ws.TestHubOperationCallback" abstract="true"/>
+    <beans:bean id="paramsTlsServer" class="org.apache.cxf.configuration.jsse.TLSServerParameters" parent="paramsTls" abstract="true"/>
     
-    <!--====================================================================================================
-    = TEST OPERATION CALLBACKS: FAULTS
-    =====================================================================================================-->
-    <beans:bean id="testOpCallbackFault" class="gov.hhs.onc.iishubpilot.ws.TestHubOperationFaultCallback" parent="testOpCallback" abstract="true"/>
-    
-    <beans:bean id="testOpCallbackFaultMsgTooLarge" class="gov.hhs.onc.iishubpilot.ws.impl.MessageTooLargeFaultCallback" parent="testOpCallbackFault"
-        abstract="true">
-        <beans:constructor-arg name="maxSize" value="0"/>
+    <beans:bean id="paramsTlsServerHub" parent="paramsTlsServer">
+        <beans:property name="clientAuthentication">
+            <beans:bean class="org.apache.cxf.configuration.security.ClientAuthentication"
+                p:required="false"
+                p:want="true"/>
+        </beans:property>
+        <beans:property name="keyManagers">
+            <beans:bean parent="keyMgrsHub"
+                c:entryAlias="dev.iis-hub-pilot.org"/>
+        </beans:property>
     </beans:bean>
     
     <!--====================================================================================================
-    = SERVICES: IIS
+    = SERVERS
     =====================================================================================================-->
-    <beans:bean id="iisServiceTest" class="gov.hhs.onc.iishubpilot.ws.TestIisService" parent="serviceIis" abstract="true"/>
+    <beans:bean id="server" class="org.apache.cxf.endpoint.Server" abstract="true"/>
     
-    <beans:bean id="iisServiceTestImpl" class="gov.hhs.onc.iishubpilot.ws.impl.TestIisServiceImpl" parent="iisServiceTest" abstract="true"/>
+    <!--====================================================================================================
+    = SERVERS: IIS HUB
+    =====================================================================================================-->
+    <beans:bean id="serverIisHub" class="gov.hhs.onc.iishubpilot.jaxws.impl.HubJaxWsServerFactoryBean" parent="server"
+        p:address="/#{ T(gov.hhs.onc.iishubpilot.ws.HubWsNames).SERVICE_HUB }"
+        p:bindingConfig-ref="soapBinding12"
+        p:bus-ref="busHub"
+        p:dataBinding-ref="dataBindingJaxb"
+        p:endpointName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).PORT_HUB }"
+        p:serviceBean-ref="serviceIisHubImpl"
+        p:serviceName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SERVICE_HUB }"
+        p:wsdlLocation="/META-INF/wsdl/cdc-iis-hub.wsdl">
+        <beans:property name="outFaultInterceptors">
+            <beans:list>
+                <beans:ref bean="interceptorFaultStacktrace"/>
+                <beans:ref bean="interceptorXmlCdata"/>
+            </beans:list>
+        </beans:property>
+        <beans:property name="outInterceptors">
+            <beans:list>
+                <beans:ref bean="interceptorXmlCdata"/>
+            </beans:list>
+        </beans:property>
+        <beans:property name="properties">
+            <beans:map>
+                <!--suppress SpringPlaceholdersInspection -->
+                <beans:entry key="#{ T(gov.hhs.onc.iishubpilot.ws.HubMessageContextProperties).FAULT_STACKTRACE_ENABLED }"
+                    value="${hub.mode.dev.active}"/>
+            </beans:map>
+        </beans:property>
+    </beans:bean>
 </beans:beans>

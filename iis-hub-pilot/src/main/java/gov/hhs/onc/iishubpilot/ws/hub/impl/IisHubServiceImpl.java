@@ -76,7 +76,7 @@ public class IisHubServiceImpl extends AbstractIisService implements IisHubServi
         try {
             // TEMP: hardcoded until a destination registry facade is implemented
             clientIisService =
-                ((IisPortType) this.appContext.getBean(this.clientIisBeanName, new URL("http", "localhost", 18080, "/iis-hub-pilot/test/1/IISService")));
+                ((IisPortType) this.appContext.getBean(this.clientIisBeanName, new URL("https", "localhost", 18443, "/iis-hub-pilot/test/1/IISService")));
         } catch (MalformedURLException e) {
             throw new HubClientFault(String.format("Unable to create IIS Hub request message (id=%s) IIS request URL.", reqMsgId), e);
         }

@@ -21,6 +21,12 @@
     <context:spring-configured/>
     
     <!--====================================================================================================
+    = BEAN POST PROCESSORS
+    =====================================================================================================-->
+    <beans:bean class="org.springframework.validation.beanvalidation.MethodValidationPostProcessor"
+        p:validatorFactory-ref="validatorFactory"/>
+    
+    <!--====================================================================================================
     = CHARACTER SET
     =====================================================================================================-->
     <beans:bean id="charset" class="java.nio.charset.Charset" abstract="true"/>
@@ -36,25 +42,54 @@
         p:fileEncoding="#{ charsetUtf8.name() }"
         p:localOverride="true">
         <beans:property name="locations">
-            <util:list>
-                <beans:value>classpath*:hub/hub.properties</beans:value>
-            </util:list>
+            <beans:array>
+                <beans:value>classpath*:META-INF/hub/hub.properties</beans:value>
+            </beans:array>
         </beans:property>
     </beans:bean>
     
     <!--====================================================================================================
     = MESSAGE SOURCES
     =====================================================================================================-->
-    <beans:bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource" primary="true"
+    <beans:bean id="messageSourceBase" class="org.springframework.context.support.ReloadableResourceBundleMessageSource" abstract="true"
         p:cacheSeconds="30"
         p:defaultEncoding="#{ charsetUtf8.name() }"
-        p:fallbackToSystemLocale="false">
+        p:fallbackToSystemLocale="false"/>
+    
+    <beans:bean id="messageSource" parent="messageSourceBase" primary="true">
         <beans:property name="basenames">
-            <util:list>
-                <beans:value>hub/hub-messages</beans:value>
-            </util:list>
+            <beans:array>
+                <beans:value>META-INF.hub.hub-messages</beans:value>
+            </beans:array>
         </beans:property>
     </beans:bean>
+    
+    <!--====================================================================================================
+    = MESSAGE SOURCES: VALIDATION
+    =====================================================================================================-->
+    <beans:bean id="messageSourceValidation" parent="messageSourceBase">
+        <beans:property name="basenames">
+            <beans:array>
+                <beans:value>org.hibernate.validator.ValidationMessages</beans:value>
+                <beans:value>META-INF.hub.hub-messages</beans:value>
+            </beans:array>
+        </beans:property>
+    </beans:bean>
+    
+    <!--====================================================================================================
+    = VALIDATOR
+    =====================================================================================================-->
+    <beans:bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <beans:property name="messageInterpolator">
+            <beans:bean class="org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator">
+                <beans:constructor-arg name="userResourceBundleLocator">
+                    <beans:bean class="org.springframework.validation.beanvalidation.MessageSourceResourceBundleLocator"
+                        c:messageSource-ref="messageSourceValidation"/>
+                </beans:constructor-arg>
+            </beans:bean>
+        </beans:property>
+    </beans:bean>
+    <beans:alias name="validator" alias="validatorFactory"/>
     
     <!--====================================================================================================
     = CONVERSION SERVICE

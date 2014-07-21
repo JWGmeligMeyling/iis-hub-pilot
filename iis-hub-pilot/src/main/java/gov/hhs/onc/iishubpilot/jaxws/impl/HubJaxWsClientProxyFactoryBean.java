@@ -14,7 +14,7 @@ public class HubJaxWsClientProxyFactoryBean extends JAXWSSpringClientProxyFactor
         super();
 
         if (addr != null) {
-            this.setAddress(addr.toExternalForm());
+            this.setAddress(addr.toString());
         }
     }
 

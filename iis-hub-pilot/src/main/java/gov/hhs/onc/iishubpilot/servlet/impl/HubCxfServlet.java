@@ -1,5 +1,6 @@
 package gov.hhs.onc.iishubpilot.servlet.impl;
 
+import gov.hhs.onc.iishubpilot.utils.HubStringUtils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -22,15 +23,12 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.http.MediaType;
-import org.springframework.util.StringUtils;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
 public class HubCxfServlet extends CXFNonSpringServlet implements ApplicationListener<ContextRefreshedEvent> {
-    private final static String INIT_PARAM_VALUE_DELIMS = ",; \t\n";
-
     private final static String FAVICON_EXT = "ico";
     private final static String FAVICON_PATH = ("/favicon." + FAVICON_EXT);
     private final static String FAVICON_PATH_STATIC = ("/static/images/iis-hub-pilot-16x16." + FAVICON_EXT);
@@ -48,7 +46,7 @@ public class HubCxfServlet extends CXFNonSpringServlet implements ApplicationLis
         try {
             this.init(this.getServletConfig());
         } catch (ServletException e) {
-            throw new ApplicationContextException(String.format("Unable to re-initialize Hub CXF Spring application context."), e);
+            throw new ApplicationContextException("Unable to re-initialize Hub CXF Spring application context.", e);
         }
     }
 
@@ -82,12 +80,11 @@ public class HubCxfServlet extends CXFNonSpringServlet implements ApplicationLis
         this.appContext = new XmlWebApplicationContext();
         this.appContext.setParent(parentAppContext);
         this.appContext.setServletConfig(servletConfig);
-        this.appContext.setConfigLocations(StringUtils.tokenizeToStringArray(servletConfig.getInitParameter(ContextLoader.CONFIG_LOCATION_PARAM),
-            INIT_PARAM_VALUE_DELIMS));
+        this.appContext.setConfigLocations(HubStringUtils.tokenizePropertyValue(servletConfig.getInitParameter(ContextLoader.CONFIG_LOCATION_PARAM)));
 
         List<Class<?>> appContextInitClasses =
-            ClassUtils.convertClassNamesToClasses(Arrays.asList(StringUtils.tokenizeToStringArray(
-                servletConfig.getInitParameter(ContextLoader.CONTEXT_INITIALIZER_CLASSES_PARAM), INIT_PARAM_VALUE_DELIMS)));
+            ClassUtils.convertClassNamesToClasses(Arrays.asList(HubStringUtils.tokenizePropertyValue(servletConfig
+                .getInitParameter(ContextLoader.CONTEXT_INITIALIZER_CLASSES_PARAM))));
 
         if (appContextInitClasses != null) {
             Set<ApplicationContextInitializer<ConfigurableApplicationContext>> appContextInits = new TreeSet<>(AnnotationAwareOrderComparator.INSTANCE);

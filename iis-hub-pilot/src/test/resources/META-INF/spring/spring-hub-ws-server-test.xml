@@ -30,24 +30,44 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
     
     <!--====================================================================================================
-    = TEST OPERATION CALLBACKS
+    = SERVERS: IIS
     =====================================================================================================-->
-    <beans:bean id="testOpCallback" class="gov.hhs.onc.iishubpilot.ws.TestHubOperationCallback" abstract="true"/>
-    
-    <!--====================================================================================================
-    = TEST OPERATION CALLBACKS: FAULTS
-    =====================================================================================================-->
-    <beans:bean id="testOpCallbackFault" class="gov.hhs.onc.iishubpilot.ws.TestHubOperationFaultCallback" parent="testOpCallback" abstract="true"/>
-    
-    <beans:bean id="testOpCallbackFaultMsgTooLarge" class="gov.hhs.onc.iishubpilot.ws.impl.MessageTooLargeFaultCallback" parent="testOpCallbackFault"
-        abstract="true">
-        <beans:constructor-arg name="maxSize" value="0"/>
+    <beans:bean id="serverIisTest" class="gov.hhs.onc.iishubpilot.jaxws.impl.HubJaxWsServerFactoryBean" parent="server" abstract="true"
+        p:bindingConfig-ref="soapBinding12"
+        p:bus-ref="busHub"
+        p:dataBinding-ref="dataBindingJaxb"
+        p:endpointName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).PORT }"
+        p:serviceName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SERVICE }"
+        p:wsdlLocation="/META-INF/wsdl/cdc-iis.wsdl">
+        <beans:property name="properties">
+            <beans:map>
+                <!--suppress SpringPlaceholdersInspection -->
+                <beans:entry key="#{ T(gov.hhs.onc.iishubpilot.ws.HubMessageContextProperties).FAULT_STACKTRACE_ENABLED }"
+                    value="${hub.mode.dev.active}"/>
+            </beans:map>
+        </beans:property>
     </beans:bean>
     
-    <!--====================================================================================================
-    = SERVICES: IIS
-    =====================================================================================================-->
-    <beans:bean id="iisServiceTest" class="gov.hhs.onc.iishubpilot.ws.TestIisService" parent="serviceIis" abstract="true"/>
-    
-    <beans:bean id="iisServiceTestImpl" class="gov.hhs.onc.iishubpilot.ws.impl.TestIisServiceImpl" parent="iisServiceTest" abstract="true"/>
+    <beans:bean id="serverIisTest1" parent="serverIisTest"
+        p:address="/test/1/#{ T(gov.hhs.onc.iishubpilot.ws.HubWsNames).SERVICE }">
+        <beans:property name="serviceBean">
+            <beans:bean parent="iisServiceTestImpl">
+                <beans:constructor-arg name="callbacks">
+                    <beans:list>
+                        <beans:bean parent="testOpCallbackFaultMsgTooLarge">
+                            <beans:property name="httpRequestHeaders">
+                                <beans:map>
+                                    <beans:entry key="#{ T(gov.hhs.onc.iishubpilot.ws.TestHubHttpHeaders).SOAPUI_TEST_CASE }">
+                                        <beans:list>
+                                            <beans:value>#{ T(gov.hhs.onc.iishubpilot.ws.HubWsNames).SUBMIT_SINGLE_MSG_OP }_Fault_MsgTooLarge</beans:value>
+                                        </beans:list>
+                                    </beans:entry>
+                                </beans:map>
+                            </beans:property>
+                        </beans:bean>
+                    </beans:list>
+                </beans:constructor-arg>
+            </beans:bean>
+        </beans:property>
+    </beans:bean>
 </beans:beans>

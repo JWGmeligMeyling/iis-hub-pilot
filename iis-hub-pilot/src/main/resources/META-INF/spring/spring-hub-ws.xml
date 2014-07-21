@@ -12,7 +12,6 @@
     xmlns:cxf-soap="http://cxf.apache.org/bindings/soap"
     xmlns:cxf-wsa="http://cxf.apache.org/ws/addressing"
     xmlns:p="http://www.springframework.org/schema/p"
-    xmlns:sws="http://www.springframework.org/schema/web-services"
     xmlns:task="http://www.springframework.org/schema/task"
     xmlns:util="http://www.springframework.org/schema/util"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -28,8 +27,14 @@
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
         http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
-        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
-        http://www.springframework.org/schema/web-services http://www.springframework.org/schema/web-services/web-services.xsd">
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+    
+    <!--====================================================================================================
+    = BEAN POST PROCESSORS
+    =====================================================================================================-->
+    <beans:bean id="org.apache.cxf.bus.spring.BusExtensionPostProcessor" class="org.apache.cxf.bus.spring.BusExtensionPostProcessor"/>
+    
+    <beans:bean id="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor" class="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor"/>
     
     <!--====================================================================================================
     = FEATURES
@@ -39,9 +44,31 @@
     <!--====================================================================================================
     = BUS
     =====================================================================================================-->
-    <beans:bean id="bus" class="org.apache.cxf.Bus" abstract="true"/>
+    <beans:bean id="bus" class="org.apache.cxf.Bus" abstract="true" destroy-method="shutdown">
+        <beans:property name="features">
+            <beans:list>
+                <beans:bean class="org.apache.cxf.feature.validation.SchemaValidationFeature" parent="feature"
+                    c:provider-ref="provSchemaValidationType"/>
+            </beans:list>
+        </beans:property>
+    </beans:bean>
     
-    <beans:bean id="busSpring" class="org.apache.cxf.bus.spring.SpringBus" parent="bus" abstract="true" destroy-method="shutdown"/>
+    <beans:bean id="busSpring" class="org.apache.cxf.bus.spring.SpringBus" parent="bus" abstract="true"/>
+    
+    <beans:alias name="busHub" alias="cxf"/>
+    
+    <!--====================================================================================================
+    = WEB SERVICE CONTEXTS
+    =====================================================================================================-->
+    <beans:bean id="org.apache.cxf.jaxws.context.WebServiceContextImpl" class="org.apache.cxf.jaxws.context.WebServiceContextImpl" lazy-init="true"/>
+    <beans:alias name="org.apache.cxf.jaxws.context.WebServiceContextImpl" alias="javax.xml.ws.WebServiceContext"/>
+    
+    <!--====================================================================================================
+    = WEB SERVICE CONTEXT RESOURCE RESOLVER
+    =====================================================================================================-->
+    <beans:bean id="org.apache.cxf.jaxws.context.WebServiceContextResourceResolver" class="org.apache.cxf.jaxws.context.WebServiceContextResourceResolver"
+        lazy-init="true"
+        c:b-ref="busHub"/>
     
     <!--====================================================================================================
     = INTERCEPTORS
@@ -55,11 +82,11 @@
     
     <beans:bean id="interceptorXmlCdata" class="gov.hhs.onc.iishubpilot.interceptor.impl.CdataAwareXmlInterceptor" parent="interceptorPhase">
         <beans:constructor-arg name="cdataElemQnames">
-            <util:set>
+            <beans:set>
                 <beans:bean class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean"
                     p:targetClass="gov.hhs.onc.iishubpilot.xml.HubXmlQnames"
                     p:targetField="CXF_FAULT_STACKTRACE"/>
-            </util:set>
+            </beans:set>
         </beans:constructor-arg>
     </beans:bean>
     
@@ -72,27 +99,6 @@
     = PORT TYPES: IIS HUB
     =====================================================================================================-->
     <beans:bean id="portTypeIisHub" class="gov.hhs.onc.iishubpilot.ws.hub.IisHubPortType" abstract="true"/>
-    
-    <!--====================================================================================================
-    = CLIENTS: IIS
-    =====================================================================================================-->
-    <!--suppress SpringBeanConstructorArgInspection -->
-    <beans:bean id="clientIis" class="gov.hhs.onc.iishubpilot.jaxws.impl.HubJaxWsClientProxyFactoryBean" parent="portTypeIis" lazy-init="true"
-        scope="prototype"
-        p:bindingConfig-ref="soapBinding12"
-        p:bus-ref="busHub"
-        p:dataBinding-ref="dataBindingJaxb"
-        p:endpointName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).PORT }"
-        p:serviceClass="gov.hhs.onc.iishubpilot.ws.IisPortType"
-        p:serviceName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SERVICE }"
-        p:wsdlLocation="/META-INF/wsdl/cdc-iis.wsdl">
-        <beans:property name="properties">
-            <beans:map>
-                <beans:entry key="#{ T(org.apache.cxf.message.Message).SCHEMA_VALIDATION_ENABLED }"
-                    value="#{ T(org.apache.cxf.annotations.SchemaValidation.SchemaValidationType).BOTH }"/>
-            </beans:map>
-        </beans:property>
-    </beans:bean>
     
     <!--====================================================================================================
     = SERVICES: IIS
@@ -108,43 +114,6 @@
         <beans:constructor-arg name="clientIisBeanName">
             <beans:idref bean="clientIis"/>
         </beans:constructor-arg>
-    </beans:bean>
-    
-    <!--====================================================================================================
-    = SERVERS
-    =====================================================================================================-->
-    <beans:bean id="server" class="org.apache.cxf.endpoint.Server" abstract="true"/>
-    
-    <!--====================================================================================================
-    = SERVERS: IIS HUB
-    =====================================================================================================-->
-    <beans:bean id="serverIisHub" class="gov.hhs.onc.iishubpilot.jaxws.impl.HubJaxWsServerFactoryBean" parent="server"
-        p:address="/#{ T(gov.hhs.onc.iishubpilot.ws.HubWsNames).SERVICE_HUB }"
-        p:bindingConfig-ref="soapBinding12"
-        p:bus-ref="busHub"
-        p:dataBinding-ref="dataBindingJaxb"
-        p:serviceBean-ref="serviceIisHubImpl"
-        p:wsdlLocation="/META-INF/wsdl/cdc-iis-hub.wsdl">
-        <beans:property name="outFaultInterceptors">
-            <beans:list>
-                <beans:ref bean="interceptorFaultStacktrace"/>
-                <beans:ref bean="interceptorXmlCdata"/>
-            </beans:list>
-        </beans:property>
-        <beans:property name="outInterceptors">
-            <beans:list>
-                <beans:ref bean="interceptorXmlCdata"/>
-            </beans:list>
-        </beans:property>
-        <beans:property name="properties">
-            <beans:map>
-                <!--suppress SpringPlaceholdersInspection -->
-                <beans:entry key="#{ T(gov.hhs.onc.iishubpilot.ws.HubMessageContextProperties).FAULT_STACKTRACE_ENABLED }"
-                    value="${hub.mode.dev.active}"/>
-                <beans:entry key="#{ T(org.apache.cxf.message.Message).SCHEMA_VALIDATION_ENABLED }"
-                    value="#{ T(org.apache.cxf.annotations.SchemaValidation.SchemaValidationType).BOTH }"/>
-            </beans:map>
-        </beans:property>
     </beans:bean>
     
     <!--====================================================================================================

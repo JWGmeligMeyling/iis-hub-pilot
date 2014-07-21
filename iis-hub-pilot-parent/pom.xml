@@ -221,37 +221,48 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-core</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-bindings-soap</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-frontend-jaxws</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-http</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-local</artifactId>
+                <version>3.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-addr</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-policy</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-security</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.1</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.opensaml</groupId>
+                        <artifactId>opensaml</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
@@ -267,6 +278,22 @@
                 <groupId>org.codehaus.janino</groupId>
                 <artifactId>janino</artifactId>
                 <version>2.7.5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-security</artifactId>
+                <version>8.1.15.v20140411</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-server</artifactId>
+                <version>8.1.15.v20140411</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty.orbit</groupId>
+                        <artifactId>javax.servlet</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.fusesource.jansi</groupId>
@@ -338,32 +365,27 @@
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-aop</artifactId>
-                <version>4.0.5.RELEASE</version>
+                <version>4.0.6.RELEASE</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-aspects</artifactId>
-                <version>4.0.5.RELEASE</version>
+                <version>4.0.6.RELEASE</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-beans</artifactId>
-                <version>4.0.5.RELEASE</version>
+                <version>4.0.6.RELEASE</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
-                <version>4.0.5.RELEASE</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-context-support</artifactId>
-                <version>4.0.5.RELEASE</version>
+                <version>4.0.6.RELEASE</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-core</artifactId>
-                <version>4.0.5.RELEASE</version>
+                <version>4.0.6.RELEASE</version>
                 <exclusions>
                     <exclusion>
                         <groupId>commons-logging</groupId>
@@ -378,32 +400,35 @@
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-framework-bom</artifactId>
-                <version>4.0.5.RELEASE</version>
+                <version>4.0.6.RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-jdbc</artifactId>
-                <version>4.0.5.RELEASE</version>
+                <version>4.0.6.RELEASE</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-orm</artifactId>
-                <version>4.0.5.RELEASE</version>
+                <version>4.0.6.RELEASE</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-tx</artifactId>
-                <version>4.0.5.RELEASE</version>
+                <version>4.0.6.RELEASE</version>
             </dependency>
             <!-- Test dependencies -->
+            <!--
             <dependency>
                 <groupId>com.smartbear.soapui</groupId>
                 <artifactId>soapui</artifactId>
                 <version>5.1.0</version>
                 <scope>test</scope>
+                <optional>true</optional>
             </dependency>
+            -->
             <dependency>
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy-all</artifactId>
@@ -413,7 +438,7 @@
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-test</artifactId>
-                <version>4.0.5.RELEASE</version>
+                <version>4.0.6.RELEASE</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -426,6 +451,8 @@
     </dependencyManagement>
     
     <build>
+        <defaultGoal>clean install</defaultGoal>
+        
         <resources>
             <resource>
                 <directory>${project.basedir}/src/main/resources</directory>
@@ -486,6 +513,11 @@
                         <junitReport>true</junitReport>
                         <printReport>true</printReport>
                         <saveAfterRun>true</saveAfterRun>
+                        <!--
+                        SSL/TLS related SoapUI properties derived from:
+                        com.eviware.soapui.impl.wsdl.support.http.SoapUISSLSocketFactory
+                        (see https://github.com/SmartBear/soapui/blob/next/soapui/src/main/java/com/eviware/soapui/impl/wsdl/support/http/SoapUISSLSocketFactory.java)
+                        -->
                         <soapuiProperties combine.children="append">
                             <property>
                                 <name>soapui.ext.libraries</name>
@@ -493,6 +525,14 @@
                             </property>
                             <property>
                                 <name>soapui.https.protocols</name>
+                                <value>TLSv1.2</value>
+                            </property>
+                            <property>
+                                <name>soapui.https.session.invalidate</name>
+                                <value>true</value>
+                            </property>
+                            <property>
+                                <name>soapui.sslcontext.algorithm</name>
                                 <value>TLSv1.2</value>
                             </property>
                             <property>
@@ -510,6 +550,9 @@
                 <plugin>
                     <groupId>org.apache.cxf</groupId>
                     <artifactId>cxf-codegen-plugin</artifactId>
+                    <!--
+                    TODO: Hold back from upgrade to CXF 3.0.1 (broken w/ Maven 3.0.5).
+                    -->
                     <version>3.0.0</version>
                     <inherited>true</inherited>
                     <dependencies>
@@ -541,7 +584,7 @@
                         <dependency>
                             <groupId>org.apache.cxf.xjcplugins</groupId>
                             <artifactId>cxf-xjc-dv</artifactId>
-                            <version>3.0.0</version>
+                            <version>3.0.1</version>
                         </dependency>
                         <dependency>
                             <groupId>org.jvnet.annox</groupId>
@@ -758,7 +801,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-war-plugin</artifactId>
-                    <version>2.3</version>
+                    <version>2.4</version>
                     <inherited>true</inherited>
                     <configuration>
                         <archiveClasses>true</archiveClasses>

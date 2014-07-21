@@ -118,6 +118,10 @@
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-transports-local</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-ws-addr</artifactId>
         </dependency>
         <dependency>
@@ -139,6 +143,14 @@
         <dependency>
             <groupId>org.codehaus.janino</groupId>
             <artifactId>janino</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
         </dependency>
         <dependency>
             <groupId>org.fusesource.jansi</groupId>
@@ -207,10 +219,6 @@
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring-context-support</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
         </dependency>
         <dependency>
@@ -230,11 +238,13 @@
             <artifactId>spring-web</artifactId>
         </dependency>
         <!-- Test dependencies (inherited) -->
+        <!--
         <dependency>
             <groupId>com.smartbear.soapui</groupId>
             <artifactId>soapui</artifactId>
             <scope>test</scope>
         </dependency>
+        -->
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
@@ -414,6 +424,7 @@
                                         <include>**/*.xml</include>
                                     </includes>
                                     <excludes>
+                                        <exclude>soapui/**</exclude>
                                         <exclude>spring/**</exclude>
                                         <exclude>testng/**</exclude>
                                     </excludes>
@@ -421,6 +432,7 @@
                                 <resource>
                                     <directory>${project.basedir}/src/test/resources/META-INF</directory>
                                     <excludes>
+                                        <exclude>soapui/**</exclude>
                                         <exclude>spring/**</exclude>
                                         <exclude>testng/**</exclude>
                                         <exclude>**/*.properties</exclude>
@@ -646,6 +658,40 @@
                                         <value>project.test.server.service.hub.url.wsdl=${project.test.server.service.hub.url.wsdl}</value>
                                     </projectProperties>
                                     <settingsFile>${project.build.directory}/soapui/soapui-settings-hub.xml</settingsFile>
+                                    <soapuiProperties>
+                                        <property>
+                                            <name>javax.net.ssl.keyStore</name>
+                                            <value>${project.test.server.keystore.file}</value>
+                                        </property>
+                                        <property>
+                                            <name>javax.net.ssl.keyStorePassword</name>
+                                            <value>${project.test.server.keystore.pass}</value>
+                                        </property>
+                                        <property>
+                                            <name>javax.net.ssl.keyStoreProvider</name>
+                                            <value>${project.test.server.keystore.prov}</value>
+                                        </property>
+                                        <property>
+                                            <name>javax.net.ssl.keyStoreType</name>
+                                            <value>${project.test.server.keystore.type}</value>
+                                        </property>
+                                        <property>
+                                            <name>javax.net.ssl.trustStore</name>
+                                            <value>${project.test.server.truststore.file}</value>
+                                        </property>
+                                        <property>
+                                            <name>javax.net.ssl.trustStorePassword</name>
+                                            <value>${project.test.server.truststore.pass}</value>
+                                        </property>
+                                        <property>
+                                            <name>javax.net.ssl.trustStoreProvider</name>
+                                            <value>${project.test.server.truststore.prov}</value>
+                                        </property>
+                                        <property>
+                                            <name>javax.net.ssl.trustStoreType</name>
+                                            <value>${project.test.server.truststore.type}</value>
+                                        </property>
+                                    </soapuiProperties>
                                 </configuration>
                             </execution>
                             <execution>
@@ -662,44 +708,59 @@
                         <artifactId>tomcat7-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>start-tomcat-1</id>
+                                <id>integration-test-tomcat-run-war</id>
                                 <phase>pre-integration-test</phase>
                                 <goals>
                                     <goal>run-war-only</goal>
                                 </goals>
                                 <configuration>
+                                    <!--<clientAuth>true</clientAuth>-->
                                     <contextReloadable>true</contextReloadable>
                                     <fork>true</fork>
                                     <hostName>${project.test.server.host}</hostName>
+                                    <httpsPort>${project.test.server.port.https}</httpsPort>
+                                    <keystoreFile>${project.test.server.keystore.file}</keystoreFile>
+                                    <keystorePass>${project.test.server.keystore.pass}</keystorePass>
+                                    <keystoreType>${project.test.server.keystore.type}</keystoreType>
                                     <jarScanAllDirectories>false</jarScanAllDirectories>
-                                    <path>/</path>
-                                    <port>${project.test.server.port}</port>
+                                    <path>/${project.artifactId}</path>
+                                    <port>${project.test.server.port.http}</port>
                                     <systemProperties>
                                         <hub.log.console.term>true</hub.log.console.term>
                                         <hub.log.context.name>${project.artifactId}-test-it-tomcat</hub.log.context.name>
                                         <hub.log.dir>${project.build.directory}/surefire-logs</hub.log.dir>
                                         <hub.mode>dev</hub.mode>
                                     </systemProperties>
-                                    <webapps>
-                                        <webapp>
-                                            <asWebapp>true</asWebapp>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>${project.artifactId}</artifactId>
-                                            <version>${project.version}</version>
-                                            <classifier>test</classifier>
-                                            <contextPath>/${project.artifactId}</contextPath>
-                                        </webapp>
-                                    </webapps>
+                                    <truststoreFile>${project.test.server.truststore.file}</truststoreFile>
+                                    <truststorePass>${project.test.server.truststore.pass}</truststorePass>
+                                    <truststoreType>${project.test.server.truststore.type}</truststoreType>
+                                    <warDirectory>${project.build.directory}/${project.artifactId}-test</warDirectory>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>stop-tomcat-1</id>
+                                <id>integration-test-tomcat-shutdown</id>
                                 <phase>post-integration-test</phase>
                                 <goals>
                                     <goal>shutdown</goal>
                                 </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>integration-test-tomcat-sockets</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
                                 <configuration>
-                                    <path>/</path>
+                                    <target>
+                                        <ant antfile="${project.build.scriptSourceDirectory}/ant-hub.xml" target="hub-test-it-tomcat-started" inheritRefs="true"
+                                            useNativeBasedir="true"/>
+                                    </target>
                                 </configuration>
                             </execution>
                         </executions>

@@ -14,40 +14,6 @@
     
     <taskdef file="antlib-hub.xml" uri="antlib:gov.hhs.onc.iishubpilot.ant"/>
     
-    <target name="hub-test-it-tomcat-started" description="Confirms that the integration testing Tomcat instance started successfully." depends="hub-init">
-        <for list="http,https" param="project.test.server.scheme">
-            <sequential>
-                <var name="project.test.server.port" value="${project.test.server.port.@{project.test.server.scheme}}"/>
-                <var name="project.test.server.port.timeout.prop.name" value="project.test.server.port.@{project.test.server.scheme}.timeout"/>
-                <var name="${project.test.server.port.timeout.prop.name}" unset="true"/>
-                <waitfor maxwait="15" maxwaitunit="second" checkevery="1" checkeveryunit="second"
-                    timeoutproperty="${project.test.server.port.timeout.prop.name}">
-                    <socket server="${project.test.server.host}" port="${project.test.server.port}"/>
-                </waitfor>
-                <if>
-                    <ispropertytrue property="${project.test.server.port.timeout.prop.name}"/>
-                    <then>
-                        <fail>Integration testing Tomcat instance is not listening on port: ${project.test.server.port}</fail>
-                    </then>
-                </if>
-                
-                <!-- TODO: fix -->
-                <!--
-                <var name="project.test.server.context.url"
-                    value="@{project.test.server.scheme}://${project.test.server.host}:${project.test.server.port}${project.test.server.context}/"/>
-                <if>
-                    <not>
-                        <http url="${project.test.server.context.url}"/>
-                    </not>
-                    <then>
-                        <fail>Integration testing Tomcat instance is not properly serving context URL: ${project.test.server.context.url}</fail>
-                    </then>
-                </if>
-                -->
-            </sequential>
-        </for>
-    </target>
-    
     <target name="hub-init" description="Initializes Ant project variable(s).">
         <var name="n" value="${line.separator}"/>
     </target>

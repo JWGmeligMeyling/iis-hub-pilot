@@ -39,7 +39,7 @@
         <init-param>
             <param-name>contextConfigLocation</param-name>
             <!--suppress XmlPathReference -->
-            <param-value>/WEB-INF/spring/spring-*.xml</param-value>
+            <param-value>/WEB-INF/spring/spring-hub*.xml</param-value>
         </init-param>
         <init-param>
             <param-name>contextInitializerClasses</param-name>

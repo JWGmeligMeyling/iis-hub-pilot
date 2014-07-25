@@ -44,6 +44,7 @@
         <beans:property name="locations">
             <beans:array>
                 <beans:value>classpath*:META-INF/hub/hub.properties</beans:value>
+                <beans:value>classpath*:META-INF/hub/hub-*.properties</beans:value>
             </beans:array>
         </beans:property>
     </beans:bean>
@@ -94,5 +95,11 @@
     <!--====================================================================================================
     = CONVERSION SERVICE
     =====================================================================================================-->
-    <beans:bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean" primary="true"/>
+    <beans:bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean" primary="true">
+        <beans:property name="converters">
+            <beans:set>
+                <beans:ref bean="convProv"/>
+            </beans:set>
+        </beans:property>
+    </beans:bean>
 </beans:beans>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:task="http://www.springframework.org/schema/task"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+    
+    <!--====================================================================================================
+    = KEY STORES
+    =====================================================================================================-->
+    <beans:bean id="keyStore" class="java.security.KeyStore" abstract="true"/>
+    
+    <beans:bean id="keyStorePkcs12" class="gov.hhs.onc.iishubpilot.crypto.impl.HubKeyStoreFactoryBean" parent="keyStore" abstract="true">
+        <beans:constructor-arg name="prov" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubCryptoProviders).BC }"/>
+        <beans:constructor-arg name="type" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubKeyStoreTypes).PKCS12 }"/>
+    </beans:bean>
+    
+    <!--suppress SpringPlaceholdersInspection -->
+    <beans:bean id="keyStoreMgrKey" parent="keyStorePkcs12"
+        c:pass="${hub.crypto.mgr.key.store.pass}"
+        c:resource="file:${hub.crypto.mgr.key.store.file}"/>
+    
+    <!--suppress SpringPlaceholdersInspection -->
+    <beans:bean id="keyStoreMgrTrust" parent="keyStorePkcs12"
+        c:pass="${hub.crypto.mgr.trust.store.pass}"
+        c:resource="file:${hub.crypto.mgr.trust.store.file}"/>
+    
+    <!--====================================================================================================
+    = MANAGER: KEYS
+    =====================================================================================================-->
+    <beans:bean id="mgrKey" class="javax.net.ssl.KeyManager" abstract="true"/>
+    
+    <beans:bean id="mgrKeyPkix" class="gov.hhs.onc.iishubpilot.crypto.impl.HubKeyManagerFactoryBean" parent="mgrKey" abstract="true">
+        <beans:constructor-arg name="alg" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubKeyManagerAlgorithms).PKIX }"/>
+        <beans:constructor-arg name="prov" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubCryptoProviders).SUN_JSSE }"/>
+    </beans:bean>
+    
+    <beans:bean id="mgrKeyHub" parent="mgrKeyPkix" abstract="true">
+        <beans:constructor-arg name="keyStore" ref="keyStoreMgrKey"/>
+    </beans:bean>
+    
+    <!--====================================================================================================
+    = MANAGER: TRUST
+    =====================================================================================================-->
+    <beans:bean id="mgrTrust" class="javax.net.ssl.TrustManager" abstract="true"/>
+    
+    <beans:bean id="mgrTrustPkix" class="gov.hhs.onc.iishubpilot.crypto.impl.HubTrustManagerFactoryBean" parent="mgrTrust" abstract="true">
+        <beans:constructor-arg name="alg" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubTrustManagerAlgorithms).PKIX }"/>
+        <beans:constructor-arg name="prov" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubCryptoProviders).SUN_JSSE }"/>
+    </beans:bean>
+    
+    <beans:bean id="mgrTrustHub" parent="mgrTrustPkix">
+        <beans:constructor-arg name="keyStore" ref="keyStoreMgrTrust"/>
+    </beans:bean>
+    
+    <!--====================================================================================================
+    = CIPHER SUITE FILTERS
+    =====================================================================================================-->
+    <beans:bean id="cipherSuiteFilters" class="gov.hhs.onc.iishubpilot.crypto.impl.CipherSuiteFilters" abstract="true"/>
+    
+    <beans:bean id="cipherSuiteFiltersHub" parent="cipherSuiteFilters"
+        p:include="#{ T(gov.hhs.onc.iishubpilot.utils.HubStringUtils).tokenizePropertyValue('${hub.crypto.cipher.suites}') }"/>
+    
+    <!--====================================================================================================
+    = TLS PARAMETERS
+    =====================================================================================================-->
+    <beans:bean id="paramsTls" class="org.apache.cxf.configuration.jsse.TLSParameterBase" abstract="true"
+        p:jsseProvider="#{ T(gov.hhs.onc.iishubpilot.crypto.HubCryptoProviders).SUN_JSSE_NAME }"
+        p:secureRandom-ref="randSecSha1"
+        p:secureSocketProtocol="#{ T(gov.hhs.onc.iishubpilot.crypto.HubTlsVersions).TLS_12_NAME }">
+        <beans:property name="trustManagers">
+            <beans:array>
+                <beans:ref bean="mgrTrustHub"/>
+            </beans:array>
+        </beans:property>
+    </beans:bean>
+    <!-- TEMP: dev -->
+    <!--
+    p:cipherSuitesFilter-ref="cipherSuiteFiltersHub"
+    -->
+</beans:beans>

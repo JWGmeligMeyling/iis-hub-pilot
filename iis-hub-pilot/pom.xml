@@ -244,6 +244,11 @@
             <artifactId>soapui</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.smartbear.soapui</groupId>
+            <artifactId>soapui-pro</artifactId>
+            <scope>test</scope>
+        </dependency>
         -->
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
@@ -414,7 +419,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/${project.artifactId}-test/WEB-INF/classes</outputDirectory>
+                            <outputDirectory>${project.build.directory}/${project.artifactId}-test/WEB-INF/classes/META-INF</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${project.basedir}/src/test/resources/META-INF</directory>
@@ -427,6 +432,7 @@
                                         <exclude>soapui/**</exclude>
                                         <exclude>spring/**</exclude>
                                         <exclude>testng/**</exclude>
+                                        <exclude>tomcat/**</exclude>
                                     </excludes>
                                 </resource>
                                 <resource>
@@ -435,6 +441,7 @@
                                         <exclude>soapui/**</exclude>
                                         <exclude>spring/**</exclude>
                                         <exclude>testng/**</exclude>
+                                        <exclude>tomcat/**</exclude>
                                         <exclude>**/*.properties</exclude>
                                         <exclude>**/*.xml</exclude>
                                     </excludes>
@@ -468,6 +475,40 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>copy-test-resources-soapui</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/soapui</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src/test/groovy</directory>
+                                    <includes>
+                                        <include>**/*.groovy</include>
+                                    </includes>
+                                    <targetPath>groovy</targetPath>
+                                </resource>
+                                <resource>
+                                    <directory>${project.basedir}/src/test/resources/META-INF/soapui</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>**/*.properties</include>
+                                        <include>**/*.xml</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>${project.basedir}/src/test/resources/META-INF/soapui</directory>
+                                    <excludes>
+                                        <exclude>**/*.properties</exclude>
+                                        <exclude>**/*.xml</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>copy-test-resources-testng</id>
                         <phase>process-test-resources</phase>
                         <goals>
@@ -493,31 +534,26 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy-test-resources-soapui</id>
+                        <id>copy-test-resources-tomcat</id>
                         <phase>process-test-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/soapui</outputDirectory>
+                            <outputDirectory>${project.build.directory}/tomcat</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${project.basedir}/src/test/groovy</directory>
-                                    <includes>
-                                        <include>**/*.groovy</include>
-                                    </includes>
-                                    <targetPath>groovy</targetPath>
-                                </resource>
-                                <resource>
-                                    <directory>${project.basedir}/src/test/resources/META-INF/soapui</directory>
+                                    <directory>${project.basedir}/src/test/resources/META-INF/tomcat</directory>
                                     <filtering>true</filtering>
                                     <includes>
+                                        <include>**/*.properties</include>
                                         <include>**/*.xml</include>
                                     </includes>
                                 </resource>
                                 <resource>
-                                    <directory>${project.basedir}/src/test/resources/META-INF/soapui</directory>
+                                    <directory>${project.basedir}/src/test/resources/META-INF/tomcat</directory>
                                     <excludes>
+                                        <exclude>**/*.properties</exclude>
                                         <exclude>**/*.xml</exclude>
                                     </excludes>
                                 </resource>
@@ -567,17 +603,11 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <additionalClasspathElements>
-                        <additionalClasspathElement>${project.build.directory}/${project.artifactId}-test/WEB-INF</additionalClasspathElement>
-                        <additionalClasspathElement>${project.build.directory}/${project.artifactId}/WEB-INF</additionalClasspathElement>
+                        <additionalClasspathElement>${project.build.directory}/${project.artifactId}-test</additionalClasspathElement>
+                        <additionalClasspathElement>${project.build.directory}/${project.artifactId}</additionalClasspathElement>
                         <additionalClasspathElement>${project.build.directory}/${project.artifactId}-test/WEB-INF/classes</additionalClasspathElement>
                         <additionalClasspathElement>${project.build.directory}/${project.artifactId}/WEB-INF/classes</additionalClasspathElement>
                     </additionalClasspathElements>
-                    <systemPropertyVariables combine.children="append">
-                        <hub.log.console.term>true</hub.log.console.term>
-                        <hub.log.dir>${project.build.directory}/surefire-logs</hub.log.dir>
-                        <hub.mode>dev</hub.mode>
-                        <logback.configurationFile>classpath:META-INF/logback/logback-hub.xml</logback.configurationFile>
-                    </systemPropertyVariables>
                     <workingDirectory>${project.build.directory}/${project.artifactId}-test</workingDirectory>
                 </configuration>
                 <executions>
@@ -593,7 +623,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>test-integration</id>
+                        <id>integration-test</id>
                         <configuration>
                             <suiteXmlFiles>
                                 <suiteXmlFile>${project.build.directory}/testng/testng-hub-it.xml</suiteXmlFile>
@@ -653,45 +683,11 @@
                                     <outputFolder>${project.build.directory}/surefire-reports</outputFolder>
                                     <projectFile>${project.build.directory}/soapui/soapui-project-hub.xml</projectFile>
                                     <projectProperties>
-                                        <value>project.test.server.service.req.timeout=${project.test.server.service.req.timeout}</value>
-                                        <value>project.test.server.service.hub.url=${project.test.server.service.hub.url}</value>
-                                        <value>project.test.server.service.hub.url.wsdl=${project.test.server.service.hub.url.wsdl}</value>
+                                        <value>project.test.server.req.timeout=${project.test.server.req.timeout}</value>
+                                        <value>project.test.server.service.iis.hub.url=${project.test.server.service.iis.hub.url}</value>
+                                        <value>project.test.server.service.iis.hub.url.wsdl=${project.test.server.service.iis.hub.url.wsdl}</value>
                                     </projectProperties>
                                     <settingsFile>${project.build.directory}/soapui/soapui-settings-hub.xml</settingsFile>
-                                    <soapuiProperties>
-                                        <property>
-                                            <name>javax.net.ssl.keyStore</name>
-                                            <value>${project.test.server.keystore.file}</value>
-                                        </property>
-                                        <property>
-                                            <name>javax.net.ssl.keyStorePassword</name>
-                                            <value>${project.test.server.keystore.pass}</value>
-                                        </property>
-                                        <property>
-                                            <name>javax.net.ssl.keyStoreProvider</name>
-                                            <value>${project.test.server.keystore.prov}</value>
-                                        </property>
-                                        <property>
-                                            <name>javax.net.ssl.keyStoreType</name>
-                                            <value>${project.test.server.keystore.type}</value>
-                                        </property>
-                                        <property>
-                                            <name>javax.net.ssl.trustStore</name>
-                                            <value>${project.test.server.truststore.file}</value>
-                                        </property>
-                                        <property>
-                                            <name>javax.net.ssl.trustStorePassword</name>
-                                            <value>${project.test.server.truststore.pass}</value>
-                                        </property>
-                                        <property>
-                                            <name>javax.net.ssl.trustStoreProvider</name>
-                                            <value>${project.test.server.truststore.prov}</value>
-                                        </property>
-                                        <property>
-                                            <name>javax.net.ssl.trustStoreType</name>
-                                            <value>${project.test.server.truststore.type}</value>
-                                        </property>
-                                    </soapuiProperties>
                                 </configuration>
                             </execution>
                             <execution>
@@ -708,60 +704,30 @@
                         <artifactId>tomcat7-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>integration-test-tomcat-run-war</id>
+                                <id>pre-integration-test-tomcat-run-war</id>
                                 <phase>pre-integration-test</phase>
                                 <goals>
                                     <goal>run-war-only</goal>
                                 </goals>
                                 <configuration>
-                                    <!--<clientAuth>true</clientAuth>-->
-                                    <contextReloadable>true</contextReloadable>
                                     <fork>true</fork>
-                                    <hostName>${project.test.server.host}</hostName>
-                                    <httpsPort>${project.test.server.port.https}</httpsPort>
-                                    <keystoreFile>${project.test.server.keystore.file}</keystoreFile>
-                                    <keystorePass>${project.test.server.keystore.pass}</keystorePass>
-                                    <keystoreType>${project.test.server.keystore.type}</keystoreType>
                                     <jarScanAllDirectories>false</jarScanAllDirectories>
-                                    <path>/${project.artifactId}</path>
-                                    <port>${project.test.server.port.http}</port>
                                     <systemProperties>
+                                        <hub.data.dir>${project.build.directory}/surefire-data</hub.data.dir>
                                         <hub.log.console.term>true</hub.log.console.term>
                                         <hub.log.context.name>${project.artifactId}-test-it-tomcat</hub.log.context.name>
                                         <hub.log.dir>${project.build.directory}/surefire-logs</hub.log.dir>
                                         <hub.mode>dev</hub.mode>
                                     </systemProperties>
-                                    <truststoreFile>${project.test.server.truststore.file}</truststoreFile>
-                                    <truststorePass>${project.test.server.truststore.pass}</truststorePass>
-                                    <truststoreType>${project.test.server.truststore.type}</truststoreType>
-                                    <warDirectory>${project.build.directory}/${project.artifactId}-test</warDirectory>
+                                    <serverXml>${project.build.directory}/tomcat/conf/server-hub.xml</serverXml>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>integration-test-tomcat-shutdown</id>
+                                <id>post-integration-test-tomcat-shutdown</id>
                                 <phase>post-integration-test</phase>
                                 <goals>
                                     <goal>shutdown</goal>
                                 </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>integration-test-tomcat-sockets</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <ant antfile="${project.build.scriptSourceDirectory}/ant-hub.xml" target="hub-test-it-tomcat-started" inheritRefs="true"
-                                            useNativeBasedir="true"/>
-                                    </target>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

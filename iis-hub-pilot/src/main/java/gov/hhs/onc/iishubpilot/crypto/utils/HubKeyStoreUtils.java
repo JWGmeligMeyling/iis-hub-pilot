@@ -7,27 +7,27 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.Provider;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public final class HubKeyStoreUtils {
     private HubKeyStoreUtils() {
     }
 
     public static void writeKeyStore(KeyStore keyStore, OutputStream outStream) throws GeneralSecurityException, IOException {
-        writeKeyStore(keyStore, outStream, null);
+        writeKeyStore(keyStore, outStream, StringUtils.EMPTY);
     }
 
-    public static void writeKeyStore(KeyStore keyStore, OutputStream outStream, @Nullable String pass) throws GeneralSecurityException, IOException {
-        keyStore.store(outStream, ((pass != null) ? pass.toCharArray() : ArrayUtils.EMPTY_CHAR_ARRAY));
+    public static void writeKeyStore(KeyStore keyStore, OutputStream outStream, String pass) throws GeneralSecurityException, IOException {
+        keyStore.store(outStream, pass.toCharArray());
 
         outStream.flush();
     }
 
     public static KeyStore readKeyStore(String type, Provider prov, InputStream inStream) throws GeneralSecurityException, IOException {
-        return readKeyStore(type, prov, inStream, null);
+        return readKeyStore(type, prov, inStream, StringUtils.EMPTY);
     }
 
-    public static KeyStore readKeyStore(String type, Provider prov, InputStream inStream, @Nullable String pass) throws GeneralSecurityException, IOException {
+    public static KeyStore readKeyStore(String type, Provider prov, InputStream inStream, String pass) throws GeneralSecurityException, IOException {
         return loadKeyStore(KeyStore.getInstance(type, prov), inStream, pass);
     }
 
@@ -35,16 +35,16 @@ public final class HubKeyStoreUtils {
         return loadKeyStore(KeyStore.getInstance(type, prov));
     }
 
-    public static KeyStore loadKeyStore(KeyStore keyStore) throws GeneralSecurityException, IOException {
+    private static KeyStore loadKeyStore(KeyStore keyStore) throws GeneralSecurityException, IOException {
         return loadKeyStore(keyStore, null);
     }
 
-    public static KeyStore loadKeyStore(KeyStore keyStore, @Nullable InputStream inStream) throws GeneralSecurityException, IOException {
-        return loadKeyStore(keyStore, inStream, null);
+    private static KeyStore loadKeyStore(KeyStore keyStore, @Nullable InputStream inStream) throws GeneralSecurityException, IOException {
+        return loadKeyStore(keyStore, inStream, StringUtils.EMPTY);
     }
 
-    public static KeyStore loadKeyStore(KeyStore keyStore, @Nullable InputStream inStream, @Nullable String pass) throws GeneralSecurityException, IOException {
-        keyStore.load(inStream, ((pass != null) ? pass.toCharArray() : ArrayUtils.EMPTY_CHAR_ARRAY));
+    private static KeyStore loadKeyStore(KeyStore keyStore, @Nullable InputStream inStream, String pass) throws GeneralSecurityException, IOException {
+        keyStore.load(inStream, pass.toCharArray());
 
         return keyStore;
     }

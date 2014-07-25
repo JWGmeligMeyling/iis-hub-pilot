@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans:beans
+    profile="hub.context.webapp"
     xmlns:aop="http://www.springframework.org/schema/aop"
     xmlns:beans="http://www.springframework.org/schema/beans"
     xmlns:c="http://www.springframework.org/schema/c"
@@ -37,8 +38,12 @@
     <beans:bean id="paramsTlsClientHub" parent="paramsTlsClient"
         p:disableCNCheck="true">
         <beans:property name="keyManagers">
-            <beans:bean parent="keyMgrsHub"
-                c:entryAlias="dev.iis-hub-pilot.org_dest_echo"/>
+            <beans:array>
+                <!--suppress SpringPlaceholdersInspection -->
+                <beans:bean parent="mgrKeyHub"
+                    c:entryAlias="${hub.crypto.mgr.key.store.entry.server.alias}"
+                    c:entryPass="${hub.crypto.mgr.key.store.entry.server.pass}"/>
+            </beans:array>
         </beans:property>
     </beans:bean>
     

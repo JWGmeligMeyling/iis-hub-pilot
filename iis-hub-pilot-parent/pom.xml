@@ -426,7 +426,12 @@
                 <artifactId>soapui</artifactId>
                 <version>5.1.0</version>
                 <scope>test</scope>
-                <optional>true</optional>
+            </dependency>
+            <dependency>
+                <groupId>com.smartbear.soapui</groupId>
+                <artifactId>soapui-pro</artifactId>
+                <version>5.1.0</version>
+                <scope>test</scope>
             </dependency>
             -->
             <dependency>
@@ -513,11 +518,6 @@
                         <junitReport>true</junitReport>
                         <printReport>true</printReport>
                         <saveAfterRun>true</saveAfterRun>
-                        <!--
-                        SSL/TLS related SoapUI properties derived from:
-                        com.eviware.soapui.impl.wsdl.support.http.SoapUISSLSocketFactory
-                        (see https://github.com/SmartBear/soapui/blob/next/soapui/src/main/java/com/eviware/soapui/impl/wsdl/support/http/SoapUISSLSocketFactory.java)
-                        -->
                         <soapuiProperties combine.children="append">
                             <property>
                                 <name>soapui.ext.libraries</name>
@@ -528,20 +528,16 @@
                                 <value>TLSv1.2</value>
                             </property>
                             <property>
-                                <name>soapui.https.session.invalidate</name>
-                                <value>true</value>
-                            </property>
-                            <property>
-                                <name>soapui.sslcontext.algorithm</name>
-                                <value>TLSv1.2</value>
-                            </property>
-                            <property>
                                 <name>soapui.logroot</name>
                                 <value>${project.build.directory}/surefire-logs/</value>
                             </property>
                             <property>
                                 <name>soapui.scripting.library</name>
                                 <value>${project.build.directory}/soapui/groovy</value>
+                            </property>
+                            <property>
+                                <name>soapui.sslcontext.algorithm</name>
+                                <value>TLSv1.2</value>
                             </property>
                         </soapuiProperties>
                         <testFailIgnore>true</testFailIgnore>
@@ -776,6 +772,13 @@
                         </argLine>
                         <parallel>all</parallel>
                         <reportFormat>plain</reportFormat>
+                        <systemPropertyVariables combine.children="append">
+                            <hub.data.dir>${project.build.directory}/surefire-data</hub.data.dir>
+                            <hub.log.console.term>true</hub.log.console.term>
+                            <hub.log.dir>${project.build.directory}/surefire-logs</hub.log.dir>
+                            <hub.mode>dev</hub.mode>
+                            <logback.configurationFile>META-INF/logback/logback-hub.xml</logback.configurationFile>
+                        </systemPropertyVariables>
                         <threadCount>8</threadCount>
                         <trimStackTrace>false</trimStackTrace>
                         <workingDirectory>${project.build.directory}</workingDirectory>
@@ -786,7 +789,7 @@
                             <inherited>true</inherited>
                         </execution>
                         <execution>
-                            <id>test-integration</id>
+                            <id>integration-test</id>
                             <phase>integration-test</phase>
                             <goals>
                                 <goal>test</goal>
@@ -812,7 +815,7 @@
                             <inherited>true</inherited>
                             <configuration>
                                 <warSourceDirectory>${project.basedir}/src/main/webapp</warSourceDirectory>
-                                <warSourceExcludes>WEB-INF/classes/**,WEB-INF/spring/**</warSourceExcludes>
+                                <warSourceExcludes>WEB-INF/classes/**</warSourceExcludes>
                                 <webappDirectory>${project.build.directory}/${project.artifactId}</webappDirectory>
                             </configuration>
                         </execution>

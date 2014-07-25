@@ -3,11 +3,12 @@
     <test name="%{project.name} Tests">
         <groups>
             <run>
+                <include name="hub\.test\.all"/>
                 <exclude name="hub\.test\.it\.all"/>
             </run>
         </groups>
         <packages>
-            <package name="gov\.hhs\.onc\.iishubpilot.*"/>
+            <package name="gov.hhs.onc.iishubpilot.*"/>
         </packages>
     </test>
 </suite>

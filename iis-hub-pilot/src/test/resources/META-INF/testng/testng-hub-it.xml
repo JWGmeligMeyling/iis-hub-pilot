@@ -7,7 +7,7 @@
             </run>
         </groups>
         <packages>
-            <package name="gov\.hhs\.onc\.iishubpilot.*"/>
+            <package name="gov.hhs.onc.iishubpilot.*"/>
         </packages>
     </test>
 </suite>

@@ -2,11 +2,11 @@
 <con:soapui-project activeEnvironment="Default" name="soapui-project-hub" resourceRoot="${projectDir}" soapui-version="5.1.0" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config">
   <con:description>CDC Immunization Information Systems (IIS) Hub Pilot SoapUI project.</con:description>
   <con:settings/>
-  <con:interface xsi:type="con:WsdlInterface" wsaVersion="200508" name="IISHubBindingSoap12" type="wsdl" bindingName="{urn:cdc:iisb:hub:2014}IISHubBindingSoap12" soapVersion="1_2" anonymous="optional" definition="${#Project#project.test.server.service.hub.url.wsdl}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <con:interface xsi:type="con:WsdlInterface" wsaVersion="200508" name="IISHubBindingSoap12" type="wsdl" bindingName="{urn:cdc:iisb:hub:2014}IISHubBindingSoap12" soapVersion="1_2" anonymous="optional" definition="${#Project#project.test.server.service.iis.hub.url.wsdl}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <con:description/>
     <con:settings/>
     <con:endpoints>
-      <con:endpoint>${#Project#project.test.server.service.hub.url}</con:endpoint>
+      <con:endpoint>${#Project#project.test.server.service.iis.hub.url}</con:endpoint>
     </con:endpoints>
     <con:operation isOneWay="false" action="urn:cdc:iisb:hub:2014:IISHubPortType:ConnectivityTest" name="ConnectivityTest" bindingOperationName="ConnectivityTest" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional">
       <con:settings/>
@@ -27,12 +27,12 @@
         <con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           <con:interface>IISHubBindingSoap12</con:interface>
           <con:operation>ConnectivityTest</con:operation>
-          <con:request name="ConnectivityTest" outgoingWss="" incomingWss="" timeout="${#Project#project.test.server.service.req.timeout}" sslKeystore="" useWsAddressing="true" useWsReliableMessaging="false" wssPasswordType="">
+          <con:request name="ConnectivityTest" outgoingWss="" incomingWss="" timeout="${#Project#project.test.server.req.timeout}" sslKeystore="" useWsAddressing="true" useWsReliableMessaging="false" wssPasswordType="">
             <con:description/>
             <con:settings/>
             <con:encoding>UTF-8</con:encoding>
-            <con:endpoint>${#Project#project.test.server.service.hub.url}</con:endpoint>
-            <con:request>${=gov.hhs.onc.iishubpilot.soapui.groovy.utils.HubGroovyUtils.addHeaders(project, testSuite, testCase, testStep, request)}<![CDATA[<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:iis="urn:cdc:iisb:2014">
+            <con:endpoint>${#Project#project.test.server.service.iis.hub.url}</con:endpoint>
+            <con:request>${=gov.hhs.onc.iishubpilot.test.soapui.utils.HubGroovyUtils.addHeaders(project, testSuite, testCase, testStep, request)}<![CDATA[<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:iis="urn:cdc:iisb:2014">
    <soap:Header/>
    <soap:Body>
       <iis:ConnectivityTestRequest>
@@ -99,12 +99,12 @@ empty(//iis:EchoBack)</path>
         <con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           <con:interface>IISHubBindingSoap12</con:interface>
           <con:operation>SubmitSingleMessage</con:operation>
-          <con:request name="SubmitSingleMessage" outgoingWss="" incomingWss="" timeout="${#Project#project.test.server.service.req.timeout}" sslKeystore="" useWsAddressing="true" useWsReliableMessaging="false" wssPasswordType="">
+          <con:request name="SubmitSingleMessage" outgoingWss="" incomingWss="" timeout="${#Project#project.test.server.req.timeout}" sslKeystore="" useWsAddressing="true" useWsReliableMessaging="false" wssPasswordType="">
             <con:description/>
             <con:settings/>
             <con:encoding>UTF-8</con:encoding>
-            <con:endpoint>${#Project#project.test.server.service.hub.url}</con:endpoint>
-            <con:request>${=gov.hhs.onc.iishubpilot.soapui.groovy.utils.HubGroovyUtils.addHeaders(project, testSuite, testCase, testStep, request)}<![CDATA[<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:iis="urn:cdc:iisb:2014" xmlns:iis-hub="urn:cdc:iisb:hub:2014">
+            <con:endpoint>${#Project#project.test.server.service.iis.hub.url}</con:endpoint>
+            <con:request>${=gov.hhs.onc.iishubpilot.test.soapui.utils.HubGroovyUtils.addHeaders(project, testSuite, testCase, testStep, request)}<![CDATA[<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:iis="urn:cdc:iisb:2014" xmlns:iis-hub="urn:cdc:iisb:hub:2014">
    <soap:Header>
       <iis-hub:HubRequestHeader>
          <iis-hub:DestinationId>${=testCase.name}</iis-hub:DestinationId>
@@ -112,7 +112,7 @@ empty(//iis:EchoBack)</path>
    </soap:Header>
    <soap:Body>
       <iis:SubmitSingleMessageRequest>
-         <iis:Hl7Message><![CDATA[${=gov.hhs.onc.iishubpilot.soapui.groovy.utils.HubGroovyUtils.readDataFile(context, "vxu-1.hl7")}]]]]>><![CDATA[</iis:Hl7Message>
+         <iis:Hl7Message><![CDATA[${=gov.hhs.onc.iishubpilot.test.soapui.utils.HubGroovyUtils.readDataFile(context, "vxu-1.hl7")}]]]]>><![CDATA[</iis:Hl7Message>
       </iis:SubmitSingleMessageRequest>
    </soap:Body>
 </soap:Envelope>]]></con:request>
@@ -174,12 +174,12 @@ empty(//iis:Hl7Message)</path>
         <con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           <con:interface>IISHubBindingSoap12</con:interface>
           <con:operation>SubmitSingleMessage</con:operation>
-          <con:request name="SubmitSingleMessage" outgoingWss="" incomingWss="" timeout="${#Project#project.test.server.service.req.timeout}" sslKeystore="" useWsAddressing="true" useWsReliableMessaging="false" wssPasswordType="">
+          <con:request name="SubmitSingleMessage" outgoingWss="" incomingWss="" timeout="${#Project#project.test.server.req.timeout}" sslKeystore="" useWsAddressing="true" useWsReliableMessaging="false" wssPasswordType="">
             <con:description/>
             <con:settings/>
             <con:encoding>UTF-8</con:encoding>
-            <con:endpoint>${#Project#project.test.server.service.hub.url}</con:endpoint>
-            <con:request>${=gov.hhs.onc.iishubpilot.soapui.groovy.utils.HubGroovyUtils.addHeaders(project, testSuite, testCase, testStep, request)}<![CDATA[<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:iis="urn:cdc:iisb:2014" xmlns:iis-hub="urn:cdc:iisb:hub:2014">
+            <con:endpoint>${#Project#project.test.server.service.iis.hub.url}</con:endpoint>
+            <con:request>${=gov.hhs.onc.iishubpilot.test.soapui.utils.HubGroovyUtils.addHeaders(project, testSuite, testCase, testStep, request)}<![CDATA[<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:iis="urn:cdc:iisb:2014" xmlns:iis-hub="urn:cdc:iisb:hub:2014">
    <soap:Header>
       <iis-hub:HubRequestHeader>
          <iis-hub:DestinationId>${=testCase.name}</iis-hub:DestinationId>
@@ -230,16 +230,16 @@ empty(//iis:MessageTooLargeFault)</path>
   </con:testSuite>
   <con:properties>
     <con:property>
-      <con:name>project.test.server.service.hub.url</con:name>
+      <con:name>project.test.server.req.timeout</con:name>
+      <con:value>5000</con:value>
+    </con:property>
+    <con:property>
+      <con:name>project.test.server.service.iis.hub.url</con:name>
       <con:value>http://localhost/iis-hub-pilot/IISHubService</con:value>
     </con:property>
     <con:property>
-      <con:name>project.test.server.service.hub.url.wsdl</con:name>
-      <con:value>${#Project#project.test.server.service.hub.url}?wsdl</con:value>
-    </con:property>
-    <con:property>
-      <con:name>project.test.server.service.req.timeout</con:name>
-      <con:value>5000</con:value>
+      <con:name>project.test.server.service.iis.hub.url.wsdl</con:name>
+      <con:value>${#Project#project.test.server.service.iis.hub.url}?wsdl</con:value>
     </con:property>
   </con:properties>
   <con:wssContainer/>

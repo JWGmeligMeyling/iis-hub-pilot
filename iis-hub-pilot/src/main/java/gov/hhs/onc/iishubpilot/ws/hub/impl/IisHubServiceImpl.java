@@ -18,8 +18,6 @@ import gov.hhs.onc.iishubpilot.ws.hub.IisHubService;
 import gov.hhs.onc.iishubpilot.ws.hub.UnknownDestinationFault;
 import gov.hhs.onc.iishubpilot.ws.impl.AbstractIisService;
 import gov.hhs.onc.iishubpilot.xml.HubXmlNs;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -70,19 +68,13 @@ public class IisHubServiceImpl extends AbstractIisService implements IisHubServi
     private Pair<SubmitSingleMessageResponseType, HubResponseHeaderType> submitSingleMessageInternal(Pair<SoapMessage, SoapMessage> msgs,
         SubmitSingleMessageRequestType reqParams, HubRequestHeaderType hubReqHeader) {
         SoapMessage reqMsg = msgs.getLeft();
-        String reqMsgId = reqMsg.getId();
-        IisPortType clientIisService;
-
-        try {
-            // TEMP: hardcoded until a destination registry facade is implemented
-            clientIisService =
-                ((IisPortType) this.appContext.getBean(this.clientIisBeanName, new URL("https", "localhost", 18443, "/iis-hub-pilot/test/1/IISService")));
-        } catch (MalformedURLException e) {
-            throw new HubClientFault(String.format("Unable to create IIS Hub request message (id=%s) IIS request URL.", reqMsgId), e);
-        }
-
+        
+        IisPortType clientIisService = this.appContext.getBean(this.clientIisBeanName, IisPortType.class);
         Client clientIisServiceObj = ClientProxy.getClient(clientIisService);
+        
         Map<String, Object> clientReqContext = clientIisServiceObj.getRequestContext();
+        clientReqContext.put(Message.ENDPOINT_ADDRESS, "https://localhost:18443/iis-hub-pilot/test/1/IISService");
+        
         AddressingProperties reqAddrProps = ContextUtils.retrieveMAPs(reqMsg, true, false);
 
         if (reqAddrProps != null) {

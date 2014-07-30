@@ -43,7 +43,10 @@
         </init-param>
         <init-param>
             <param-name>contextInitializerClasses</param-name>
-            <param-value>gov.hhs.onc.iishubpilot.context.impl.HubApplicationContextInitializer</param-value>
+            <param-value>
+                gov.hhs.onc.iishubpilot.context.impl.HubApplicationContextInitializer,
+                gov.hhs.onc.iishubpilot.context.impl.HubWebApplicationContextInitializer
+            </param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
@@ -92,15 +95,7 @@
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>hubSecTransportResource</web-resource-name>
-            <description/>
             <url-pattern>/*</url-pattern>
-            <http-method>GET</http-method>
-            <http-method>POST</http-method>
-            <http-method>HEAD</http-method>
-            <http-method>PUT</http-method>
-            <http-method>OPTIONS</http-method>
-            <http-method>TRACE</http-method>
-            <http-method>DELETE</http-method>
         </web-resource-collection>
         <auth-constraint>
             <role-name>hubSecTransportRole</role-name>

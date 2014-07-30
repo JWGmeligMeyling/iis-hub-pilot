@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<antlib
+    xmlns="antlib:org.apache.tools.ant"
+    xmlns:current="ant:current"
+    xmlns:hub="antlib:gov.hhs.onc.iishubpilot.ant"
+    xmlns:res-cmp="antlib:org.apache.tools.ant.types.resources.comparators"
+    xmlns:res-sel="antlib:org.apache.tools.ant.types.resources.selectors">
+    
+    <macrodef name="load-class-constant-properties">
+        <attribute name="file"/>
+        <attribute name="prefix"/>
+        <element name="extract-class-constants.elements" optional="true" implicit="true"/>
+        <sequential>
+            <loadproperties srcfile="@{file}" encoding="ISO-8859-1">
+                <filterchain>
+                    <classconstants/>
+                    <scriptfilter language="javascript" classpath="${maven.classpath}"><![CDATA[
+                        var tokenMatches = /^([^=]+)(=[^$]*)$/.exec(self.getToken());
+                        
+                        self.setToken(tokenMatches[1].toLowerCase() + tokenMatches[2]);
+                    ]]></scriptfilter>
+                    <linecontainsregexp negate="true">
+                        <regexp pattern="^(?:\w+_)?(?:delim|(?:pre|suf)fix)="/>
+                    </linecontainsregexp>
+                    <extract-class-constants.elements/>
+                    <replacestring from="_" to="."/>
+                    <prefixlines prefix="@{prefix}"/>
+                </filterchain>
+            </loadproperties>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="suppress-class-warnings">
+        <attribute name="file"/>
+        <attribute name="warnings"/>
+        <sequential>
+            <var name="suppress-class-warnings.value"/>
+            
+            <for list="@{warnings}" param="warning">
+                <sequential>
+                    <if>
+                        <not><hub:isempty string="${suppress-class-warnings.value}"/></not>
+                        <then>
+                            <var name="suppress-class-warnings.value" value="${suppress-class-warnings.value}, "/>
+                        </then>
+                    </if>
+                    <var name="suppress-class-warnings.value" value="${suppress-class-warnings.value}&quot;@{warning}&quot;"/>
+                </sequential>
+            </for>
+            
+            <hub:filter-file file="@{file}">
+                <replaceregex pattern="^((?:(?:public|protected|private)\s+)class\s+[a-zA-Z]+\s+)"
+                    replace="@SuppressWarnings({ ${suppress-class-warnings.value} })${n}\1"/>
+            </hub:filter-file>
+        </sequential>
+    </macrodef>
+</antlib>

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class HubPriorityConverter extends HighlightingCompositeConverter {
     private final static Map<Level, String> FG_COLOR_CODES = new HashMap<>();
@@ -22,7 +23,9 @@ public class HubPriorityConverter extends HighlightingCompositeConverter {
 
     @Override
     protected String transform(ILoggingEvent event, String msg) {
-        return (BooleanUtils.toBoolean(this.getFirstOption()) ? super.transform(event, msg) : msg);
+        String enabledOptValue = this.getFirstOption();
+
+        return ((StringUtils.isBlank(enabledOptValue) || BooleanUtils.toBoolean(enabledOptValue)) ? super.transform(event, msg) : msg);
     }
 
     @Override

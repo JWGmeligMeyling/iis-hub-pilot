@@ -1,94 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project
     name="hub-ws"
+    xmlns="antlib:org.apache.tools.ant"
     xmlns:hub="antlib:gov.hhs.onc.iishubpilot.ant"
-    xmlns:hub-ws="antlib:gov.hhs.onc.iishubpilot.ant.ws">
+    xmlns:hub-java="antlib:gov.hhs.onc.iishubpilot.ant.java"
+    xmlns:res-cmp="antlib:org.apache.tools.ant.types.resources.comparators"
+    xmlns:res-sel="antlib:org.apache.tools.ant.types.resources.selectors">
     
     <description>Ant project for Immunization Information Services (IIS) Hub Pilot web service related components.</description>
     
     <import file="ant-hub.xml" as="" prefixSeparator=""/>
     
-    <taskdef file="antlib-hub-ws.xml" uri="antlib:gov.hhs.onc.iishubpilot.ant.ws"/>
-    
-    <target name="hub-ws-process-sources" description="Processes Java source files generated from the web service definitions." depends="hub-init,hub-ws-init">
+    <target name="hub-ws-process-sources" depends="hub-init,hub-ws-init">
         <delete quiet="true">
             <fileset dir="${project.build.cxfSourceDirectory}">
-                <patternset refid="patternset.java.pkgInfo.files"/>
+                <patternset refid="patternset.java.pkg.info.files"/>
                 <patternset refid="patternset.java.jaxws.service.files"/>
             </fileset>
         </delete>
         
-        <for param="java.jaxb.contextFactory.file">
+        <for param="cxf.factory.file">
             <path>
                 <fileset dir="${project.build.cxfSourceDirectory}">
-                    <patternset refid="patternset.java.jaxb.contextFactory.files"/>
+                    <patternset refid="patternset.java.jaxb.factory.context.files"/>
+                    <patternset refid="patternset.java.jaxb.factory.obj.files"/>
                 </fileset>
             </path>
             <sequential>
-                <var name="java.jaxb.contextFactory.file.content" unset="true"/>
-                <loadfile srcFile="@{java.jaxb.contextFactory.file}" property="java.jaxb.contextFactory.file.content"
-                    encoding="${project.build.sourceEncoding}">
-                    <filterchain>
-                        <tokenfilter>
-                            <replaceregex pattern="^(public\s+class\s+JAXBContextFactory\s+)"
-                                replace="@SuppressWarnings({ &quot;rawtypes&quot;, &quot;unchecked&quot; })${n}\1"/>
-                        </tokenfilter>
-                    </filterchain>
-                </loadfile>
-                <concat destfile="@{java.jaxb.contextFactory.file}" encoding="${project.build.sourceEncoding}">
-                    <resources>
-                        <propertyresource name="java.jaxb.contextFactory.file.content"/>
-                    </resources>
-                </concat>
+                <hub-java:suppress-class-warnings file="@{cxf.factory.file}" warnings="rawtypes,unchecked"/>
             </sequential>
         </for>
         
-        <for param="java.jaxb.objFactory.file">
+        <for param="cxf.factory.obj.file">
             <path>
                 <fileset dir="${project.build.cxfSourceDirectory}">
-                    <patternset refid="patternset.java.jaxb.objFactory.files"/>
+                    <patternset refid="patternset.java.jaxb.factory.obj.files"/>
                 </fileset>
             </path>
             <sequential>
-                <var name="java.jaxb.objFactory.file.content" unset="true"/>
-                <loadfile srcFile="@{java.jaxb.objFactory.file}" property="java.jaxb.objFactory.file.content"
-                    encoding="${project.build.sourceEncoding}">
-                    <filterchain>
-                        <tokenfilter>
-                            <replaceregex pattern="^(public\s+class\s+ObjectFactory\s+)"
-                                replace="@SuppressWarnings({ &quot;rawtypes&quot;, &quot;unchecked&quot; })${n}\1"/>
-                            <scriptfilter language="javascript">
-                                var token = self.getToken(), tokenMatches;
-                                
-                                if ((tokenMatches = /^(\s+)private(\s+final\s+static\s+QName\s+)_(\w+)(_QNAME\s+=\s+[^$]+$)/.exec(token)) !== null) {
-                                    token = tokenMatches[1] + "public" + tokenMatches[2] + tokenMatches[3].replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase() +
-                                        tokenMatches[4];
-                                } else if ((tokenMatches = /^([^$]+)_(\w+)(_QNAME[^$]+)$/.exec(token)) !== null) {
-                                    token = tokenMatches[1] + tokenMatches[2].replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase() + tokenMatches[3];
-                                }
-                                
-                                self.setToken(token);
-                            </scriptfilter>
-                        </tokenfilter>
-                    </filterchain>
-                </loadfile>
-                <concat destfile="@{java.jaxb.objFactory.file}" encoding="${project.build.sourceEncoding}">
-                    <resources>
-                        <propertyresource name="java.jaxb.objFactory.file.content"/>
-                    </resources>
-                </concat>
+                <hub:filter-file file="@{cxf.factory.obj.file}">
+                    <tokenfilter>
+                        <scriptfilter language="javascript" classpath="${maven.classpath}"><![CDATA[
+                            var token = self.getToken(), tokenMatches;
+                            
+                            if ((tokenMatches = /^(\s+)private(\s+final\s+static\s+QName\s+)_(\w+)(_QNAME\s+=\s+[^$]+$)/.exec(token)) !== null) {
+                                token = tokenMatches[1] + "public" + tokenMatches[2] + tokenMatches[3].replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase() +
+                                    tokenMatches[4];
+                            } else if ((tokenMatches = /^([^$]+)_(\w+)(_QNAME[^$]+)$/.exec(token)) !== null) {
+                                token = tokenMatches[1] + tokenMatches[2].replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase() + tokenMatches[3];
+                            }
+                            
+                            self.setToken(token);
+                        ]]></scriptfilter>
+                    </tokenfilter>
+                </hub:filter-file>
             </sequential>
         </for>
     </target>
     
-    <target name="hub-ws-init" description="Initializes Ant project web service related variable(s).">
-        <patternset id="patternset.java.pkgInfo.files">
+    <target name="hub-ws-init">
+        <patternset id="patternset.java.pkg.info.files">
             <include name="**/package-info.java"/>
         </patternset>
-        <patternset id="patternset.java.jaxb.contextFactory.files">
+        <patternset id="patternset.java.jaxb.factory.context.files">
             <include name="**/JAXBContextFactory.java"/>
         </patternset>
-        <patternset id="patternset.java.jaxb.objFactory.files">
+        <patternset id="patternset.java.jaxb.factory.obj.files">
             <include name="**/ObjectFactory.java"/>
         </patternset>
         <patternset id="patternset.java.jaxws.service.files">

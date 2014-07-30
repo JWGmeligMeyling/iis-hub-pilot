@@ -19,13 +19,13 @@ public final class HubTlsVersions {
     public final static int TLS_1_VERSION_MINOR = 0;
     public final static String TLS_1_NAME = TLS_PREFIX + NAME_DELIM + TLS_1_VERSION_MAJOR;
     
-    public final static int TLS_11_VERSION_MAJOR = TLS_1_VERSION_MAJOR;
-    public final static int TLS_11_VERSION_MINOR = 1;
-    public final static String TLS_11_NAME = TLS_1_NAME + VERSION_DELIM + TLS_11_VERSION_MINOR;
+    public final static int TLS_1_1_VERSION_MAJOR = TLS_1_VERSION_MAJOR;
+    public final static int TLS_1_1_VERSION_MINOR = 1;
+    public final static String TLS_1_1_NAME = TLS_1_NAME + VERSION_DELIM + TLS_1_1_VERSION_MINOR;
     
-    public final static int TLS_12_VERSION_MAJOR = TLS_1_VERSION_MAJOR;
-    public final static int TLS_12_VERSION_MINOR = 2;
-    public final static String TLS_12_NAME = TLS_1_NAME + VERSION_DELIM + TLS_12_VERSION_MINOR;
+    public final static int TLS_1_2_VERSION_MAJOR = TLS_1_VERSION_MAJOR;
+    public final static int TLS_1_2_VERSION_MINOR = 2;
+    public final static String TLS_1_2_NAME = TLS_1_NAME + VERSION_DELIM + TLS_1_2_VERSION_MINOR;
     
     private HubTlsVersions() {
     }

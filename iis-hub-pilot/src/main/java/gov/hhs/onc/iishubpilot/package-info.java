@@ -1,4 +1,4 @@
-@ParametersAreNonnullByDefault
+@NotNullByDefault
 package gov.hhs.onc.iishubpilot;
 
-import javax.annotation.ParametersAreNonnullByDefault;
+import com.github.sebhoss.nullanalysis.NotNullByDefault;

@@ -66,6 +66,14 @@
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
+    <logger name="org.apache.cxf.configuration.jsse" level="${hub.log.logger.cxf.config.jsse.lvl:-info}" additivity="false">
+        <appender-ref ref="console"/>
+        <appender-ref ref="file"/>
+    </logger>
+    <logger name="org.apache.cxf.transport.https" level="${hub.log.logger.cxf.transport.https.lvl:-info}" additivity="false">
+        <appender-ref ref="console"/>
+        <appender-ref ref="file"/>
+    </logger>
     <logger name="org.hibernate" level="info" additivity="false">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>

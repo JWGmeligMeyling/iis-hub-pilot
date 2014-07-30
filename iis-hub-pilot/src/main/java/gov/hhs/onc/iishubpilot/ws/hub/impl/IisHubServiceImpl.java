@@ -1,8 +1,9 @@
 package gov.hhs.onc.iishubpilot.ws.hub.impl;
 
-import gov.hhs.onc.iishubpilot.net.utils.HubUrnUtils;
+import gov.hhs.onc.iishubpilot.destination.HubDestination;
+import gov.hhs.onc.iishubpilot.destination.HubDestinationRegistry;
+import gov.hhs.onc.iishubpilot.jaxws.impl.HubJaxWsClientProxyFactoryBean;
 import gov.hhs.onc.iishubpilot.ws.HubHttpHeaders;
-import gov.hhs.onc.iishubpilot.ws.HubHttpHeaders.HubHttpHeaderPredicate;
 import gov.hhs.onc.iishubpilot.ws.HubWsNames;
 import gov.hhs.onc.iishubpilot.ws.IisPortType;
 import gov.hhs.onc.iishubpilot.ws.MessageTooLargeFault;
@@ -17,102 +18,120 @@ import gov.hhs.onc.iishubpilot.ws.hub.IisHubPortType;
 import gov.hhs.onc.iishubpilot.ws.hub.IisHubService;
 import gov.hhs.onc.iishubpilot.ws.hub.UnknownDestinationFault;
 import gov.hhs.onc.iishubpilot.ws.impl.AbstractIisService;
+import gov.hhs.onc.iishubpilot.ws.utils.HubWsUtils;
 import gov.hhs.onc.iishubpilot.xml.HubXmlNs;
-import java.util.Arrays;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.jws.WebService;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.ws.Holder;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.cxf.binding.soap.SoapMessage;
-import org.apache.cxf.endpoint.Client;
-import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.interceptor.Fault;
+import org.apache.cxf.jaxws.context.WrappedMessageContext;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
-import org.apache.cxf.ws.addressing.AddressingProperties;
-import org.apache.cxf.ws.addressing.AttributedURIType;
-import org.apache.cxf.ws.addressing.ContextUtils;
-import org.apache.cxf.ws.addressing.JAXWSAConstants;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @WebService(portName = HubWsNames.PORT_HUB, serviceName = HubWsNames.SERVICE_HUB, targetNamespace = HubXmlNs.IIS_HUB)
 public class IisHubServiceImpl extends AbstractIisService implements IisHubService, IisHubPortType {
-    @Autowired
-    private ObjectFactory objFactoryIisHub;
+    private ObjectFactory hubObjFactory;
+    private HubDestinationRegistry destReg;
+    private String clientIisFactoryBeanName;
 
-    private String clientIisBeanName;
-
-    public IisHubServiceImpl(String clientIisBeanName) {
-        this.clientIisBeanName = clientIisBeanName;
+    public IisHubServiceImpl(String clientIisFactoryBeanName) {
+        this.clientIisFactoryBeanName = clientIisFactoryBeanName;
     }
 
     @Override
     public void submitSingleMessage(SubmitSingleMessageRequestType reqParams, HubRequestHeaderType hubReqHeader,
         Holder<SubmitSingleMessageResponseType> respParams, Holder<HubResponseHeaderType> hubRespHeader) throws DestinationConnectionFault, HubClientFault,
         MessageTooLargeFault, SecurityFault, UnknownDestinationFault {
-        Pair<SoapMessage, SoapMessage> msgs = this.getMessages();
-        Pair<SubmitSingleMessageResponseType, HubResponseHeaderType> respPair = this.submitSingleMessageInternal(msgs, reqParams, hubReqHeader);
+        Pair<SubmitSingleMessageResponseType, HubResponseHeaderType> respPair = this.submitSingleMessageInternal(reqParams, hubReqHeader);
 
-        this.auditor.auditSubmitSingleMessage(msgs, reqParams, hubReqHeader, (respParams.value = respPair.getLeft()),
+        this.auditor.auditSubmitSingleMessage(this.wsContext, reqParams, hubReqHeader, (respParams.value = respPair.getLeft()),
             (hubRespHeader.value = respPair.getRight()));
     }
 
-    @SuppressWarnings({ "unchecked" })
-    private Pair<SubmitSingleMessageResponseType, HubResponseHeaderType> submitSingleMessageInternal(Pair<SoapMessage, SoapMessage> msgs,
-        SubmitSingleMessageRequestType reqParams, HubRequestHeaderType hubReqHeader) {
-        SoapMessage reqMsg = msgs.getLeft();
-        
-        IisPortType clientIisService = this.appContext.getBean(this.clientIisBeanName, IisPortType.class);
-        Client clientIisServiceObj = ClientProxy.getClient(clientIisService);
-        
-        Map<String, Object> clientReqContext = clientIisServiceObj.getRequestContext();
-        clientReqContext.put(Message.ENDPOINT_ADDRESS, "https://localhost:18443/iis-hub-pilot/test/1/IISService");
-        
-        AddressingProperties reqAddrProps = ContextUtils.retrieveMAPs(reqMsg, true, false);
+    private Pair<SubmitSingleMessageResponseType, HubResponseHeaderType> submitSingleMessageInternal(SubmitSingleMessageRequestType reqParams,
+        HubRequestHeaderType hubReqHeader) throws DestinationConnectionFault, HubClientFault, MessageTooLargeFault, SecurityFault, UnknownDestinationFault {
+        String destId = hubReqHeader.getDestinationId();
+        Set<HubDestination> dests = this.destReg.getDestinations();
+        HubDestination dest;
 
-        if (reqAddrProps != null) {
-            AddressingProperties clientReqAddrProps = new AddressingProperties();
-            AttributedURIType reqAddrPropValueType;
-
-            if ((reqAddrPropValueType = reqAddrProps.getAction()) != null) {
-                clientReqAddrProps.setAction(ContextUtils.getAttributedURI((HubXmlNs.IIS + HubUrnUtils.DELIM + HubWsNames.PORT_TYPE + StringUtils.removeStart(
-                    reqAddrPropValueType.getValue(), HubXmlNs.IIS_HUB + HubUrnUtils.DELIM + HubWsNames.PORT_TYPE_HUB))));
-            }
-
-            if ((reqAddrPropValueType = reqAddrProps.getMessageID()) != null) {
-                clientReqAddrProps.setMessageID(reqAddrPropValueType);
-            }
-
-            clientReqContext.put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES, clientReqAddrProps);
+        if ((dest = CollectionUtils.find(dests, ((HubDestination destCheck) -> destCheck.getId().equals(destId)))) == null) {
+            throw new UnknownDestinationFault("IIS destination ID is not registered.", new UnknownDestinationFaultTypeImpl(destId));
         }
 
-        String destId = hubReqHeader.getDestinationId(), destUri = clientIisServiceObj.getEndpoint().getEndpointInfo().getAddress();
-        Pair<Map<String, List<String>>, Map<String, List<String>>> httpHeaders = this.getHttpHeaders();
+        WrappedMessageContext reqMsgContext = HubWsUtils.getMessageContext(this.wsContext);
+        SoapMessage reqMsg = ((SoapMessage) reqMsgContext.getWrappedMessage());
+        HttpServletRequest httpServletReq = HubWsUtils.getHttpServletRequest(reqMsgContext);
+        URI destUri = dest.getUri();
+        String destUriStr = destUri.toString();
 
-        final Map<String, List<String>> hubHttpHeaders =
-            MapUtils.putAll(new TreeMap<String, List<String>>(String.CASE_INSENSITIVE_ORDER),
-                CollectionUtils.select(httpHeaders.getLeft().entrySet(), HubHttpHeaderPredicate.INSTANCE).toArray());
-        hubHttpHeaders.put(HubHttpHeaders.DEST_ID, Arrays.asList(destId));
-        hubHttpHeaders.put(HubHttpHeaders.DEST_URI, Arrays.asList(destUri));
+        if (!destUri.isAbsolute()) {
+            try {
+                destUriStr =
+                    (destUri =
+                        destUri.relativize(new URI(httpServletReq.getScheme(), null, httpServletReq.getServerName(), httpServletReq.getServerPort(),
+                            StringUtils.prependIfMissing(destUri.getPath(), httpServletReq.getContextPath()), null, null))).toString();
+            } catch (URISyntaxException e) {
+                throw new DestinationConnectionFault("Unable to relativize local IIS destination URI.", new DestinationConnectionFaultTypeImpl(destId,
+                    destUriStr), e);
+            }
+        }
 
-        clientIisServiceObj.getEndpoint().getOutInterceptors().add(new AbstractPhaseInterceptor<Message>(Phase.PRE_STREAM) {
+        HubJaxWsClientProxyFactoryBean clientIisFactoryBean = this.appContext.getBean(this.clientIisFactoryBeanName, HubJaxWsClientProxyFactoryBean.class);
+        clientIisFactoryBean.setAddress(destUri.toString());
+
+        Map<String, List<String>> httpReqHeaders =
+            HubWsUtils.getHttpHeaders(reqMsg).entrySet().stream()
+                .filter(((Entry<String, List<String>> httpReqHeaderEntry) -> httpReqHeaderEntry.getKey().equalsIgnoreCase(HubHttpHeaders.DEV_ACTION_NAME)))
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+
+        clientIisFactoryBean.getOutInterceptors().add(new AbstractPhaseInterceptor<Message>(Phase.PRE_STREAM) {
             @Override
-            public void handleMessage(Message msg) throws Fault {
-                ((Map<String, List<String>>) msg.get(Message.PROTOCOL_HEADERS)).putAll(hubHttpHeaders);
+            public void handleMessage(Message clientReqMsg) throws Fault {
+                HubWsUtils.getHttpHeaders(clientReqMsg).putAll(httpReqHeaders);
             }
         });
 
-        HubResponseHeaderType hubRespHeader = this.objFactoryIisHub.createHubResponseHeaderType();
-        hubRespHeader.setDestinationId(destId);
-        hubRespHeader.setDestinationUri(destUri);
+        IisPortType clientIis;
 
-        return new MutablePair<>(clientIisService.submitSingleMessage(reqParams), hubRespHeader);
+        try {
+            clientIis = ((IisPortType) clientIisFactoryBean.getObject());
+        } catch (Exception e) {
+            throw new HubClientFault("Unable to build IIS destination web service client.", new HubClientFaultTypeImpl(destId, destUriStr), e);
+        }
+
+        return new MutablePair<>(clientIis.submitSingleMessage(reqParams), new HubResponseHeaderTypeImpl(destId, destUriStr));
+    }
+
+    @Override
+    public HubDestinationRegistry getDestinationRegistry() {
+        return this.destReg;
+    }
+
+    @Override
+    public void setDestinationRegistry(HubDestinationRegistry destReg) {
+        this.destReg = destReg;
+    }
+
+    @Override
+    public ObjectFactory getHubObjectFactory() {
+        return this.hubObjFactory;
+    }
+
+    @Override
+    public void setHubObjectFactory(ObjectFactory hubObjFactory) {
+        this.hubObjFactory = hubObjFactory;
     }
 }

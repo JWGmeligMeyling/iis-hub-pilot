@@ -31,11 +31,24 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>enforce-java-version</id>
+                        <inherited>false</inherited>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.kuali.maven.plugins</groupId>
                 <artifactId>properties-maven-plugin</artifactId>
+                <inherited>false</inherited>
                 <executions>
                     <execution>
                         <id>read-pom-properties</id>
+                        <inherited>false</inherited>
                     </execution>
                 </executions>
             </plugin>

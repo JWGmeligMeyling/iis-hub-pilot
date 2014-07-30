@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Server port="${hub.test.server.port.control}" shutdown="SHUTDOWN">
+    <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener"/>
+    <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener"/>
+    
+    <Service name="Catalina">
+        <Connector
+            ciphers="${hub.crypto.cipher.suites}"
+            clientAuth="${hub.crypto.client.auth}"
+            clientCertProvider="${hub.crypto.prov.name.sun.jsse}"
+            keyAlias="${hub.crypto.mgr.key.store.entry.iis.hub.alias}"
+            keyPass="${hub.crypto.mgr.key.store.entry.iis.hub.pass}"
+            keystoreFile="${hub.crypto.mgr.key.store.file}"
+            keystorePass="${hub.crypto.mgr.key.store.pass}"
+            keystoreProvider="${hub.crypto.prov.name.sun}"
+            keystoreType="${hub.crypto.store.key.type.jks}"
+            maxThreads="150"
+            port="${hub.test.server.port.https}"
+            protocol="org.apache.coyote.http11.Http11NioProtocol"
+            scheme="${hub.test.server.scheme}"
+            secure="true"
+            SSLEnabled="true"
+            sslEnabledProtocols="${hub.crypto.tls.version.1.2}"
+            sslProtocol="${hub.crypto.tls.version.1.2}"
+            truststoreFile="${hub.crypto.mgr.trust.store.file}"
+            truststorePass="${hub.crypto.mgr.trust.store.pass}"
+            truststoreProvider="${hub.crypto.prov.name.sun}"
+            truststoreType="${hub.crypto.store.key.type.jks}"/>
+            <!--
+            algorithm="${hub.crypto.mgr.key.alg.pkix}"
+            truststoreAlgorithm="${hub.crypto.mgr.trust.alg.pkix}"
+            -->
+        
+        <Engine name="Catalina" defaultHost="${hub.test.server.host.name}">
+            <Host name="${hub.test.server.host.name}" appBase="webapps">
+                <Context path="${hub.test.server.context.path}" docBase="%{project.build.directory}/%{project.artifactId}-test"/>
+            </Host>
+        </Engine>
+    </Service>
+</Server>

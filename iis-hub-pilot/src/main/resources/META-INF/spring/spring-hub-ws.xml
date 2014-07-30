@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans:beans
-    profile="hub.context.webapp"
     xmlns:aop="http://www.springframework.org/schema/aop"
     xmlns:beans="http://www.springframework.org/schema/beans"
     xmlns:c="http://www.springframework.org/schema/c"
@@ -52,6 +51,12 @@
                     c:provider-ref="provSchemaValidationType"/>
             </beans:list>
         </beans:property>
+        <beans:property name="properties">
+            <beans:map>
+                <beans:entry key="#{ T(gov.hhs.onc.iishubpilot.ws.HubMessageContextProperties).FAULT_ROOT_STACK_TRACE_ENABLED }"
+                    value="#{ environment.acceptsProfiles(T(gov.hhs.onc.iishubpilot.context.HubProfiles).DEV_MODE) }"/>
+            </beans:map>
+        </beans:property>
     </beans:bean>
     
     <beans:bean id="busSpring" class="org.apache.cxf.bus.spring.SpringBus" parent="bus" abstract="true"/>
@@ -84,9 +89,7 @@
     <beans:bean id="interceptorXmlCdata" class="gov.hhs.onc.iishubpilot.interceptor.impl.CdataAwareXmlInterceptor" parent="interceptorPhase">
         <beans:constructor-arg name="cdataElemQnames">
             <beans:set>
-                <beans:bean class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean"
-                    p:targetClass="gov.hhs.onc.iishubpilot.xml.HubXmlQnames"
-                    p:targetField="CXF_FAULT_STACKTRACE"/>
+                <beans:value>#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).CXF_FAULT_ROOT_STACK_TRACE }</beans:value>
             </beans:set>
         </beans:constructor-arg>
     </beans:bean>
@@ -102,33 +105,24 @@
     <beans:bean id="portTypeIisHub" class="gov.hhs.onc.iishubpilot.ws.hub.IisHubPortType" abstract="true"/>
     
     <!--====================================================================================================
-    = SERVICES: IIS
-    =====================================================================================================-->
-    <beans:bean id="serviceIis" class="gov.hhs.onc.iishubpilot.ws.IisService" abstract="true"/>
-    
-    <!--====================================================================================================
-    = SERVICES: IIS HUB
-    =====================================================================================================-->
-    <beans:bean id="serviceIisHub" class="gov.hhs.onc.iishubpilot.ws.hub.IisHubService" parent="serviceIis" abstract="true"/>
-    
-    <beans:bean id="serviceIisHubImpl" class="gov.hhs.onc.iishubpilot.ws.hub.impl.IisHubServiceImpl" parent="serviceIisHub">
-        <beans:constructor-arg name="clientIisBeanName">
-            <beans:idref bean="clientIis"/>
-        </beans:constructor-arg>
-    </beans:bean>
-    
-    <!--====================================================================================================
     = PROFILE: DEVELOPMENT
     =====================================================================================================-->
-    <beans:beans profile="hub.mode.dev">
+    <beans:beans profile="hub.mode.dev,!hub.mode.prod">
         <!--====================================================================================================
         = BUS
         =====================================================================================================-->
         <!--suppress DuplicatedBeanNamesInspection -->
-        <beans:bean id="busHub" parent="busSpring">
+        <beans:bean id="busHub" parent="busSpring" primary="true">
             <beans:property name="features">
                 <beans:list merge="true">
                     <beans:bean class="org.apache.cxf.feature.LoggingFeature" parent="feature"/>
+                </beans:list>
+            </beans:property>
+            <beans:property name="inInterceptors">
+                <beans:list>
+                    <beans:bean class="gov.hhs.onc.iishubpilot.interceptor.impl.MessageTooLargeDevFaultActionInterceptor"
+                        c:opQname="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SUBMIT_SINGLE_MSG_OP }"
+                        c:phase="#{ T(org.apache.cxf.phase.Phase).PRE_INVOKE }"/>
                 </beans:list>
             </beans:property>
         </beans:bean>
@@ -137,11 +131,11 @@
     <!--====================================================================================================
     = PROFILE: PRODUCTION
     =====================================================================================================-->
-    <beans:beans profile="hub.mode.prod">
+    <beans:beans profile="!hub.mode.dev,hub.mode.prod">
         <!--====================================================================================================
         = BUS
         =====================================================================================================-->
         <!--suppress DuplicatedBeanNamesInspection -->
-        <beans:bean id="busHub" parent="busSpring"/>
+        <beans:bean id="busHub" parent="busSpring" primary="true"/>
     </beans:beans>
 </beans:beans>

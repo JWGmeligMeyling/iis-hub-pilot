@@ -14,7 +14,7 @@
     <description>Immunization Information Services (IIS) Hub Pilot parent project.</description>
     
     <prerequisites>
-        <maven>3.0.4</maven>
+        <maven>3.0.5</maven>
     </prerequisites>
     
     <scm>
@@ -77,15 +77,23 @@
     
     <properties>
         <!-- Java properties -->
-        <java.version>1.7</java.version>
+        <java.version>1.8</java.version>
         <!-- Project properties -->
         <project.basedir>${project.basedir}</project.basedir>
         <project.basedir.all>${project.basedir}/..</project.basedir.all>
         <project.basedir.parent>${project.basedir}/${project.parent.relativePath}</project.basedir.parent>
         <!-- Project build CXF source properties -->
         <project.build.cxfSourceDirectory>${project.build.directory}/generated-sources/cxf</project.build.cxfSourceDirectory>
+        <!-- Project build SoapUI properties -->
+        <project.build.soapuiDirectory>${project.build.directory}/soapui</project.build.soapuiDirectory>
+        <!-- Project build SoapUI source properties -->
+        <project.build.soapuiSourceDirectory>${project.basedir}/src/soapui</project.build.soapuiSourceDirectory>
         <!-- Project build source properties -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Project build Tomcat properties -->
+        <project.build.tomcatDirectory>${project.build.directory}/tomcat</project.build.tomcatDirectory>
+        <!-- Project build Tomcat source properties -->
+        <project.build.tomcatSourceDirectory>${project.basedir}/src/tomcat</project.build.tomcatSourceDirectory>
     </properties>
     
     <dependencyManagement>
@@ -259,10 +267,20 @@
                 <version>3.0.1</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>net.sf.ehcache</groupId>
+                        <artifactId>ehcache</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.opensaml</groupId>
                         <artifactId>opensaml</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-coyote</artifactId>
+                <version>7.0.54</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
@@ -278,22 +296,6 @@
                 <groupId>org.codehaus.janino</groupId>
                 <artifactId>janino</artifactId>
                 <version>2.7.5</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-security</artifactId>
-                <version>8.1.15.v20140411</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-server</artifactId>
-                <version>8.1.15.v20140411</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty.orbit</groupId>
-                        <artifactId>javax.servlet</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.fusesource.jansi</groupId>
@@ -521,7 +523,7 @@
                         <soapuiProperties combine.children="append">
                             <property>
                                 <name>soapui.ext.libraries</name>
-                                <value>${project.build.directory}/soapui/ext</value>
+                                <value>${project.build.soapuiDirectory}/ext</value>
                             </property>
                             <property>
                                 <name>soapui.https.protocols</name>
@@ -533,7 +535,7 @@
                             </property>
                             <property>
                                 <name>soapui.scripting.library</name>
-                                <value>${project.build.directory}/soapui/groovy</value>
+                                <value>${project.build.soapuiDirectory}/groovy</value>
                             </property>
                             <property>
                                 <name>soapui.sslcontext.algorithm</name>
@@ -605,8 +607,8 @@
                     </dependencies>
                     <configuration>
                         <additionalJvmArgs>
-                            -Xms128m -Xmx256m -XX:PermSize=64m -XX:MaxPermSize=128m -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -XX:ParallelGCThreads=4 \
-                            -XX:ConcGCThreads=4 -Dorg.apache.cxf.Logger=org.apache.cxf.common.logging.Slf4jLogger \
+                            -Xms128m -Xmx256m -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -XX:ParallelGCThreads=4 \
+                            -XX:ConcGCThreads=4 -Djavax.xml.accessExternalSchema=all -Dorg.apache.cxf.Logger=org.apache.cxf.common.logging.Slf4jLogger \
                             -Dlogback.configurationFile="${project.basedir}/src/cxf/logback-hub-cxf-codegen.xml"
                         </additionalJvmArgs>
                         <defaultOptions>
@@ -615,6 +617,7 @@
                                 <extraarg>java.lang.RuntimeException</extraarg>
                                 <extraarg>-faultSerialVersionUID</extraarg>
                                 <extraarg>1</extraarg>
+                                <extraarg>-mark-generated</extraarg>
                                 <extraarg>-validate</extraarg>
                                 <extraarg>-verbose</extraarg>
                                 <extraarg>-xjc-Xannotate</extraarg>
@@ -654,6 +657,11 @@
                             <version>1.9.4</version>
                         </dependency>
                         <dependency>
+                            <groupId>org.apache.ant</groupId>
+                            <artifactId>ant-apache-bcel</artifactId>
+                            <version>1.9.4</version>
+                        </dependency>
+                        <dependency>
                             <groupId>org.mozilla</groupId>
                             <artifactId>rhino</artifactId>
                             <version>1.7R4</version>
@@ -678,8 +686,8 @@
                     <inherited>true</inherited>
                     <configuration>
                         <compilerArgs>
-                            <arg>-J-XX:PermSize=64m</arg>
-                            <arg>-J-XX:MaxPermSize=128m</arg>
+                            <arg>-J-XX:MetaspaceSize=64m</arg>
+                            <arg>-J-XX:MaxMetaspaceSize=128m</arg>
                             <arg>-J-XX:+UseG1GC</arg>
                             <arg>-J-XX:MaxGCPauseMillis=50</arg>
                             <arg>-J-XX:ParallelGCThreads=4</arg>
@@ -707,6 +715,28 @@
                     <configuration>
                         <silent>true</silent>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>1.3.1</version>
+                    <inherited>true</inherited>
+                    <executions>
+                        <execution>
+                            <id>enforce-java-version</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <inherited>true</inherited>
+                            <configuration>
+                                <rules>
+                                    <requireJavaVersion>
+                                        <version>[${java.version},)</version>
+                                    </requireJavaVersion>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -768,7 +798,7 @@
                     <inherited>true</inherited>
                     <configuration>
                         <argLine>
-                            -Xms128m -Xmx256m -XX:PermSize=64m -XX:MaxPermSize=128m -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -XX:ParallelGCThreads=4 -XX:ConcGCThreads=4
+                            -Xms128m -Xmx256m -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -XX:ParallelGCThreads=4 -XX:ConcGCThreads=4
                         </argLine>
                         <parallel>all</parallel>
                         <reportFormat>plain</reportFormat>
@@ -840,7 +870,75 @@
                     <artifactId>tomcat7-maven-plugin</artifactId>
                     <version>2.2</version>
                     <inherited>true</inherited>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.tomcat</groupId>
+                            <artifactId>tomcat-api</artifactId>
+                            <version>7.0.54</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.tomcat</groupId>
+                            <artifactId>tomcat-coyote</artifactId>
+                            <version>7.0.54</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.tomcat</groupId>
+                            <artifactId>tomcat-dbcp</artifactId>
+                            <version>7.0.54</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.tomcat</groupId>
+                            <artifactId>tomcat-jasper</artifactId>
+                            <version>7.0.54</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.tomcat</groupId>
+                            <artifactId>tomcat-jasper-el</artifactId>
+                            <version>7.0.54</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.tomcat</groupId>
+                            <artifactId>tomcat-jdbc</artifactId>
+                            <version>7.0.54</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.tomcat</groupId>
+                            <artifactId>tomcat-jsp-api</artifactId>
+                            <version>7.0.54</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.tomcat</groupId>
+                            <artifactId>tomcat-annotations-api</artifactId>
+                            <version>7.0.54</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.tomcat</groupId>
+                            <artifactId>tomcat-catalina</artifactId>
+                            <version>7.0.54</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.tomcat</groupId>
+                            <artifactId>tomcat-el-api</artifactId>
+                            <version>7.0.54</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.tomcat</groupId>
+                            <artifactId>tomcat-servlet-api</artifactId>
+                            <version>7.0.54</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.tomcat</groupId>
+                            <artifactId>tomcat-util</artifactId>
+                            <version>7.0.54</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.tomcat.embed</groupId>
+                            <artifactId>tomcat-embed-core</artifactId>
+                            <version>7.0.54</version>
+                        </dependency>
+                    </dependencies>
                     <configuration>
+                        <charset>${project.build.sourceEncoding}</charset>
                         <password>${tomcat.manager.password}</password>
                         <path>/${project.artifactId}</path>
                         <update>true</update>
@@ -880,6 +978,17 @@
         </pluginManagement>
         
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>enforce-java-version</id>
+                        <inherited>false</inherited>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.kuali.maven.plugins</groupId>
                 <artifactId>properties-maven-plugin</artifactId>

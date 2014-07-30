@@ -39,8 +39,7 @@
     = PROPERTY SOURCES PLACEHOLDER CONFIGURER
     =====================================================================================================-->
     <beans:bean id="propSourcesPlaceholderConfigurer" class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer"
-        p:fileEncoding="#{ charsetUtf8.name() }"
-        p:localOverride="true">
+        p:fileEncoding="#{ charsetUtf8.name() }">
         <beans:property name="locations">
             <beans:array>
                 <beans:value>classpath*:META-INF/hub/hub.properties</beans:value>
@@ -95,11 +94,5 @@
     <!--====================================================================================================
     = CONVERSION SERVICE
     =====================================================================================================-->
-    <beans:bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean" primary="true">
-        <beans:property name="converters">
-            <beans:set>
-                <beans:ref bean="convProv"/>
-            </beans:set>
-        </beans:property>
-    </beans:bean>
+    <beans:bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean" primary="true"/>
 </beans:beans>

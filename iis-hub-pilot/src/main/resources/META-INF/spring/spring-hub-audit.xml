@@ -20,5 +20,7 @@
     =====================================================================================================-->
     <beans:bean id="auditor" class="gov.hhs.onc.iishubpilot.audit.HubAuditor" abstract="true"/>
     
-    <beans:bean id="auditorImpl" class="gov.hhs.onc.iishubpilot.audit.impl.HubAuditorImpl" parent="auditor"/>
+    <beans:bean id="auditorImpl" class="gov.hhs.onc.iishubpilot.audit.impl.HubAuditorImpl" parent="auditor" abstract="true"/>
+    
+    <beans:bean id="auditorHub" parent="auditorImpl" primary="true"/>
 </beans:beans>

@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<antlib
+    xmlns="antlib:org.apache.tools.ant"
+    xmlns:current="ant:current"
+    xmlns:hub="antlib:gov.hhs.onc.iishubpilot.ant"
+    xmlns:res-cmp="antlib:org.apache.tools.ant.types.resources.comparators"
+    xmlns:res-sel="antlib:org.apache.tools.ant.types.resources.selectors">
+    
+    <macrodef name="copy-entry">
+        <attribute name="certOnly" default="false"/>
+        <attribute name="srcAlias"/>
+        <attribute name="srcKeyPass"/>
+        <attribute name="srcStoreFile"/>
+        <attribute name="srcStorePass"/>
+        <attribute name="srcStoreType" default="${hub.crypto.store.key.type.jks}"/>
+        <attribute name="destAlias" default="@{srcAlias}"/>
+        <attribute name="destKeyPass" default="@{srcKeyPass}"/>
+        <attribute name="destStoreFile"/>
+        <attribute name="destStorePass" default="@{srcStorePass}"/>
+        <attribute name="destStoreType" default="${hub.crypto.store.key.type.jks}"/>
+        <attribute name="providerName" default="${hub.crypto.prov.name.sun}"/>
+        <attribute name="providerPath" default="${toString:maven.plugin.classpath}"/>
+        <element name="copy-entry.elements" optional="true" implicit="true"/>
+        <sequential>
+            <if>
+                <istrue value="@{certOnly}"/>
+                <then>
+                    <current:export-certificate outputProperty="copy-entry.cert" alias="@{srcAlias}" keyPass="@{srcKeyPass}" storeFile="@{srcStoreFile}"
+                        storePass="@{srcStorePass}" storeType="@{srcStoreType}" providerName="@{providerName}" providerPath="@{providerPath}">
+                        <copy-entry.elements/>
+                    </current:export-certificate>
+                    <current:import-certificate inputProperty="copy-entry.cert" alias="@{destAlias}" keyPass="@{destKeyPass}" storeFile="@{destStoreFile}"
+                        storePass="@{destStorePass}" storeType="@{destStoreType}" providerName="@{providerName}" providerPath="@{providerPath}">
+                        <copy-entry.elements/>
+                    </current:import-certificate>
+                </then>
+                <else>
+                    <current:initialize-store storeFile="@{destStoreFile}"/>
+                    
+                    <current:keytool cmd="importkeystore">
+                        <arg value="-srcprovidername"/>
+                        <arg value="@{providerName}"/>
+                        <arg value="-destprovidername"/>
+                        <arg value="@{providerName}"/>
+                        <arg value="-providerpath"/>
+                        <arg value="@{providerPath}"/>
+                        <arg value="-noprompt"/>
+                        <arg value="-srcalias"/>
+                        <arg value="@{srcAlias}"/>
+                        <arg value="-srckeypass"/>
+                        <arg value="@{srcKeyPass}"/>
+                        <arg value="-srckeystore"/>
+                        <arg value="@{srcStoreFile}"/>
+                        <arg value="-srcstorepass"/>
+                        <arg value="@{srcStorePass}"/>
+                        <arg value="-srcstoretype"/>
+                        <arg value="@{srcStoreType}"/>
+                        <arg value="-destalias"/>
+                        <arg value="@{destAlias}"/>
+                        <arg value="-destkeypass"/>
+                        <arg value="@{destKeyPass}"/>
+                        <arg value="-destkeystore"/>
+                        <arg value="@{destStoreFile}"/>
+                        <arg value="-deststorepass"/>
+                        <arg value="@{destStorePass}"/>
+                        <arg value="-deststoretype"/>
+                        <arg value="@{destStoreType}"/>
+                        <copy-entry.elements/>
+                    </current:keytool>
+                </else>
+            </if>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="generate-entry">
+        <attribute name="alias"/>
+        <attribute name="keyAlg" default="${hub.crypto.pair.key.alg.rsa}"/>
+        <attribute name="keySize" default="2048"/>
+        <attribute name="sigAlg" default="${hub.crypto.sig.alg.sha.512.rsa}"/>
+        <attribute name="dn" default="CN=@{alias}"/>
+        <attribute name="startDate" default="+0S"/>
+        <attribute name="validDays" default="365"/>
+        <attribute name="keyPass"/>
+        <attribute name="storeFile"/>
+        <attribute name="storePass"/>
+        <attribute name="storeType" default="${hub.crypto.store.key.type.jks}"/>
+        <attribute name="issuerAlias" default="@{alias}"/>
+        <attribute name="issuerKeyPass" default="@{keyPass}"/>
+        <attribute name="providerName" default="${hub.crypto.prov.name.sun}"/>
+        <attribute name="providerPath" default="${toString:maven.plugin.classpath}"/>
+        <element name="generate-entry.elements" optional="true" implicit="true"/>
+        <text name="generate-entry.text" optional="true"/>
+        <sequential>
+            <current:generate-key-pair alias="@{alias}" keyAlg="@{keyAlg}" keySize="@{keySize}" keyPass="@{keyPass}" storeFile="@{storeFile}"
+                storePass="@{storePass}" storeType="@{storeType}" providerName="@{providerName}" providerPath="@{providerPath}">
+                <generate-entry.elements/>
+            </current:generate-key-pair>
+            <current:generate-certificate-request outputProperty="generate-entry.cert.req" alias="@{alias}" sigAlg="@{sigAlg}" dn="@{dn}" keyPass="@{keyPass}"
+                storeFile="@{storeFile}" storePass="@{storePass}" storeType="@{storeType}" providerName="@{providerName}" providerPath="@{providerPath}">
+                <generate-entry.elements/>
+            </current:generate-certificate-request>
+            <current:generate-certificate inputProperty="generate-entry.cert.req" outputProperty="generate-entry.cert" sigAlg="@{sigAlg}"
+                dn="@{dn}" startDate="@{startDate}" validDays="@{validDays}" issuerAlias="@{issuerAlias}" issuerKeyPass="@{issuerKeyPass}"
+                issuerStoreFile="@{storeFile}" issuerStorePass="@{storePass}" issuerStoreType="@{storeType}" providerName="@{providerName}"
+                providerPath="@{providerPath}">
+                <generate-entry.elements/>
+                @{generate-entry.text}
+            </current:generate-certificate>
+            <current:import-certificate inputProperty="generate-entry.cert" alias="@{alias}" keyPass="@{keyPass}" storeFile="@{storeFile}"
+                storePass="@{storePass}" storeType="@{storeType}" providerName="@{providerName}" providerPath="@{providerPath}">
+                <generate-entry.elements/>
+            </current:import-certificate>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="import-certificate">
+        <attribute name="inputProperty"/>
+        <attribute name="alias"/>
+        <attribute name="keyPass"/>
+        <attribute name="storeFile"/>
+        <attribute name="storePass"/>
+        <attribute name="storeType" default="${hub.crypto.store.key.type.jks}"/>
+        <attribute name="providerName" default="${hub.crypto.prov.name.sun}"/>
+        <attribute name="providerPath" default="${toString:maven.plugin.classpath}"/>
+        <element name="import-certificate.elements" optional="true" implicit="true"/>
+        <sequential>
+            <current:initialize-store storeFile="@{storeFile}"/>
+            
+            <current:keytool cmd="importcert">
+                <redirector inputstring="${@{inputProperty}}"/>
+                <arg value="-providername"/>
+                <arg value="@{providerName}"/>
+                <arg value="-providerpath"/>
+                <arg value="@{providerPath}"/>
+                <arg value="-noprompt"/>
+                <arg value="-alias"/>
+                <arg value="@{alias}"/>
+                <arg value="-keypass"/>
+                <arg value="@{keyPass}"/>
+                <arg value="-keystore"/>
+                <arg value="@{storeFile}"/>
+                <arg value="-storepass"/>
+                <arg value="@{storePass}"/>
+                <arg value="-storetype"/>
+                <arg value="@{storeType}"/>
+                <import-certificate.elements/>
+            </current:keytool>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="export-certificate">
+        <attribute name="outputProperty"/>
+        <attribute name="alias"/>
+        <attribute name="keyPass"/>
+        <attribute name="storeFile"/>
+        <attribute name="storePass"/>
+        <attribute name="storeType" default="${hub.crypto.store.key.type.jks}"/>
+        <attribute name="providerName" default="${hub.crypto.prov.name.sun}"/>
+        <attribute name="providerPath" default="${toString:maven.plugin.classpath}"/>
+        <element name="export-certificate.elements" optional="true" implicit="true"/>
+        <sequential>
+            <hub:unset name="@{outputProperty}"/>
+            <current:keytool cmd="exportcert">
+                <redirector outputproperty="@{outputProperty}" binaryOutput="true"/>
+                <arg value="-providername"/>
+                <arg value="@{providerName}"/>
+                <arg value="-providerpath"/>
+                <arg value="@{providerPath}"/>
+                <arg value="-rfc"/>
+                <arg value="-alias"/>
+                <arg value="@{alias}"/>
+                <arg value="-keypass"/>
+                <arg value="@{keyPass}"/>
+                <arg value="-keystore"/>
+                <arg value="@{storeFile}"/>
+                <arg value="-storepass"/>
+                <arg value="@{storePass}"/>
+                <arg value="-storetype"/>
+                <arg value="@{storeType}"/>
+                <export-certificate.elements/>
+            </current:keytool>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="generate-certificate">
+        <attribute name="inputProperty"/>
+        <attribute name="outputProperty"/>
+        <attribute name="sigAlg" default="${hub.crypto.sig.alg.sha.512.rsa}"/>
+        <attribute name="dn" default="CN=@{alias}"/>
+        <attribute name="startDate" default="+0S"/>
+        <attribute name="validDays" default="365"/>
+        <attribute name="issuerAlias"/>
+        <attribute name="issuerKeyPass"/>
+        <attribute name="issuerStoreFile"/>
+        <attribute name="issuerStorePass"/>
+        <attribute name="issuerStoreType" default="${hub.crypto.store.key.type.jks}"/>
+        <attribute name="providerName" default="${hub.crypto.prov.name.sun}"/>
+        <attribute name="providerPath" default="${toString:maven.plugin.classpath}"/>
+        <element name="generate-certificate.elements" optional="true" implicit="true"/>
+        <text name="generate-certificate.text" optional="true"/>
+        <sequential>
+            <var name="generate-certificate.exts.args"/>
+            
+            <for list="@{generate-certificate.text}" param="generate-certificate.exts.line" delimiter="${n}" trim="true">
+                <sequential>
+                    <if>
+                        <not><hub:isempty string="@{generate-certificate.exts.line}"/></not>
+                        <then>
+                            <if>
+                                <not><hub:isempty string="${generate-certificate.exts.args}"/></not>
+                                <then>
+                                    <var name="generate-certificate.exts.args" value="${generate-certificate.exts.args} "/>
+                                </then>
+                            </if>
+                            <var name="generate-certificate.exts.args"
+                                value="${generate-certificate.exts.args}-ext &quot;@{generate-certificate.exts.line}&quot;"/>
+                        </then>
+                    </if>
+                </sequential>
+            </for>
+            
+            <hub:unset name="@{outputProperty}"/>
+            <current:keytool cmd="gencert">
+                <redirector inputstring="${@{inputProperty}}" outputproperty="@{outputProperty}" binaryOutput="true"/>
+                <arg value="-providername"/>
+                <arg value="@{providerName}"/>
+                <arg value="-providerpath"/>
+                <arg value="@{providerPath}"/>
+                <arg value="-rfc"/>
+                <arg value="-alias"/>
+                <arg value="@{issuerAlias}"/>
+                <arg value="-sigalg"/>
+                <arg value="@{sigAlg}"/>
+                <arg value="-dname"/>
+                <arg value="@{dn}"/>
+                <arg value="-startdate"/>
+                <arg value="@{startDate}"/>
+                <arg value="-validity"/>
+                <arg value="@{validDays}"/>
+                <arg value="-keypass"/>
+                <arg value="@{issuerKeyPass}"/>
+                <arg value="-keystore"/>
+                <arg value="@{issuerStoreFile}"/>
+                <arg value="-storepass"/>
+                <arg value="@{issuerStorePass}"/>
+                <arg value="-storetype"/>
+                <arg value="@{issuerStoreType}"/>
+                <arg line="${generate-certificate.exts.args}"/>
+                <generate-certificate.elements/>
+            </current:keytool>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="generate-certificate-request">
+        <attribute name="outputProperty"/>
+        <attribute name="alias"/>
+        <attribute name="sigAlg" default="${hub.crypto.sig.alg.sha.512.rsa}"/>
+        <attribute name="dn" default="CN=@{alias}"/>
+        <attribute name="keyPass"/>
+        <attribute name="storeFile"/>
+        <attribute name="storePass"/>
+        <attribute name="storeType" default="${hub.crypto.store.key.type.jks}"/>
+        <attribute name="providerName" default="${hub.crypto.prov.name.sun}"/>
+        <attribute name="providerPath" default="${toString:maven.plugin.classpath}"/>
+        <element name="generate-certificate-request.elements" optional="true" implicit="true"/>
+        <sequential>
+            <hub:unset name="@{outputProperty}"/>
+            <current:keytool cmd="certreq">
+                <redirector outputproperty="@{outputProperty}" binaryOutput="true"/>
+                <arg value="-providername"/>
+                <arg value="@{providerName}"/>
+                <arg value="-providerpath"/>
+                <arg value="@{providerPath}"/>
+                <arg value="-alias"/>
+                <arg value="@{alias}"/>
+                <arg value="-sigalg"/>
+                <arg value="@{sigAlg}"/>
+                <arg value="-dname"/>
+                <arg value="@{dn}"/>
+                <arg value="-keypass"/>
+                <arg value="@{keyPass}"/>
+                <arg value="-keystore"/>
+                <arg value="@{storeFile}"/>
+                <arg value="-storepass"/>
+                <arg value="@{storePass}"/>
+                <arg value="-storetype"/>
+                <arg value="@{storeType}"/>
+                <generate-certificate-request.elements/>
+            </current:keytool>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="generate-key-pair">
+        <attribute name="alias"/>
+        <attribute name="dn" default="CN=@{alias}"/>
+        <attribute name="keyAlg" default="${hub.crypto.pair.key.alg.rsa}"/>
+        <attribute name="keySize" default="2048"/>
+        <attribute name="keyPass"/>
+        <attribute name="storeFile"/>
+        <attribute name="storePass"/>
+        <attribute name="storeType" default="${hub.crypto.store.key.type.jks}"/>
+        <attribute name="providerName" default="${hub.crypto.prov.name.sun}"/>
+        <attribute name="providerPath" default="${toString:maven.plugin.classpath}"/>
+        <element name="generate-key-pair.elements" optional="true" implicit="true"/>
+        <sequential>
+            <current:initialize-store storeFile="@{storeFile}"/>
+            
+            <current:keytool cmd="genkeypair">
+                <arg value="-providername"/>
+                <arg value="@{providerName}"/>
+                <arg value="-providerpath"/>
+                <arg value="@{providerPath}"/>
+                <arg value="-alias"/>
+                <arg value="@{alias}"/>
+                <arg value="-dname"/>
+                <arg value="@{dn}"/>
+                <arg value="-keyalg"/>
+                <arg value="@{keyAlg}"/>
+                <arg value="-keysize"/>
+                <arg value="@{keySize}"/>
+                <arg value="-keypass"/>
+                <arg value="@{keyPass}"/>
+                <arg value="-keystore"/>
+                <arg value="@{storeFile}"/>
+                <arg value="-storepass"/>
+                <arg value="@{storePass}"/>
+                <arg value="-storetype"/>
+                <arg value="@{storeType}"/>
+                <generate-key-pair.elements/>
+            </current:keytool>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="initialize-store">
+        <attribute name="storeFile"/>
+        <sequential>
+            <hub:unset name="initialize-store.store.dir"/>
+            <dirname file="@{storeFile}" property="initialize-store.store.dir"/>
+            <mkdir dir="${initialize-store.store.dir}"/>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="keytool">
+        <attribute name="cmd"/>
+        <attribute name="exec" default="keytool"/>
+        <element name="keytool.elements" implicit="true"/>
+        <sequential>
+            <exec taskname="keytool:@{cmd}" executable="@{exec}" failonerror="true" searchpath="true">
+                <env key="PATH" path="${env.PATH}:${java.home}/bin:${java.home}/jre/bin"/>
+                <arg value="-@{cmd}"/>
+                <keytool.elements/>
+            </exec>
+        </sequential>
+    </macrodef>
+</antlib>

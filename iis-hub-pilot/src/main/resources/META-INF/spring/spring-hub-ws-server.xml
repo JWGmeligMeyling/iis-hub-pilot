@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans:beans
-    profile="hub.context.webapp"
     xmlns:aop="http://www.springframework.org/schema/aop"
     xmlns:beans="http://www.springframework.org/schema/beans"
     xmlns:c="http://www.springframework.org/schema/c"
@@ -45,10 +44,30 @@
             <beans:array>
                 <!--suppress SpringPlaceholdersInspection -->
                 <beans:bean parent="mgrKeyHub"
-                    c:entryAlias="${hub.crypto.mgr.key.store.entry.server.alias}"
-                    c:entryPass="${hub.crypto.mgr.key.store.entry.server.pass}"/>
+                    c:entryAlias="${hub.crypto.mgr.key.store.entry.iis.hub.alias}"
+                    c:entryPass="${hub.crypto.mgr.key.store.entry.iis.hub.pass}"/>
             </beans:array>
         </beans:property>
+    </beans:bean>
+    
+    <!--====================================================================================================
+    = SERVICES: IIS
+    =====================================================================================================-->
+    <beans:bean id="serviceIis" class="gov.hhs.onc.iishubpilot.ws.IisService" abstract="true"
+        p:auditor-ref="auditorHub"
+        p:objectFactory-ref="objFactoryIis"/>
+    
+    <!--====================================================================================================
+    = SERVICES: IIS HUB
+    =====================================================================================================-->
+    <beans:bean id="serviceIisHub" class="gov.hhs.onc.iishubpilot.ws.hub.IisHubService" parent="serviceIis" abstract="true"
+        p:destinationRegistry-ref="destRegHub"
+        p:hubObjectFactory-ref="objFactoryIisHub"/>
+    
+    <beans:bean id="serviceIisHubImpl" class="gov.hhs.onc.iishubpilot.ws.hub.impl.IisHubServiceImpl" parent="serviceIisHub">
+        <beans:constructor-arg name="clientIisFactoryBeanName">
+            <beans:idref bean="&amp;clientIis"/>
+        </beans:constructor-arg>
     </beans:bean>
     
     <!--====================================================================================================
@@ -56,21 +75,13 @@
     =====================================================================================================-->
     <beans:bean id="server" class="org.apache.cxf.endpoint.Server" abstract="true"/>
     
-    <!--====================================================================================================
-    = SERVERS: IIS HUB
-    =====================================================================================================-->
-    <beans:bean id="serverIisHub" class="gov.hhs.onc.iishubpilot.jaxws.impl.HubJaxWsServerFactoryBean" parent="server"
-        p:address="/#{ T(gov.hhs.onc.iishubpilot.ws.HubWsNames).SERVICE_HUB }"
+    <beans:bean id="serverJaxWs" class="gov.hhs.onc.iishubpilot.jaxws.impl.HubJaxWsServerFactoryBean" parent="server" abstract="true"
         p:bindingConfig-ref="soapBinding12"
         p:bus-ref="busHub"
-        p:dataBinding-ref="dataBindingJaxb"
-        p:endpointName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).PORT_HUB }"
-        p:serviceBean-ref="serviceIisHubImpl"
-        p:serviceName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SERVICE_HUB }"
-        p:wsdlLocation="/META-INF/wsdl/cdc-iis-hub.wsdl">
+        p:dataBinding-ref="dataBindingJaxb">
         <beans:property name="outFaultInterceptors">
             <beans:list>
-                <beans:ref bean="interceptorFaultStacktrace"/>
+                <beans:ref bean="interceptorFaultStackTrace"/>
                 <beans:ref bean="interceptorXmlCdata"/>
             </beans:list>
         </beans:property>
@@ -79,12 +90,44 @@
                 <beans:ref bean="interceptorXmlCdata"/>
             </beans:list>
         </beans:property>
-        <beans:property name="properties">
-            <beans:map>
-                <!--suppress SpringPlaceholdersInspection -->
-                <beans:entry key="#{ T(gov.hhs.onc.iishubpilot.ws.HubMessageContextProperties).FAULT_STACKTRACE_ENABLED }"
-                    value="${hub.mode.dev.active}"/>
-            </beans:map>
-        </beans:property>
     </beans:bean>
+    
+    <!--====================================================================================================
+    = SERVERS: IIS
+    =====================================================================================================-->
+    <beans:bean id="serverIis" parent="serverJaxWs" abstract="true"
+        p:endpointName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).PORT }"
+        p:serviceName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SERVICE }"
+        p:wsdlLocation="/META-INF/wsdl/cdc-iis.wsdl"/>
+    
+    <!--====================================================================================================
+    = SERVERS: IIS HUB
+    =====================================================================================================-->
+    <!--suppress SpringPlaceholdersInspection -->
+    <beans:bean id="serverIisHub" parent="serverJaxWs"
+        p:address="${hub.ws.iis.hub.path}"
+        p:endpointName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).PORT_HUB }"
+        p:serviceBean-ref="serviceIisHubImpl"
+        p:serviceName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SERVICE_HUB }"
+        p:wsdlLocation="/META-INF/wsdl/cdc-iis-hub.wsdl"/>
+    
+    <!--====================================================================================================
+    = PROFILE: DEVELOPMENT
+    =====================================================================================================-->
+    <beans:beans profile="hub.mode.dev,!hub.mode.prod">
+        <!--====================================================================================================
+        = SERVICES: DEVELOPMENT IIS
+        =====================================================================================================-->
+        <beans:bean id="serviceIisDev" class="gov.hhs.onc.iishubpilot.ws.DevIisService" parent="serviceIis" abstract="true"/>
+        
+        <beans:bean id="serviceIisDevImpl" class="gov.hhs.onc.iishubpilot.ws.impl.DevIisServiceImpl" parent="serviceIisDev"/>
+        
+        <!--====================================================================================================
+        = SERVERS: IIS
+        =====================================================================================================-->
+        <!--suppress SpringPlaceholdersInspection -->
+        <beans:bean id="serverIisDev" parent="serverIis"
+            p:address="${hub.ws.iis.dev.path}"
+            p:serviceBean-ref="serviceIisDevImpl"/>
+    </beans:beans>
 </beans:beans>

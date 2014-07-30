@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans:beans
-    profile="hub.context.webapp"
     xmlns:aop="http://www.springframework.org/schema/aop"
     xmlns:beans="http://www.springframework.org/schema/beans"
     xmlns:c="http://www.springframework.org/schema/c"
@@ -41,8 +40,8 @@
             <beans:array>
                 <!--suppress SpringPlaceholdersInspection -->
                 <beans:bean parent="mgrKeyHub"
-                    c:entryAlias="${hub.crypto.mgr.key.store.entry.server.alias}"
-                    c:entryPass="${hub.crypto.mgr.key.store.entry.server.pass}"/>
+                    c:entryAlias="${hub.crypto.mgr.key.store.entry.iis.hub.alias}"
+                    c:entryPass="${hub.crypto.mgr.key.store.entry.iis.hub.pass}"/>
             </beans:array>
         </beans:property>
     </beans:bean>
@@ -70,26 +69,23 @@
     <beans:bean name="*.http-conduit" class="org.apache.cxf.transport.http.URLConnectionHTTPConduit" parent="conduitHttpUrlConn"/>
     
     <!--====================================================================================================
-    = CLIENTS: IIS
+    = CLIENTS
     =====================================================================================================-->
-    <!--suppress SpringBeanConstructorArgInspection -->
-    <beans:bean id="clientIis" class="gov.hhs.onc.iishubpilot.jaxws.impl.HubJaxWsClientProxyFactoryBean" parent="portTypeIis" lazy-init="true" scope="prototype"
+    <beans:bean id="clientJaxWs" class="gov.hhs.onc.iishubpilot.jaxws.impl.HubJaxWsClientProxyFactoryBean" abstract="true"
         p:bindingConfig-ref="soapBinding12"
         p:bus-ref="busHub"
-        p:dataBinding-ref="dataBindingJaxb"
-        p:endpointName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).PORT }"
-        p:serviceClass="gov.hhs.onc.iishubpilot.ws.IisPortType"
-        p:serviceName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SERVICE }"
-        p:wsdlLocation="/META-INF/wsdl/cdc-iis.wsdl">
+        p:dataBinding-ref="dataBindingJaxb">
         <beans:property name="conduitSelector">
             <beans:bean class="org.apache.cxf.endpoint.DeferredConduitSelector"/>
         </beans:property>
-        <beans:property name="properties">
-            <beans:map>
-                <!--suppress SpringPlaceholdersInspection -->
-                <beans:entry key="#{ T(gov.hhs.onc.iishubpilot.ws.HubMessageContextProperties).FAULT_STACKTRACE_ENABLED }"
-                    value="${hub.mode.dev.active}"/>
-            </beans:map>
-        </beans:property>
     </beans:bean>
+    
+    <!--====================================================================================================
+    = CLIENTS: IIS
+    =====================================================================================================-->
+    <beans:bean id="clientIis" parent="clientJaxWs" lazy-init="true" scope="prototype"
+        p:endpointName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).PORT }"
+        p:serviceClass="gov.hhs.onc.iishubpilot.ws.IisPortType"
+        p:serviceName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SERVICE }"
+        p:wsdlLocation="/META-INF/wsdl/cdc-iis.wsdl"/>
 </beans:beans>

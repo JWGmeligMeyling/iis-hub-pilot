@@ -1,26 +1,16 @@
 package gov.hhs.onc.iishubpilot.ws;
 
-import java.util.List;
-import java.util.Map.Entry;
-import org.apache.commons.collections4.Predicate;
-import org.apache.commons.lang3.StringUtils;
-
 public final class HubHttpHeaders {
-    public static class HubHttpHeaderPredicate implements Predicate<Entry<String, List<String>>> {
-        public final static HubHttpHeaderPredicate INSTANCE = new HubHttpHeaderPredicate();
+    private final static String PREFIX = "X-IIS-Hub-";
+    private final static String DEV_PREFIX = PREFIX + "Dev-";
 
-        @Override
-        public boolean evaluate(Entry<String, List<String>> headerEntry) {
-            return StringUtils.startsWithIgnoreCase(headerEntry.getKey(), HubHttpHeaders.PREFIX);
-        }
-    }
+    public final static String DEV_ACTION_NAME = DEV_PREFIX + "Action";
 
-    final static String PREFIX = "X-IIS-Hub-";
-    final static String DEST_PREFIX = PREFIX + "Destination-";
-
-    public final static String DEST_ID = DEST_PREFIX + "Id";
-
-    public final static String DEST_URI = DEST_PREFIX + "URI";
+    public final static String DEV_ACTION_MSG_TOO_LARGE_FAULT_VALUE = HubWsNames.MSG_TOO_LARGE_FAULT;
+    public final static String DEV_ACTION_SEC_FAULT_VALUE = HubWsNames.SEC_FAULT;
+    public final static String DEV_ACTION_DEST_CONN_FAULT_VALUE = HubWsNames.DEST_CONN_FAULT;
+    public final static String DEV_ACTION_HUB_CLIENT_FAULT_VALUE = HubWsNames.HUB_CLIENT_FAULT;
+    public final static String DEV_ACTION_UNKNOWN_DEST_FAULT_VALUE = HubWsNames.UNKNOWN_DEST_FAULT;
 
     private HubHttpHeaders() {
     }

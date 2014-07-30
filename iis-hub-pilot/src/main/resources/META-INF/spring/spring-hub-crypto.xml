@@ -16,24 +16,6 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
     
     <!--====================================================================================================
-    = KEY PURPOSE IDS
-    =====================================================================================================-->
-    <beans:bean id="keyPurposeId" class="org.bouncycastle.asn1.x509.KeyPurposeId" abstract="true"/>
-    
-    <!--====================================================================================================
-    = EXTENDED KEY USAGES
-    =====================================================================================================-->
-    <beans:bean id="keyUsageExt" class="org.bouncycastle.asn1.x509.ExtendedKeyUsage" abstract="true"/>
-    
-    <!--====================================================================================================
-    = X500 NAMES
-    =====================================================================================================-->
-    <beans:bean id="x500Name" class="org.bouncycastle.asn1.x500.X500Name" abstract="true">
-        <beans:constructor-arg index="0" type="org.bouncycastle.asn1.x500.X500NameStyle"
-            value="#{ T(org.bouncycastle.asn1.x500.style.BCStrictStyle).INSTANCE }"/>
-    </beans:bean>
-    
-    <!--====================================================================================================
     = SECURE RANDOMS
     =====================================================================================================-->
     <beans:bean id="randSec" class="java.security.SecureRandom" abstract="true"/>
@@ -44,137 +26,73 @@
     </beans:bean>
     
     <!--====================================================================================================
-    = DESCRIPTORS
+    = KEY STORES
     =====================================================================================================-->
-    <beans:bean id="cryptoDesc" class="gov.hhs.onc.iishubpilot.crypto.HubCryptoDescriptor" abstract="true"/>
+    <beans:bean id="keyStore" class="java.security.KeyStore" abstract="true"/>
+    
+    <beans:bean id="keyStoreJks" class="gov.hhs.onc.iishubpilot.crypto.impl.HubKeyStoreFactoryBean" parent="keyStore" abstract="true">
+        <beans:constructor-arg name="prov" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubCryptoProviders).SUN }"/>
+        <beans:constructor-arg name="type" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubKeyStoreTypes).JKS }"/>
+    </beans:bean>
+    
+    <!--suppress SpringPlaceholdersInspection -->
+    <beans:bean id="keyStoreMgrKey" parent="keyStoreJks"
+        c:pass="${hub.crypto.mgr.key.store.pass}"
+        c:resource="file:${hub.crypto.mgr.key.store.file}"/>
+    
+    <!--suppress SpringPlaceholdersInspection -->
+    <beans:bean id="keyStoreMgrTrust" parent="keyStoreJks"
+        c:pass="${hub.crypto.mgr.trust.store.pass}"
+        c:resource="file:${hub.crypto.mgr.trust.store.file}"/>
     
     <!--====================================================================================================
-    = CONFIGS
+    = MANAGER: KEYS
     =====================================================================================================-->
-    <beans:bean id="cryptoConfig" class="gov.hhs.onc.iishubpilot.crypto.HubCryptoConfig" parent="cryptoDesc" abstract="true"/>
+    <beans:bean id="mgrKey" class="javax.net.ssl.KeyManager" abstract="true"/>
+    
+    <beans:bean id="mgrKeyPkix" class="gov.hhs.onc.iishubpilot.crypto.impl.HubKeyManagerFactoryBean" parent="mgrKey" abstract="true">
+        <beans:constructor-arg name="alg" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubKeyManagerAlgorithms).PKIX }"/>
+        <beans:constructor-arg name="prov" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubCryptoProviders).SUN_JSSE }"/>
+    </beans:bean>
+    
+    <beans:bean id="mgrKeyHub" parent="mgrKeyPkix" abstract="true">
+        <beans:constructor-arg name="keyStore" ref="keyStoreMgrKey"/>
+    </beans:bean>
     
     <!--====================================================================================================
-    = INFOS
+    = MANAGER: TRUST
     =====================================================================================================-->
-    <beans:bean id="cryptoInfo" class="gov.hhs.onc.iishubpilot.crypto.HubCryptoInfo" parent="cryptoDesc" abstract="true"/>
+    <beans:bean id="mgrTrust" class="javax.net.ssl.TrustManager" abstract="true"/>
+    
+    <beans:bean id="mgrTrustPkix" class="gov.hhs.onc.iishubpilot.crypto.impl.HubTrustManagerFactoryBean" parent="mgrTrust" abstract="true">
+        <beans:constructor-arg name="alg" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubTrustManagerAlgorithms).PKIX }"/>
+        <beans:constructor-arg name="prov" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubCryptoProviders).SUN_JSSE }"/>
+    </beans:bean>
+    
+    <beans:bean id="mgrTrustHub" parent="mgrTrustPkix">
+        <beans:constructor-arg name="keyStore" ref="keyStoreMgrTrust"/>
+    </beans:bean>
     
     <!--====================================================================================================
-    = CONFIGS: KEY PAIR
+    = CIPHER SUITE FILTERS
     =====================================================================================================-->
-    <beans:bean id="keyPairConfig" class="gov.hhs.onc.iishubpilot.crypto.HubKeyPairConfig" parent="cryptoConfig" abstract="true"/>
+    <beans:bean id="cipherSuiteFilters" class="gov.hhs.onc.iishubpilot.crypto.impl.CipherSuiteFilters" abstract="true"/>
     
-    <beans:bean id="keyPairConfigImpl" class="gov.hhs.onc.iishubpilot.crypto.impl.HubKeyPairConfigImpl" parent="keyPairConfig" abstract="true"
-        p:algorithmName="#{ T(gov.hhs.onc.iishubpilot.crypto.HubKeyPairAlgorithms).RSA }"
-        p:algorithmOid="#{ T(org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers).rsaEncryption }"/>
-    
-    <beans:bean id="keyPairConfigHub" parent="keyPairConfigImpl"
-        p:size="2048"/>
+    <beans:bean id="cipherSuiteFiltersHub" parent="cipherSuiteFilters"
+        p:include="#{ T(gov.hhs.onc.iishubpilot.utils.HubStringUtils).tokenizePropertyValue('${hub.crypto.cipher.suites}') }"/>
     
     <!--====================================================================================================
-    = INFOS: KEY PAIR
+    = TLS PARAMETERS
     =====================================================================================================-->
-    <beans:bean id="keyPairInfo" class="gov.hhs.onc.iishubpilot.crypto.HubKeyPairInfo" parent="cryptoInfo" abstract="true"/>
-    
-    <beans:bean id="keyPairInfoImpl" class="gov.hhs.onc.iishubpilot.crypto.impl.HubKeyPairInfoImpl" parent="keyPairInfo" abstract="true"/>
-    
-    <!--====================================================================================================
-    = CONFIGS: CERTIFICATE
-    =====================================================================================================-->
-    <beans:bean id="certConfig" class="gov.hhs.onc.iishubpilot.crypto.HubCertificateConfig" parent="cryptoConfig" abstract="true"/>
-    
-    <beans:bean id="certConfigImpl" class="gov.hhs.onc.iishubpilot.crypto.impl.HubCertificateConfigImpl" parent="certConfig" abstract="true"
-        p:algorithmName="#{ T(gov.hhs.onc.iishubpilot.crypto.HubCertificateAlgorithms).X509 }"
-        p:algorithmOid="#{ T(org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers).x509Certificate }"/>
-    
-    <beans:bean id="certConfigHub" parent="certConfigImpl" abstract="true"
-        p:signatureAlgorithmName="#{ T(gov.hhs.onc.iishubpilot.crypto.HubSignatureAlgorithms).SHA_512_RSA }">
-        <beans:property name="validInterval">
-            <beans:bean class="org.apache.commons.lang3.tuple.MutablePair"
-                c:left="#{ new java.util.Date() }"
-                c:right="#{ T(org.apache.commons.lang3.time.DateUtils).addYears(new java.util.Date(), 1) }"/>
+    <beans:bean id="paramsTls" class="org.apache.cxf.configuration.jsse.TLSParameterBase" abstract="true"
+        p:cipherSuitesFilter-ref="cipherSuiteFiltersHub"
+        p:jsseProvider="#{ T(gov.hhs.onc.iishubpilot.crypto.HubCryptoProviders).SUN_JSSE_NAME }"
+        p:secureRandom-ref="randSecSha1"
+        p:secureSocketProtocol="#{ T(gov.hhs.onc.iishubpilot.crypto.HubTlsVersions).TLS_1_2_NAME }">
+        <beans:property name="trustManagers">
+            <beans:array>
+                <beans:ref bean="mgrTrustHub"/>
+            </beans:array>
         </beans:property>
     </beans:bean>
-    
-    <beans:bean id="certConfigHubCa" parent="certConfigHub"
-        p:basicConstraints="#{ new org.bouncycastle.asn1.x509.BasicConstraints(true) }"
-        p:serialNumber="1">
-        <beans:property name="subjectDn">
-            <beans:bean parent="x500Name">
-                <beans:constructor-arg index="1" type="java.lang.String" value="CN=iis-hub-pilot_ca"/>
-            </beans:bean>
-        </beans:property>
-    </beans:bean>
-    
-    <beans:bean id="certConfigHubLeaf" parent="certConfigHub" abstract="true"
-        p:basicConstraints="#{ new org.bouncycastle.asn1.x509.BasicConstraints(false) }">
-        <beans:property name="extendedKeyUsage">
-            <beans:bean parent="keyUsageExt">
-                <beans:constructor-arg index="0" type="org.bouncycastle.asn1.x509.KeyPurposeId[]">
-                    <beans:array>
-                        <beans:bean parent="keyPurposeId">
-                            <beans:constructor-arg index="0" type="java.lang.String"
-                                value="#{ T(org.bouncycastle.asn1.x509.KeyPurposeId).id_kp_clientAuth.id }"/>
-                        </beans:bean>
-                        <beans:bean parent="keyPurposeId">
-                            <beans:constructor-arg index="0" type="java.lang.String"
-                                value="#{ T(org.bouncycastle.asn1.x509.KeyPurposeId).id_kp_serverAuth.id }"/>
-                        </beans:bean>
-                    </beans:array>
-                </beans:constructor-arg>
-            </beans:bean>
-        </beans:property>
-    </beans:bean>
-    
-    <beans:bean id="certConfigHubServer" parent="certConfigHubLeaf"
-        p:serialNumber="#{ certConfigHubCa.serialNumber + 1 }">
-        <beans:property name="subjectDn">
-            <beans:bean parent="x500Name">
-                <beans:constructor-arg index="1" type="java.lang.String" value="CN=iis-hub-pilot_server"/>
-            </beans:bean>
-        </beans:property>
-    </beans:bean>
-    
-    <beans:bean id="certConfigHubClientDev" parent="certConfigHubLeaf"
-        p:serialNumber="#{ certConfigHubServer.serialNumber + 1 }">
-        <beans:property name="subjectDn">
-            <beans:bean parent="x500Name">
-                <beans:constructor-arg index="1" type="java.lang.String" value="CN=iis-hub-pilot_client_dev"/>
-            </beans:bean>
-        </beans:property>
-    </beans:bean>
-    
-    <!--====================================================================================================
-    = INFOS: CERTIFICATE
-    =====================================================================================================-->
-    <beans:bean id="certInfo" class="gov.hhs.onc.iishubpilot.crypto.HubCertificateInfo" parent="cryptoInfo" abstract="true"/>
-    
-    <beans:bean id="certInfoImpl" class="gov.hhs.onc.iishubpilot.crypto.impl.HubCertificateInfoImpl" parent="certInfo" abstract="true"/>
-    
-    <!--====================================================================================================
-    = GENERATORS
-    =====================================================================================================-->
-    <beans:bean id="cryptoGen" class="gov.hhs.onc.iishubpilot.crypto.HubCryptoGenerator" abstract="true"/>
-    
-    <!--====================================================================================================
-    = GENERATORS: KEY PAIR
-    =====================================================================================================-->
-    <beans:bean id="keyPairGen" class="gov.hhs.onc.iishubpilot.crypto.HubKeyPairGenerator" parent="cryptoGen" abstract="true"/>
-    
-    <beans:bean id="keyPairGenImpl" class="gov.hhs.onc.iishubpilot.crypto.impl.HubKeyPairGeneratorImpl" parent="keyPairGen" abstract="true">
-        <beans:constructor-arg name="prov" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubCryptoProviders).BC }"/>
-    </beans:bean>
-    
-    <beans:bean id="keyPairGenHub" parent="keyPairGenImpl"
-        c:rand-ref="randSecSha1"/>
-    
-    <!--====================================================================================================
-    = GENERATORS: CERTIFICATE
-    =====================================================================================================-->
-    <beans:bean id="certGen" class="gov.hhs.onc.iishubpilot.crypto.HubCertificateGenerator" parent="cryptoGen" abstract="true"/>
-    
-    <beans:bean id="certGenImpl" class="gov.hhs.onc.iishubpilot.crypto.impl.HubCertificateGeneratorImpl" parent="certGen" abstract="true">
-        <beans:constructor-arg name="prov" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubCryptoProviders).BC }"/>
-    </beans:bean>
-    
-    <beans:bean id="certGenHub" parent="certGenImpl"/>
 </beans:beans>

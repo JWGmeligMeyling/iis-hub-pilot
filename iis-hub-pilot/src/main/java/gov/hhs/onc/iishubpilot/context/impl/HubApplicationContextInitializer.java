@@ -1,28 +1,26 @@
 package gov.hhs.onc.iishubpilot.context.impl;
 
-import gov.hhs.onc.iishubpilot.HubMode;
-import gov.hhs.onc.iishubpilot.HubProperties;
-import java.util.EnumSet;
+import gov.hhs.onc.iishubpilot.context.HubProfiles;
+import gov.hhs.onc.iishubpilot.context.HubProperties;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.web.context.WebApplicationContext;
 
 public class HubApplicationContextInitializer implements ApplicationContextInitializer<AbstractApplicationContext> {
     @Override
     public void initialize(AbstractApplicationContext appContext) {
         ConfigurableEnvironment env = appContext.getEnvironment();
+        String modeValue = env.getProperty(HubProperties.MODE_NAME, HubProperties.PROD_MODE_VALUE), modeProfile;
 
-        if (appContext instanceof WebApplicationContext) {
-            env.addActiveProfile(HubProperties.CONTEXT_WEBAPP);
+        if (modeValue.equalsIgnoreCase(HubProperties.DEV_MODE_VALUE)) {
+            modeProfile = HubProfiles.DEV_MODE;
+        } else if (modeValue.equalsIgnoreCase(HubProperties.PROD_MODE_VALUE)) {
+            modeProfile = HubProfiles.PROD_MODE;
+        } else {
+            throw new ApplicationContextException(String.format("Unknown Hub mode: %s", modeValue));
         }
 
-        HubMode activeMode = HubMode.valueOf(env.getProperty(HubProperties.MODE, HubMode.PROD.name()).toUpperCase());
-        env.addActiveProfile(activeMode.getProfile());
-        System.setProperty(activeMode.getActivePropertyName(), Boolean.toString(true));
-
-        for (HubMode inactiveMode : EnumSet.complementOf(EnumSet.of(activeMode))) {
-            System.setProperty(inactiveMode.getActivePropertyName(), Boolean.toString(false));
-        }
+        env.addActiveProfile(modeProfile);
     }
 }

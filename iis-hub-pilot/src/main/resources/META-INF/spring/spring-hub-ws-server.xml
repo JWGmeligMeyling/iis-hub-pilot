@@ -34,19 +34,13 @@
     =====================================================================================================-->
     <beans:bean id="paramsTlsServer" class="org.apache.cxf.configuration.jsse.TLSServerParameters" parent="paramsTls" abstract="true"/>
     
-    <beans:bean id="paramsTlsServerHub" parent="paramsTlsServer">
+    <!--suppress SpringPlaceholdersInspection -->
+    <beans:bean id="paramsTlsServerHub" parent="paramsTlsServer"
+        p:certAlias="${hub.crypto.mgr.key.store.entry.iis.hub.alias}">
         <beans:property name="clientAuthentication">
             <beans:bean class="org.apache.cxf.configuration.security.ClientAuthentication"
-                p:required="false"
+                p:required="true"
                 p:want="true"/>
-        </beans:property>
-        <beans:property name="keyManagers">
-            <beans:array>
-                <!--suppress SpringPlaceholdersInspection -->
-                <beans:bean parent="mgrKeyHub"
-                    c:entryAlias="${hub.crypto.mgr.key.store.entry.iis.hub.alias}"
-                    c:entryPass="${hub.crypto.mgr.key.store.entry.iis.hub.pass}"/>
-            </beans:array>
         </beans:property>
     </beans:bean>
     

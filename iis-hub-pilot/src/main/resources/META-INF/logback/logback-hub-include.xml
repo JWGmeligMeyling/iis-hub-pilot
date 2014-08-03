@@ -62,15 +62,19 @@
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
-    <logger name="org.apache.cxf" level="${hub.log.logger.cxf.lvl:-info}" additivity="false">
+    <logger name="org.apache.cxf" level="${hub.log.logger.lvl.cxf:-info}" additivity="false">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
-    <logger name="org.apache.cxf.configuration.jsse" level="${hub.log.logger.cxf.config.jsse.lvl:-info}" additivity="false">
+    <logger name="org.apache.cxf.configuration.jsse" level="${hub.log.logger.lvl.cxf.config.jsse:-info}" additivity="false">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
-    <logger name="org.apache.cxf.transport.https" level="${hub.log.logger.cxf.transport.https.lvl:-info}" additivity="false">
+    <logger name="org.apache.cxf.transport.http" level="${hub.log.logger.lvl.cxf.transport.http:-info}" additivity="false">
+        <appender-ref ref="console"/>
+        <appender-ref ref="file"/>
+    </logger>
+    <logger name="org.apache.cxf.transport.https" level="${hub.log.logger.lvl.cxf.transport.https:-info}" additivity="false">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
@@ -82,7 +86,7 @@
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
-    <logger name="org.springframework" level="${hub.log.logger.spring.lvl:-info}" additivity="false">
+    <logger name="org.springframework" level="${hub.log.logger.lvl.spring:-info}" additivity="false">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>

@@ -66,43 +66,34 @@
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
     
-    <!--
-    TODO: Uncomment/activate secure transport constraints when codebase + infrastructure is prepared.
-    -->
-    
     <!--====================================================================================================
     = LOGIN CONFIG
     =====================================================================================================-->
-    <!--
     <login-config>
         <auth-method>CLIENT-CERT</auth-method>
+        <realm-name>hubSecResource</realm-name>
     </login-config>
-    -->
     
     <!--====================================================================================================
     = SECURITY ROLES
     =====================================================================================================-->
-    <!--
     <security-role>
-        <role-name>hubSecTransportRole</role-name>
+        <role-name>hubSecRole</role-name>
     </security-role>
-    -->
     
     <!--====================================================================================================
     = SECURITY CONSTRAINTS
     =====================================================================================================-->
-    <!--
     <security-constraint>
         <web-resource-collection>
-            <web-resource-name>hubSecTransportResource</web-resource-name>
+            <web-resource-name>hubSecResource</web-resource-name>
             <url-pattern>/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
-            <role-name>hubSecTransportRole</role-name>
+            <role-name>hubSecRole</role-name>
         </auth-constraint>
         <user-data-constraint>
             <transport-guarantee>CONFIDENTIAL</transport-guarantee>
         </user-data-constraint>
     </security-constraint>
-    -->
 </web-app>

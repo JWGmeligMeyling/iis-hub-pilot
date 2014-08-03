@@ -13,6 +13,13 @@
     <con:setting id="HttpSettings@include_response_in_time_taken">true</con:setting>
     
     <!--====================================================================================================
+    = SETTINGS: SSL
+    =====================================================================================================-->
+    <con:setting id="SSLSettings@keyStore">${hub.crypto.mgr.key.store.file}</con:setting>
+    <con:setting id="SSLSettings@keyStorePassword">${hub.crypto.mgr.key.store.pass}</con:setting>
+    <con:setting id="SSLSettings@needClientAuthentication">${hub.crypto.client.auth}</con:setting>
+    
+    <!--====================================================================================================
     = SETTINGS: WS-ADDRESSING
     =====================================================================================================-->
     <con:setting id="WsaSettings@overrideExistingHeaders">true</con:setting>

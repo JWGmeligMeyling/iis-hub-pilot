@@ -34,17 +34,11 @@
     =====================================================================================================-->
     <beans:bean id="paramsTlsClient" class="org.apache.cxf.configuration.jsse.TLSClientParameters" parent="paramsTls" abstract="true"/>
     
+    <!--suppress SpringPlaceholdersInspection -->
     <beans:bean id="paramsTlsClientHub" parent="paramsTlsClient"
-        p:disableCNCheck="true">
-        <beans:property name="keyManagers">
-            <beans:array>
-                <!--suppress SpringPlaceholdersInspection -->
-                <beans:bean parent="mgrKeyHub"
-                    c:entryAlias="${hub.crypto.mgr.key.store.entry.iis.hub.alias}"
-                    c:entryPass="${hub.crypto.mgr.key.store.entry.iis.hub.pass}"/>
-            </beans:array>
-        </beans:property>
-    </beans:bean>
+        p:certAlias="${hub.crypto.mgr.key.store.entry.iis.hub.alias}"
+        p:disableCNCheck="true"
+        p:sslCacheTimeout="${hub.crypto.session.timeout}"/>
     
     <!--====================================================================================================
     = CONDUITS

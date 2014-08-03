@@ -50,12 +50,20 @@
     =====================================================================================================-->
     <beans:bean id="mgrKey" class="javax.net.ssl.KeyManager" abstract="true"/>
     
-    <beans:bean id="mgrKeyPkix" class="gov.hhs.onc.iishubpilot.crypto.impl.HubKeyManagerFactoryBean" parent="mgrKey" abstract="true">
-        <beans:constructor-arg name="alg" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubKeyManagerAlgorithms).PKIX }"/>
+    <beans:bean id="mgrKeyNewSunX509" class="gov.hhs.onc.iishubpilot.crypto.impl.HubKeyManagerFactoryBean" parent="mgrKey" abstract="true">
+        <beans:constructor-arg name="alg" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubKeyManagerAlgorithms).NEW_SUN_X509 }"/>
         <beans:constructor-arg name="prov" value="#{ T(gov.hhs.onc.iishubpilot.crypto.HubCryptoProviders).SUN_JSSE }"/>
     </beans:bean>
     
-    <beans:bean id="mgrKeyHub" parent="mgrKeyPkix" abstract="true">
+    <beans:bean id="mgrKeyHub" parent="mgrKeyNewSunX509">
+        <beans:constructor-arg name="entryMap">
+            <beans:map>
+                <!--suppress SpringPlaceholdersInspection -->
+                <beans:entry key="${hub.crypto.mgr.key.store.entry.iis.dev.alias}" value="${hub.crypto.mgr.key.store.entry.iis.dev.pass}"/>
+                <!--suppress SpringPlaceholdersInspection -->
+                <beans:entry key="${hub.crypto.mgr.key.store.entry.iis.hub.alias}" value="${hub.crypto.mgr.key.store.entry.iis.hub.pass}"/>
+            </beans:map>
+        </beans:constructor-arg>
         <beans:constructor-arg name="keyStore" ref="keyStoreMgrKey"/>
     </beans:bean>
     
@@ -89,6 +97,11 @@
         p:jsseProvider="#{ T(gov.hhs.onc.iishubpilot.crypto.HubCryptoProviders).SUN_JSSE_NAME }"
         p:secureRandom-ref="randSecSha1"
         p:secureSocketProtocol="#{ T(gov.hhs.onc.iishubpilot.crypto.HubTlsVersions).TLS_1_2_NAME }">
+        <beans:property name="keyManagers">
+            <beans:array>
+                <beans:ref bean="mgrKeyHub"/>
+            </beans:array>
+        </beans:property>
         <beans:property name="trustManagers">
             <beans:array>
                 <beans:ref bean="mgrTrustHub"/>

@@ -3,7 +3,6 @@ package gov.hhs.onc.iishubpilot.crypto.impl;
 import gov.hhs.onc.iishubpilot.crypto.utils.HubKeyStoreUtils;
 import java.security.KeyStore;
 import java.security.Provider;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.SmartFactoryBean;
 import org.springframework.core.io.Resource;
 
@@ -12,10 +11,6 @@ public class HubKeyStoreFactoryBean implements SmartFactoryBean<KeyStore> {
     private Provider prov;
     private Resource resource;
     private String pass;
-
-    public HubKeyStoreFactoryBean(String type, Provider prov, Resource resource) {
-        this(type, prov, resource, StringUtils.EMPTY);
-    }
 
     public HubKeyStoreFactoryBean(String type, Provider prov, Resource resource, String pass) {
         this.type = type;
@@ -26,8 +21,7 @@ public class HubKeyStoreFactoryBean implements SmartFactoryBean<KeyStore> {
 
     @Override
     public KeyStore getObject() throws Exception {
-        return (this.resource.exists() ? HubKeyStoreUtils.readKeyStore(this.type, this.prov, this.resource.getInputStream(), this.pass) : HubKeyStoreUtils
-            .createKeyStore(this.type, this.prov));
+        return HubKeyStoreUtils.readKeyStore(this.type, this.prov, this.resource.getInputStream(), this.pass);
     }
 
     @Override

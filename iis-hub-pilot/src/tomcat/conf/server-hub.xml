@@ -3,6 +3,15 @@
     <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener"/>
     <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener"/>
     
+    <GlobalNamingResources>
+        <Resource
+            auth="Container"
+            factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+            name="UserDatabase"
+            pathname="%{project.build.tomcatDirectory}/conf/tomcat-users-hub.xml"
+            type="org.apache.catalina.UserDatabase"/>
+    </GlobalNamingResources>
+    
     <Service name="Catalina">
         <Connector
             ciphers="${hub.crypto.cipher.suites}"
@@ -14,11 +23,12 @@
             keystorePass="${hub.crypto.mgr.key.store.pass}"
             keystoreProvider="${hub.crypto.prov.name.sun}"
             keystoreType="${hub.crypto.store.key.type.jks}"
-            maxThreads="150"
             port="${hub.test.server.port.https}"
             protocol="org.apache.coyote.http11.Http11NioProtocol"
             scheme="${hub.test.server.scheme}"
             secure="true"
+            sessionCacheSize="${hub.crypto.session.cache.size}"
+            sessionTimeout="${hub.crypto.session.timeout}"
             SSLEnabled="true"
             sslEnabledProtocols="${hub.crypto.tls.version.1.2}"
             sslProtocol="${hub.crypto.tls.version.1.2}"
@@ -26,12 +36,10 @@
             truststorePass="${hub.crypto.mgr.trust.store.pass}"
             truststoreProvider="${hub.crypto.prov.name.sun}"
             truststoreType="${hub.crypto.store.key.type.jks}"/>
-            <!--
-            algorithm="${hub.crypto.mgr.key.alg.pkix}"
-            truststoreAlgorithm="${hub.crypto.mgr.trust.alg.pkix}"
-            -->
         
         <Engine name="Catalina" defaultHost="${hub.test.server.host.name}">
+            <Realm className="org.apache.catalina.realm.UserDatabaseRealm" resourceName="UserDatabase"/>
+            
             <Host name="${hub.test.server.host.name}" appBase="webapps">
                 <Context path="${hub.test.server.context.path}" docBase="%{project.build.directory}/%{project.artifactId}-test"/>
             </Host>

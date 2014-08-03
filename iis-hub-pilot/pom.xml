@@ -690,6 +690,10 @@
                                     <projectFile>${project.build.soapuiDirectory}/soapui-project-hub.xml</projectFile>
                                     <settingsFile>${project.build.soapuiDirectory}/soapui-settings-hub.xml</settingsFile>
                                     <soapuiProperties>
+                                        <property>
+                                            <name>java.security.egd</name>
+                                            <value>file:/dev/urandom</value>
+                                        </property>
                                         <!--
                                         <property>
                                             <name>javax.net.ssl.keyStore</name>
@@ -724,15 +728,29 @@
                                             <value>JKS</value>
                                         </property>
                                         -->
-                                        <!--
                                         <property>
-                                            <name>soapui.https.ciphers</name>
-                                            <value></value>
+                                            <name>jdk.tls.client.protocols</name>
+                                            <value>TLSv1.2</value>
                                         </property>
-                                        -->
+                                        <property>
+                                            <name>jdk.tls.ephemeralDHKeySize</name>
+                                            <value>2048</value>
+                                        </property>
+                                        <property>
+                                            <name>soapui.https.protocols</name>
+                                            <value>TLSv1.2</value>
+                                        </property>
+                                        <property>
+                                            <name>soapui.https.session.invalidate</name>
+                                            <value>true</value>
+                                        </property>
                                         <property>
                                             <name>soapui.properties</name>
                                             <value>${project.build.soapuiDirectory}/soapui-project-hub.properties</value>
+                                        </property>
+                                        <property>
+                                            <name>soapui.sslcontext.algorithm</name>
+                                            <value>TLSv1.2</value>
                                         </property>
                                     </soapuiProperties>
                                 </configuration>
@@ -784,12 +802,15 @@
                                         <hub.log.context.name>${project.artifactId}-test-it-tomcat</hub.log.context.name>
                                         <hub.log.dir>${project.build.directory}/surefire-logs</hub.log.dir>
                                         <hub.mode>dev</hub.mode>
+                                        <java.security.egd>file:/dev/urandom</java.security.egd>
                                         <!--
                                         <javax.net.ssl.trustStore>${project.build.directory}/surefire-data/ssl/${project.artifactId}_store_trust.jks</javax.net.ssl.trustStore>
                                         <javax.net.ssl.trustStorePassword>storepass</javax.net.ssl.trustStorePassword>
                                         <javax.net.ssl.trustStoreProvider>SUN</javax.net.ssl.trustStoreProvider>
                                         <javax.net.ssl.trustStoreType>JKS</javax.net.ssl.trustStoreType>
                                         -->
+                                        <jdk.tls.client.protocols>TLSv1.2</jdk.tls.client.protocols>
+                                        <jdk.tls.ephemeralDHKeySize>2048</jdk.tls.ephemeralDHKeySize>
                                     </systemProperties>
                                     <serverXml>${project.build.tomcatDirectory}/conf/server-hub.xml</serverXml>
                                     <uriEncoding>${project.build.sourceEncoding}</uriEncoding>

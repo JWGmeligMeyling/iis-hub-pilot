@@ -25,9 +25,16 @@
         <propertyselector property="hub-process-it-properties.props.names.test.soapui" override="true" match="^hub\.[^$]+$"/>
         <hub:write-properties file="${project.build.soapuiDirectory}/soapui-project-hub.properties"
             props="${hub-process-it-properties.props.names.test.soapui}"/>
+        
+        <hub:filter-file file="${project.build.soapuiDirectory}/soapui-settings-hub.xml">
+            <expandproperties/>
+        </hub:filter-file>
     </target>
     
     <target name="hub-process-it-tomcat" extensionOf="hub-process-it-components" depends="hub-process-it-ssl">
+        <hub:filter-file file="${project.build.tomcatDirectory}/conf/tomcat-users-hub.xml">
+            <expandproperties/>
+        </hub:filter-file>
         <hub:filter-file file="${project.build.tomcatDirectory}/conf/server-hub.xml">
             <expandproperties/>
         </hub:filter-file>

@@ -526,20 +526,12 @@
                                 <value>${project.build.soapuiDirectory}/ext</value>
                             </property>
                             <property>
-                                <name>soapui.https.protocols</name>
-                                <value>TLSv1.2</value>
-                            </property>
-                            <property>
                                 <name>soapui.logroot</name>
                                 <value>${project.build.directory}/surefire-logs/</value>
                             </property>
                             <property>
                                 <name>soapui.scripting.library</name>
                                 <value>${project.build.soapuiDirectory}/groovy</value>
-                            </property>
-                            <property>
-                                <name>soapui.sslcontext.algorithm</name>
-                                <value>TLSv1.2</value>
                             </property>
                         </soapuiProperties>
                         <testFailIgnore>true</testFailIgnore>

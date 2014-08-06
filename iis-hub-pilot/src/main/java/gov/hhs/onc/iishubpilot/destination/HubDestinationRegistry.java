@@ -1,9 +1,6 @@
 package gov.hhs.onc.iishubpilot.destination;
 
-import java.util.Set;
+import gov.hhs.onc.iishubpilot.data.HubDataService;
 
-public interface HubDestinationRegistry {
-    public Set<HubDestination> getDestinations();
-
-    public void setDestinations(Set<HubDestination> dests);
+public interface HubDestinationRegistry extends HubDataService<String, HubDestination, HubDestinationRegistryDao> {
 }

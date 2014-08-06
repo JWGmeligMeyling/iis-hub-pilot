@@ -87,7 +87,7 @@
                                     <goal>execute</goal>
                                 </goals>
                                 <configuration>
-                                    <driver>org.apache.derby.jdbc.ClientDriver</driver>
+                                    <driver>${hub.data.db.jdbc.driver.class.name}</driver>
                                     <driverProperties>create=true</driverProperties>
                                     <forceMojoExecution>true</forceMojoExecution>
                                     <password>${hub.test.data.db.user.admin.pass}</password>
@@ -95,7 +95,7 @@
                                         <resourceLocation>file:${project.build.dbDirectory}/db-derby-hub-init.sql</resourceLocation>
                                     </resourceLocations>
                                     <showSql>true</showSql>
-                                    <url>jdbc:derby://${hub.data.db.host}:${hub.data.db.port}/${hub.data.db.name}</url>
+                                    <url>${hub.data.db.jdbc.url}</url>
                                     <username>${hub.test.data.db.user.admin.name}</username>
                                 </configuration>
                             </execution>

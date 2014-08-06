@@ -25,13 +25,12 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.jws.WebService;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.ws.Holder;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.cxf.binding.soap.SoapMessage;
@@ -40,11 +39,15 @@ import org.apache.cxf.jaxws.context.WrappedMessageContext;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @WebService(portName = HubWsNames.PORT_HUB, serviceName = HubWsNames.SERVICE_HUB, targetNamespace = HubXmlNs.IIS_HUB)
 public class IisHubServiceImpl extends AbstractIisService implements IisHubService, IisHubPortType {
-    private ObjectFactory hubObjFactory;
+    @Autowired
     private HubDestinationRegistry destReg;
+
+    private ObjectFactory hubObjFactory;
     private String clientIisFactoryBeanName;
 
     public IisHubServiceImpl(String clientIisFactoryBeanName) {
@@ -64,10 +67,9 @@ public class IisHubServiceImpl extends AbstractIisService implements IisHubServi
     private Pair<SubmitSingleMessageResponseType, HubResponseHeaderType> submitSingleMessageInternal(SubmitSingleMessageRequestType reqParams,
         HubRequestHeaderType hubReqHeader) throws DestinationConnectionFault, HubClientFault, MessageTooLargeFault, SecurityFault, UnknownDestinationFault {
         String destId = hubReqHeader.getDestinationId();
-        Set<HubDestination> dests = this.destReg.getDestinations();
-        HubDestination dest;
+        HubDestination dest = this.destReg.findById(destId);
 
-        if ((dest = CollectionUtils.find(dests, ((HubDestination destCheck) -> destCheck.getId().equals(destId)))) == null) {
+        if (dest == null) {
             throw new UnknownDestinationFault("IIS destination ID is not registered.", new UnknownDestinationFaultTypeImpl(destId));
         }
 
@@ -115,14 +117,9 @@ public class IisHubServiceImpl extends AbstractIisService implements IisHubServi
         return new MutablePair<>(clientIis.submitSingleMessage(reqParams), new HubResponseHeaderTypeImpl(destId, destUriStr));
     }
 
-    @Override
-    public HubDestinationRegistry getDestinationRegistry() {
-        return this.destReg;
-    }
-
-    @Override
-    public void setDestinationRegistry(HubDestinationRegistry destReg) {
-        this.destReg = destReg;
+    @Scheduled(fixedRate = (DateUtils.MILLIS_PER_MINUTE * 5))
+    private void evictDestinationCache() {
+        this.destReg.evictCache();
     }
 
     @Override

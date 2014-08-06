@@ -7,17 +7,18 @@
         <Resource
             alternateUsernameAllowed="true"
             auth="Container"
-            driverClassName="org.apache.derby.jdbc.ClientDriver"
+            driverClassName="${hub.data.db.jdbc.driver.class.name}"
             factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+            global="${hub.data.db.data.src.jndi.name}"
             initialSize="5"
             maxActive="10"
             maxIdle="20"
             maxWait="5000"
             minIdle="0"
-            name="jdbc/${hub.data.db.name}"
+            name="${hub.data.db.data.src.jndi.name}"
             password="${hub.data.db.user.tomcat.pass}"
-            type="javax.sql.DataSource"
-            url="jdbc:derby://${hub.data.db.host}:${hub.data.db.port}/${hub.data.db.name}"
+            type="${hub.data.db.data.src.class.name}"
+            url="${hub.data.db.jdbc.url}"
             username="${hub.data.db.user.tomcat.name}"
             validationQuery="select 1"/>
     </GlobalNamingResources>
@@ -50,7 +51,7 @@
         <Engine name="Catalina" defaultHost="${hub.test.server.host.name}">
             <Realm
                 className="org.apache.catalina.realm.DataSourceRealm"
-                dataSourceName="jdbc/${hub.data.db.name}"
+                dataSourceName="${hub.data.db.data.src.jndi.name}"
                 roleNameCol="role_name"
                 userCredCol="user_pass"
                 userNameCol="user_name"
@@ -61,10 +62,10 @@
                 <Context path="${hub.test.server.context.path}" docBase="%{project.build.directory}/%{project.artifactId}-test">
                     <ResourceLink
                         factory="org.apache.naming.factory.DataSourceLinkFactory"
-                        global="jdbc/${hub.data.db.name}"
-                        name="jdbc/${hub.data.db.name}"
+                        global="${hub.data.db.data.src.jndi.name}"
+                        name="${hub.data.db.data.src.jndi.name}"
                         password="${hub.data.db.user.hub.pass}"
-                        type="javax.sql.DataSource"
+                        type="${hub.data.db.data.src.class.name}"
                         username="${hub.data.db.user.hub.name}"/>
                 </Context>
             </Host>

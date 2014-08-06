@@ -55,7 +55,6 @@
     = SERVICES: IIS HUB
     =====================================================================================================-->
     <beans:bean id="serviceIisHub" class="gov.hhs.onc.iishubpilot.ws.hub.IisHubService" parent="serviceIis" abstract="true"
-        p:destinationRegistry-ref="destRegHub"
         p:hubObjectFactory-ref="objFactoryIisHub"/>
     
     <beans:bean id="serviceIisHubImpl" class="gov.hhs.onc.iishubpilot.ws.hub.impl.IisHubServiceImpl" parent="serviceIisHub">

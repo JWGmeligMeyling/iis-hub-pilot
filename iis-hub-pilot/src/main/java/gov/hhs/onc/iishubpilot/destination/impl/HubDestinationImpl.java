@@ -1,10 +1,21 @@
 package gov.hhs.onc.iishubpilot.destination.impl;
 
+import gov.hhs.onc.iishubpilot.data.impl.AbstractHubEntity;
 import gov.hhs.onc.iishubpilot.destination.HubDestination;
 import java.net.URI;
+import javax.persistence.Cacheable;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-public class HubDestinationImpl implements HubDestination {
-    private String id;
+@Cache(usage = CacheConcurrencyStrategy.NONE)
+@Cacheable
+@Entity(name = "dest")
+@Table(name = "destinations")
+public class HubDestinationImpl extends AbstractHubEntity<String> implements HubDestination {
     private URI uri;
 
     public HubDestinationImpl() {
@@ -15,16 +26,14 @@ public class HubDestinationImpl implements HubDestination {
         this.uri = uri;
     }
 
+    @Column(name = "dest_id", nullable = false)
+    @Id
     @Override
     public String getId() {
-        return this.id;
+        return super.getId();
     }
 
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
-
+    @Column(name = "dest_uri", nullable = false)
     @Override
     public URI getUri() {
         return this.uri;

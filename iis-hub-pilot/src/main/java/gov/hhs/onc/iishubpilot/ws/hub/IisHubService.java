@@ -1,6 +1,5 @@
 package gov.hhs.onc.iishubpilot.ws.hub;
 
-import gov.hhs.onc.iishubpilot.destination.HubDestinationRegistry;
 import gov.hhs.onc.iishubpilot.ws.IisService;
 import gov.hhs.onc.iishubpilot.ws.MessageTooLargeFault;
 import gov.hhs.onc.iishubpilot.ws.SecurityFault;
@@ -13,10 +12,6 @@ public interface IisHubService extends IisService {
     public void submitSingleMessage(SubmitSingleMessageRequestType reqParams, HubRequestHeaderType hubReqHeader,
         Holder<SubmitSingleMessageResponseType> respParams, Holder<HubResponseHeaderType> hubRespHeader) throws DestinationConnectionFault, HubClientFault,
         MessageTooLargeFault, SecurityFault, UnknownDestinationFault;
-
-    public HubDestinationRegistry getDestinationRegistry();
-
-    public void setDestinationRegistry(HubDestinationRegistry destReg);
 
     public ObjectFactory getHubObjectFactory();
 

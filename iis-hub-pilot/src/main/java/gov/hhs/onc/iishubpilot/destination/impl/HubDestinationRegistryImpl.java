@@ -1,22 +1,16 @@
 package gov.hhs.onc.iishubpilot.destination.impl;
 
+import gov.hhs.onc.iishubpilot.data.impl.AbstractHubDataService;
 import gov.hhs.onc.iishubpilot.destination.HubDestination;
 import gov.hhs.onc.iishubpilot.destination.HubDestinationRegistry;
-import java.util.Comparator;
-import java.util.Set;
-import java.util.TreeSet;
+import gov.hhs.onc.iishubpilot.destination.HubDestinationRegistryDao;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-public class HubDestinationRegistryImpl implements HubDestinationRegistry {
-    private Set<HubDestination> dests = new TreeSet<>(Comparator.comparing(HubDestination::getId).thenComparing(HubDestination::getUri));
-
-    @Override
-    public Set<HubDestination> getDestinations() {
-        return this.dests;
-    }
-
-    @Override
-    public void setDestinations(Set<HubDestination> dests) {
-        this.dests.clear();
-        this.dests.addAll(dests);
+@Service("destReg")
+public class HubDestinationRegistryImpl extends AbstractHubDataService<String, HubDestination, HubDestinationRegistryDao> implements HubDestinationRegistry {
+    @Autowired
+    public HubDestinationRegistryImpl(HubDestinationRegistryDao dao) {
+        super(String.class, HubDestination.class, dao);
     }
 }

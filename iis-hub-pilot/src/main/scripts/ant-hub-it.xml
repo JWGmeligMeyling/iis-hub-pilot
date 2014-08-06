@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+    name="hub-it"
+    xmlns="antlib:org.apache.tools.ant"
+    xmlns:hub="antlib:gov.hhs.onc.iishubpilot.ant"
+    xmlns:hub-java="antlib:gov.hhs.onc.iishubpilot.ant.java"
+    xmlns:hub-keytool="antlib:gov.hhs.onc.iishubpilot.ant.keytool"
+    xmlns:res-cmp="antlib:org.apache.tools.ant.types.resources.comparators"
+    xmlns:res-sel="antlib:org.apache.tools.ant.types.resources.selectors">
+    
+    <description>Ant project for Immunization Information Services (IIS) Hub Pilot integration testing related components.</description>
+    
+    <import file="ant-hub.xml" as="" prefixSeparator=""/>
+    
+    <taskdef file="antlib-hub-keytool.xml" uri="antlib:gov.hhs.onc.iishubpilot.ant.keytool"/>
+    
+    <target name="hub-it-process-soapui" extensionOf="hub-it-process-components" depends="hub-it-process-ssl">
+        <hub:write-file file="${project.build.soapuiDirectory}/soapui-project-hub.properties" append="true">
+            <string value="${toString:hub-it-process-properties.props.list.all}"/>
+            <filterchain>
+                <tokenfilter delimOutput="">
+                    <stringtokenizer delims=","/>
+                    <replaceregex pattern="^([^$]+)$" replace="\1=$${\1}${n}"/>
+                </tokenfilter>
+                <expandproperties/>
+            </filterchain>
+        </hub:write-file>
+        
+        <hub:filter-file file="${project.build.soapuiDirectory}/soapui-settings-hub.xml">
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </hub:filter-file>
+    </target>
+    
+    <target name="hub-it-process-tomcat" extensionOf="hub-it-process-components" depends="hub-it-process-ssl">
+        <hub:filter-file file="${project.build.tomcatDirectory}/conf/server-hub.xml">
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </hub:filter-file>
+    </target>
+    
+    <target name="hub-it-process-db" extensionOf="hub-it-process-components" depends="hub-it-process-ssl">
+        <hub:filter-file file="${project.build.dbDirectory}/db-derby-hub-init.sql">
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </hub:filter-file>
+        <hub:filter-file file="${project.build.dbDirectory}/derby/derby.properties">
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </hub:filter-file>
+    </target>
+    
+    <target name="hub-it-process-ssl" extensionOf="hub-it-process-components" depends="hub-it-process-properties">
+        <hub-keytool:generate-entry alias="${hub.crypto.mgr.trust.store.entry.ca.alias}" keyPass="${hub.crypto.mgr.trust.store.entry.ca.pass}"
+            storeFile="${hub.data.ssl.dir}/${project.artifactId}_store_all.jks" storePass="${hub.crypto.mgr.key.store.pass}">
+            BC=ca:true
+            <!--
+            TODO: Uncomment/enable when infrastructure is ready.
+            AIA=ocsp:URI:https://ocsp.iis-hub-pilot.org/${hub.crypto.mgr.trust.store.entry.ca.alias}
+            -->
+        </hub-keytool:generate-entry>
+        <hub-keytool:copy-entry certOnly="true" srcAlias="${hub.crypto.mgr.trust.store.entry.ca.alias}" srcKeyPass="${hub.crypto.mgr.trust.store.entry.ca.pass}"
+            srcStoreFile="${hub.data.ssl.dir}/${project.artifactId}_store_all.jks" srcStorePass="${hub.crypto.mgr.key.store.pass}"
+            destStoreFile="${hub.crypto.mgr.trust.store.file}" destStorePass="${hub.crypto.mgr.trust.store.pass}"/>
+        
+        <for list="iis.dev,iis.hub" param="entryName">
+            <sequential>
+                <hub-keytool:generate-entry alias="${hub.crypto.mgr.key.store.entry.@{entryName}.alias}"
+                    keyPass="${hub.crypto.mgr.key.store.entry.@{entryName}.pass}" storeFile="${hub.data.ssl.dir}/${project.artifactId}_store_all.jks"
+                    storePass="${hub.crypto.mgr.key.store.pass}" issuerAlias="${hub.crypto.mgr.trust.store.entry.ca.alias}"
+                    issuerKeyPass="${hub.crypto.mgr.trust.store.entry.ca.pass}">
+                    BC=ca:false
+                    EKU=serverAuth,clientAuth
+                </hub-keytool:generate-entry>
+                <hub-keytool:copy-entry srcAlias="${hub.crypto.mgr.key.store.entry.@{entryName}.alias}"
+                    srcKeyPass="${hub.crypto.mgr.key.store.entry.@{entryName}.pass}" srcStoreFile="${hub.data.ssl.dir}/${project.artifactId}_store_all.jks"
+                    srcStorePass="${hub.crypto.mgr.key.store.pass}" destStoreFile="${hub.crypto.mgr.key.store.file}"/>
+            </sequential>
+        </for>
+    </target>
+    
+    <target name="hub-it-process-properties" extensionOf="hub-it-process-components">
+        <var name="hub-it-process-properties.props.dir.main" value="${project.build.directory}/${project.artifactId}/WEB-INF/classes/META-INF/hub"/>
+        <var name="hub-it-process-properties.props.dir.test" value="${project.build.directory}/${project.artifactId}-test/WEB-INF/classes/META-INF/hub"/>
+        
+        <var name="hub.data.dir" value="${project.build.directory}/surefire-data"/>
+        
+        <for param="propsFile">
+            <path>
+                <fileset dir="${hub-it-process-properties.props.dir.main}">
+                    <include name="hub*.properties"/>
+                </fileset>
+                <fileset dir="${hub-it-process-properties.props.dir.test}">
+                    <include name="hub*-test.properties"/>
+                </fileset>
+            </path>
+            <sequential>
+                <var file="@{propsFile}"/>
+            </sequential>
+        </for>
+        
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.context.HubProfiles" prefix="hub.context.profile.">
+            <filterchain>
+                <replaceregex pattern="^([\w\.]+)\.(context|mode)(=[^$]+)$" replace="\2.\1\3"/>
+            </filterchain>
+        </hub-java:load-class-constant-properties>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.context.HubProperties" prefix="hub.context.props.">
+            <filterchain>
+                <replaceregex pattern="^([\w\.]+)\.(mode)\.(name|value)(=[^$]+)$" replace="\2.\3.\1\4"/>
+            </filterchain>
+        </hub-java:load-class-constant-properties>
+        
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubCertificateTypes" prefix="hub.crypto.cert.type."/>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubCryptoProviders" prefix="hub.crypto.prov.name.">
+            <filterchain>
+                <replaceregex pattern="^([\w\.]+)\.name(=[^$]+)$" replace="\1\2"/>
+            </filterchain>
+        </hub-java:load-class-constant-properties>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubKeyManagerAlgorithms" prefix="hub.crypto.mgr.key.alg."/>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubKeyPairAlgorithms" prefix="hub.crypto.pair.key.alg."/>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubKeyStoreTypes" prefix="hub.crypto.store.key.type."/>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubSecureRandomSeedSources"
+            prefix="hub.crypto.rand.sec.seed.src.device.">
+            <filterchain>
+                <replaceregex pattern="^([\w\.]+)\.device(=[^$]+)$" replace="\1\2"/>
+            </filterchain>
+        </hub-java:load-class-constant-properties>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubSecureRandomAlgorithms" prefix="hub.crypto.rand.sec.alg."/>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubSignatureAlgorithms" prefix="hub.crypto.sig.alg."/>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubTlsVersions" prefix="hub.crypto.">
+            <filterchain>
+                <replaceregex pattern="^(ssl|tls)((?:\.\d)+)\.name(=[^$]+)$" replace="\1.version\2\3"/>
+            </filterchain>
+        </hub-java:load-class-constant-properties>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubTrustManagerAlgorithms" prefix="hub.crypto.mgr.trust.alg."/>
+        
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.ws.HubHttpHeaders" prefix="hub.ws.http.header.">
+            <filterchain>
+                <replaceregex pattern="^([\w\.]+)\.(name|value)(=[^$]+)$" replace="\2.\1\3"/>
+            </filterchain>
+        </hub-java:load-class-constant-properties>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.ws.HubWsNames" prefix="hub.ws.name."/>
+        
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.xml.HubXmlNs" prefix="hub.xml.ns."/>
+        
+        <propertyset id="hub-it-process-properties.props.consts">
+            <propertyref prefix="hub.context.profile."/>
+            <propertyref prefix="hub.context.props."/>
+            <propertyref prefix="hub.crypto.cert.type."/>
+            <propertyref prefix="hub.crypto.prov.name."/>
+            <propertyref prefix="hub.crypto.mgr.key.alg."/>
+            <propertyref prefix="hub.crypto.pair.key.alg."/>
+            <propertyref prefix="hub.crypto.store.key.type."/>
+            <propertyref prefix="hub.crypto.rand.sec.alg."/>
+            <propertyref prefix="hub.crypto.rand.sec.seed.src.device."/>
+            <propertyref prefix="hub.crypto.sig.alg."/>
+            <propertyref regex="^hub\.crypto.(?:ssl|tls)\.version"/>
+            <propertyref prefix="hub.crypto.mgr.trust.alg."/>
+            <propertyref prefix="hub.ws.http.header."/>
+            <propertyref prefix="hub.ws.name."/>
+            <propertyref prefix="hub.xml.ns."/>
+        </propertyset>
+        <hub:propertylist id="hub-it-process-properties.props.list.consts">
+            <propertyset refid="hub-it-process-properties.props.consts"/>
+        </hub:propertylist>
+        
+        <propertyset id="hub-it-process-properties.props.all">
+            <propertyref prefix="hub."/>
+        </propertyset>
+        <hub:propertylist id="hub-it-process-properties.props.list.all">
+            <propertyset refid="hub-it-process-properties.props.all"/>
+        </hub:propertylist>
+        
+        <hub:write-file file="${hub-it-process-properties.props.dir.main}/hub-consts.properties">
+            <string value="${toString:hub-it-process-properties.props.list.consts}"/>
+            <filterchain>
+                <tokenfilter delimOutput="">
+                    <stringtokenizer delims=","/>
+                    <replaceregex pattern="^([^$]+)$" replace="\1=$${\1}${n}"/>
+                </tokenfilter>
+                <expandproperties/>
+            </filterchain>
+        </hub:write-file>
+        <hub:write-file file="${project.build.itDirectory}/${project.artifactId}-it/test.properties">
+            <string value="${toString:hub-it-process-properties.props.list.all}"/>
+            <filterchain>
+                <tokenfilter delimOutput="">
+                    <stringtokenizer delims=","/>
+                    <replaceregex pattern="^([^$]+)$" replace="\1=$${\1}${n}"/>
+                </tokenfilter>
+                <expandproperties/>
+            </filterchain>
+        </hub:write-file>
+    </target>
+    
+    <extension-point name="hub-it-process-components" depends="hub-it-init"/>
+    
+    <target name="hub-it-init" depends="hub-init">
+        
+    </target>
+</project>

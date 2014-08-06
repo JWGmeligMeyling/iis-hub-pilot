@@ -54,17 +54,17 @@ public class HubKeyManagerFactoryBean extends AbstractHubCryptoManagerFactoryBea
             @Nullable
             @Override
             public X509Certificate[] getCertificateChain(String entryAlias) {
-                PrivateKeyEntry keyEntry = this.getKeyEntry(entryAlias);
+                PrivateKeyEntry privateKeyEntry = this.getPrivateKeyEntry(entryAlias);
 
-                return ((keyEntry != null) ? ((X509Certificate[]) keyEntry.getCertificateChain()) : null);
+                return ((privateKeyEntry != null) ? ((X509Certificate[]) privateKeyEntry.getCertificateChain()) : null);
             }
 
             @Nullable
             @Override
             public PrivateKey getPrivateKey(String entryAlias) {
-                PrivateKeyEntry keyEntry = this.getKeyEntry(entryAlias);
+                PrivateKeyEntry privateKeyEntry = this.getPrivateKeyEntry(entryAlias);
 
-                return ((keyEntry != null) ? keyEntry.getPrivateKey() : null);
+                return ((privateKeyEntry != null) ? privateKeyEntry.getPrivateKey() : null);
             }
 
             @Nullable
@@ -92,7 +92,7 @@ public class HubKeyManagerFactoryBean extends AbstractHubCryptoManagerFactoryBea
             }
 
             @Nullable
-            private PrivateKeyEntry getKeyEntry(String entryAlias) {
+            private PrivateKeyEntry getPrivateKeyEntry(String entryAlias) {
                 try {
                     return (HubKeyManagerFactoryBean.this.keyStore.isKeyEntry(entryAlias) ? ((PrivateKeyEntry) HubKeyManagerFactoryBean.this.keyStore.getEntry(
                         entryAlias, HubKeyManagerFactoryBean.this.entryMap.get(entryAlias))) : null);

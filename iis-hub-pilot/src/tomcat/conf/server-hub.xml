@@ -5,11 +5,21 @@
     
     <GlobalNamingResources>
         <Resource
+            alternateUsernameAllowed="true"
             auth="Container"
-            factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
-            name="UserDatabase"
-            pathname="%{project.build.tomcatDirectory}/conf/tomcat-users-hub.xml"
-            type="org.apache.catalina.UserDatabase"/>
+            driverClassName="org.apache.derby.jdbc.ClientDriver"
+            factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+            initialSize="5"
+            maxActive="10"
+            maxIdle="20"
+            maxWait="5000"
+            minIdle="0"
+            name="jdbc/${hub.data.db.name}"
+            password="${hub.data.db.user.tomcat.pass}"
+            type="javax.sql.DataSource"
+            url="jdbc:derby://${hub.data.db.host}:${hub.data.db.port}/${hub.data.db.name}"
+            username="${hub.data.db.user.tomcat.name}"
+            validationQuery="select 1"/>
     </GlobalNamingResources>
     
     <Service name="Catalina">
@@ -38,10 +48,25 @@
             truststoreType="${hub.crypto.store.key.type.jks}"/>
         
         <Engine name="Catalina" defaultHost="${hub.test.server.host.name}">
-            <Realm className="org.apache.catalina.realm.UserDatabaseRealm" resourceName="UserDatabase"/>
+            <Realm
+                className="org.apache.catalina.realm.DataSourceRealm"
+                dataSourceName="jdbc/${hub.data.db.name}"
+                roleNameCol="role_name"
+                userCredCol="user_pass"
+                userNameCol="user_name"
+                userRoleTable="tomcat_user_roles"
+                userTable="tomcat_users"/>
             
             <Host name="${hub.test.server.host.name}" appBase="webapps">
-                <Context path="${hub.test.server.context.path}" docBase="%{project.build.directory}/%{project.artifactId}-test"/>
+                <Context path="${hub.test.server.context.path}" docBase="%{project.build.directory}/%{project.artifactId}-test">
+                    <ResourceLink
+                        factory="org.apache.naming.factory.DataSourceLinkFactory"
+                        global="jdbc/${hub.data.db.name}"
+                        name="jdbc/${hub.data.db.name}"
+                        password="${hub.data.db.user.hub.pass}"
+                        type="javax.sql.DataSource"
+                        username="${hub.data.db.user.hub.name}"/>
+                </Context>
             </Host>
         </Engine>
     </Service>

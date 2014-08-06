@@ -107,7 +107,7 @@ empty(//iis:EchoBack)</path>
             <con:request><![CDATA[<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:iis="urn:cdc:iisb:2014" xmlns:iis-hub="urn:cdc:iisb:hub:2014">
    <soap:Header>
       <iis-hub:HubRequestHeader>
-         <iis-hub:DestinationId>${#Project#hub.dest.iis.dev.id}</iis-hub:DestinationId>
+         <iis-hub:DestinationId>${#Project#hub.data.dest.iis.dev.id}</iis-hub:DestinationId>
       </iis-hub:HubRequestHeader>
    </soap:Header>
    <soap:Body>
@@ -186,7 +186,7 @@ empty(//iis:Hl7Message)</path>
             <con:request><![CDATA[<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:iis="urn:cdc:iisb:2014" xmlns:iis-hub="urn:cdc:iisb:hub:2014">
    <soap:Header>
       <iis-hub:HubRequestHeader>
-         <iis-hub:DestinationId>${#Project#hub.dest.iis.dev.id}</iis-hub:DestinationId>
+         <iis-hub:DestinationId>${#Project#hub.data.dest.iis.dev.id}</iis-hub:DestinationId>
       </iis-hub:HubRequestHeader>
    </soap:Header>
    <soap:Body>

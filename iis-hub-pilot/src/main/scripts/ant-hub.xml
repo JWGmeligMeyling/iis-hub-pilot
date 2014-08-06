@@ -4,128 +4,144 @@
     xmlns="antlib:org.apache.tools.ant"
     xmlns:hub="antlib:gov.hhs.onc.iishubpilot.ant"
     xmlns:hub-java="antlib:gov.hhs.onc.iishubpilot.ant.java"
-    xmlns:hub-keytool="antlib:gov.hhs.onc.iishubpilot.ant.keytool"
+    xmlns:hub-props="antlib:gov.hhs.onc.iishubpilot.ant.props"
+    xmlns:props="antlib:org.apache.ant.props"
     xmlns:res-cmp="antlib:org.apache.tools.ant.types.resources.comparators"
     xmlns:res-sel="antlib:org.apache.tools.ant.types.resources.selectors">
     
     <description>Ant project for common components of Immunization Information Services (IIS) Hub Pilot Ant projects.</description>
     
-    <taskdef resource="net/sf/antcontrib/antlib.xml" classpath="${maven.classpath}"/>
+    <typedef name="javaconstantresource" classname="org.apache.tools.ant.types.resources.JavaConstantResource"/>
     
-    <typedef name="islessthan" classname="net.sf.antcontrib.logic.condition.IsLessThan" classpath="${maven.classpath}"/>
-    <typedef name="isgreaterthan" classname="net.sf.antcontrib.logic.condition.IsGreaterThan" classpath="${maven.classpath}"/>
-    <typedef name="ispropertyfalse" classname="net.sf.antcontrib.logic.condition.IsPropertyFalse" classpath="${maven.classpath}"/>
-    <typedef name="ispropertytrue" classname="net.sf.antcontrib.logic.condition.IsPropertyTrue" classpath="${maven.classpath}"/>
+    <script language="beanshell"><![CDATA[
+        import java.io.File;
+        import org.apache.tools.ant.BuildException;
+        import org.apache.tools.ant.Project;
+        import org.apache.tools.ant.ProjectHelper;
+        import org.apache.tools.ant.taskdefs.DefBase;
+        import org.apache.tools.ant.util.ScriptRunnerHelper;
+        
+        public class ScriptComponentDef extends DefBase {
+            private ScriptRunnerHelper runnerHelper = new ScriptRunnerHelper();
+            private String name;
+            
+            public void execute() throws BuildException {
+                super.execute();
+                
+                this.project.addDataTypeDefinition((this.uri + ":" + this.name), this.runnerHelper.scriptRunner.evaluateScript("ANT"));
+            }
+            
+            public void addText(String text) {
+                this.runnerHelper.addText(text);
+            }
+            
+            public void setLanguage(String lang) {
+                this.runnerHelper.setLanguage(lang);
+            }
+            
+            public void setManager(String mgr) {
+                this.runnerHelper.manager = mgr;
+            }
+            
+            public void setName(String name) {
+                this.name = name;
+            }
+            
+            public void setProject(Project project) {
+                super.setProject(project);
+                
+                this.runnerHelper.setProjectComponent(this);
+            }
+            
+            public void setSetBeans(boolean setBeans) {
+                this.runnerHelper.setBeans = setBeans;
+            }
+            
+            public void setSrc(String srcFilePath) {
+                this.runnerHelper.src = new File(srcFilePath);
+            }
+        }
+        
+        project.addTaskDefinition((ProjectHelper.ANTLIB_URI + "gov.hhs.onc.iishubpilot.ant:" + ScriptComponentDef.class.simpleName.toLowerCase()),
+            ScriptComponentDef.class);
+    ]]></script>
+    
+    <hub:scriptcomponentdef name="strings" language="beanshell" uri="antlib:gov.hhs.onc.iishubpilot.ant.props"><![CDATA[
+        import java.util.Objects;
+        import org.apache.ant.props.DelegatingPropertyEvaluator;
+        import org.apache.ant.props.RegexBasedEvaluator;
+        import org.apache.commons.lang3.StringUtils;
+        import org.apache.tools.ant.PropertyHelper;
+        
+        public abstract class AbstractStringPropertyEvaluator extends RegexBasedEvaluator {
+            protected AbstractStringPropertyEvaluator(String propPattern) {
+                super(propPattern);
+            }
+            
+            protected Object evaluate(String[] propGroups, PropertyHelper propHelper) {
+                return Objects.toString(propHelper.getProperty(propGroups[1]), null);
+            }
+        }
+        
+        public class StringDefaultPropertyEvaluator extends AbstractStringPropertyEvaluator {
+            public StringDefaultPropertyEvaluator() {
+                super("(.*):([\\-\\+])(~{1,2})(.*)");
+            }
+            
+            protected Object evaluate(String[] propGroups, PropertyHelper propHelper) {
+                String propValue = ((String) super.evaluate(propGroups, propHelper));
+                boolean propValueEval = ((propGroups[3].length() == 1) ? StringUtils.isEmpty(propValue) : StringUtils.isBlank(propValue));
+                
+                return (((propValueEval && propGroups[2].equals("-")) || (!propValueEval && propGroups[2].equals("+"))) ? propGroups[4] : StringUtils.EMPTY);
+            }
+        }
+        
+        public class StringCasePropertyEvaluator extends AbstractStringPropertyEvaluator {
+            public StringCasePropertyEvaluator() {
+                super("(.*)(^{2}|,{2})");
+            }
+            
+            protected Object evaluate(String[] propGroups, PropertyHelper propHelper) {
+                String propValue = ((String) super.evaluate(propGroups, propHelper));
+                
+                return ((propGroups[2].equals("^^")) ? StringUtils.upperCase(propValue) : StringUtils.lowerCase(propValue));
+            }
+        }
+        
+        public class DelegatingStringPropertyEvaluator extends DelegatingPropertyEvaluator {
+            public DelegatingStringPropertyEvaluator() {
+                this.addDelegate(new StringDefaultPropertyEvaluator());
+                this.addDelegate(new StringCasePropertyEvaluator());
+            }
+        }
+        
+        return DelegatingStringPropertyEvaluator.class;
+    ]]></hub:scriptcomponentdef>
+    
+    <taskdef resource="net/sf/antcontrib/antlib.xml"/>
+    
+    <typedef name="islessthan" classname="net.sf.antcontrib.logic.condition.IsLessThan"/>
+    <typedef name="isgreaterthan" classname="net.sf.antcontrib.logic.condition.IsGreaterThan"/>
+    <typedef name="ispropertyfalse" classname="net.sf.antcontrib.logic.condition.IsPropertyFalse"/>
+    <typedef name="ispropertytrue" classname="net.sf.antcontrib.logic.condition.IsPropertyTrue"/>
+    
+    <taskdef resource="org/apache/ant/props/antlib.xml" uri="antlib:org.apache.ant.props"/>
+    
+    <propertyhelper>
+        <props:conditions/>
+        <props:encodeURL/>
+        <props:nested/>
+        <props:stringops/>
+        <props:types/>
+        <hub-props:strings/>
+    </propertyhelper>
     
     <taskdef file="antlib-hub.xml" uri="antlib:gov.hhs.onc.iishubpilot.ant"/>
     <taskdef file="antlib-hub-java.xml" uri="antlib:gov.hhs.onc.iishubpilot.ant.java"/>
-    <taskdef file="antlib-hub-keytool.xml" uri="antlib:gov.hhs.onc.iishubpilot.ant.keytool"/>
-    
-    <target name="hub-process-it-soapui" extensionOf="hub-process-it-components" depends="hub-process-it-ssl">
-        <propertyselector property="hub-process-it-properties.props.names.test.soapui" override="true" match="^hub\.[^$]+$"/>
-        <hub:write-properties file="${project.build.soapuiDirectory}/soapui-project-hub.properties"
-            props="${hub-process-it-properties.props.names.test.soapui}"/>
-        
-        <hub:filter-file file="${project.build.soapuiDirectory}/soapui-settings-hub.xml">
-            <expandproperties/>
-        </hub:filter-file>
-    </target>
-    
-    <target name="hub-process-it-tomcat" extensionOf="hub-process-it-components" depends="hub-process-it-ssl">
-        <hub:filter-file file="${project.build.tomcatDirectory}/conf/tomcat-users-hub.xml">
-            <expandproperties/>
-        </hub:filter-file>
-        <hub:filter-file file="${project.build.tomcatDirectory}/conf/server-hub.xml">
-            <expandproperties/>
-        </hub:filter-file>
-    </target>
-    
-    <target name="hub-process-it-ssl" extensionOf="hub-process-it-components" depends="hub-process-it-properties">
-        <hub-keytool:generate-entry alias="${hub.crypto.mgr.trust.store.entry.ca.alias}" keyPass="${hub.crypto.mgr.trust.store.entry.ca.pass}"
-            storeFile="${hub.data.ssl.dir}/${project.artifactId}_store_all.jks" storePass="${hub.crypto.mgr.key.store.pass}">
-            BC=ca:true
-            AIA=ocsp:URI:http://ocsp.iis-hub-pilot.org/${hub.crypto.mgr.trust.store.entry.ca.alias}
-        </hub-keytool:generate-entry>
-        <hub-keytool:copy-entry certOnly="true" srcAlias="${hub.crypto.mgr.trust.store.entry.ca.alias}" srcKeyPass="${hub.crypto.mgr.trust.store.entry.ca.pass}"
-            srcStoreFile="${hub.data.ssl.dir}/${project.artifactId}_store_all.jks" srcStorePass="${hub.crypto.mgr.key.store.pass}"
-            destStoreFile="${hub.crypto.mgr.trust.store.file}" destStorePass="${hub.crypto.mgr.trust.store.pass}"/>
-        
-        <for list="iis.dev,iis.hub" param="entryName">
-            <sequential>
-                <hub-keytool:generate-entry alias="${hub.crypto.mgr.key.store.entry.@{entryName}.alias}"
-                    keyPass="${hub.crypto.mgr.key.store.entry.@{entryName}.pass}" storeFile="${hub.data.ssl.dir}/${project.artifactId}_store_all.jks"
-                    storePass="${hub.crypto.mgr.key.store.pass}" issuerAlias="${hub.crypto.mgr.trust.store.entry.ca.alias}"
-                    issuerKeyPass="${hub.crypto.mgr.trust.store.entry.ca.pass}">
-                    BC=ca:false
-                    EKU=serverAuth,clientAuth
-                </hub-keytool:generate-entry>
-                <hub-keytool:copy-entry srcAlias="${hub.crypto.mgr.key.store.entry.@{entryName}.alias}"
-                    srcKeyPass="${hub.crypto.mgr.key.store.entry.@{entryName}.pass}" srcStoreFile="${hub.data.ssl.dir}/${project.artifactId}_store_all.jks"
-                    srcStorePass="${hub.crypto.mgr.key.store.pass}" destStoreFile="${hub.crypto.mgr.key.store.file}"/>
-            </sequential>
-        </for>
-    </target>
-    
-    <target name="hub-process-it-properties" extensionOf="hub-process-it-components">
-        <hub-java:load-class-constant-properties file="${project.build.outputDirectory}/gov/hhs/onc/iishubpilot/crypto/HubCertificateTypes.class"
-            prefix="hub.crypto.cert.type."/>
-        <hub-java:load-class-constant-properties file="${project.build.outputDirectory}/gov/hhs/onc/iishubpilot/crypto/HubCryptoProviders.class"
-            prefix="hub.crypto.prov.name.">
-            <replaceregex pattern="^(\w+)_name(=[^$]+)$" replace="\1\2"/>
-        </hub-java:load-class-constant-properties>
-        <hub-java:load-class-constant-properties file="${project.build.outputDirectory}/gov/hhs/onc/iishubpilot/crypto/HubKeyManagerAlgorithms.class"
-            prefix="hub.crypto.mgr.key.alg."/>
-        <hub-java:load-class-constant-properties file="${project.build.outputDirectory}/gov/hhs/onc/iishubpilot/crypto/HubKeyPairAlgorithms.class"
-            prefix="hub.crypto.pair.key.alg."/>
-        <hub-java:load-class-constant-properties file="${project.build.outputDirectory}/gov/hhs/onc/iishubpilot/crypto/HubKeyStoreTypes.class"
-            prefix="hub.crypto.store.key.type."/>
-        <hub-java:load-class-constant-properties file="${project.build.outputDirectory}/gov/hhs/onc/iishubpilot/crypto/HubSecureRandomAlgorithms.class"
-            prefix="hub.crypto.rand.sec.alg."/>
-        <hub-java:load-class-constant-properties file="${project.build.outputDirectory}/gov/hhs/onc/iishubpilot/crypto/HubSignatureAlgorithms.class"
-            prefix="hub.crypto.sig.alg."/>
-        <hub-java:load-class-constant-properties file="${project.build.outputDirectory}/gov/hhs/onc/iishubpilot/crypto/HubTlsVersions.class"
-            prefix="hub.crypto.">
-            <replaceregex pattern="^(ssl|tls)((?:_\d)+)_name(=[^$]+)$" replace="\1.version\2\3"/>
-        </hub-java:load-class-constant-properties>
-        <hub-java:load-class-constant-properties file="${project.build.outputDirectory}/gov/hhs/onc/iishubpilot/crypto/HubTrustManagerAlgorithms.class"
-            prefix="hub.crypto.mgr.trust.alg."/>
-        
-        <hub-java:load-class-constant-properties file="${project.build.outputDirectory}/gov/hhs/onc/iishubpilot/ws/HubHttpHeaders.class"
-            prefix="hub.ws.http.header.">
-            <replaceregex pattern="^(\w+)_(name|value)(=[^$]+)$" replace="\2.\1\3"/>
-        </hub-java:load-class-constant-properties>
-        <hub-java:load-class-constant-properties file="${project.build.outputDirectory}/gov/hhs/onc/iishubpilot/ws/HubWsNames.class"
-            prefix="hub.ws.name."/>
-        
-        <hub-java:load-class-constant-properties file="${project.build.outputDirectory}/gov/hhs/onc/iishubpilot/xml/HubXmlNs.class"
-            prefix="hub.xml.ns."/>
-        
-        <var name="hub.data.dir" value="${project.build.directory}/surefire-data"/>
-        
-        <var name="hub-process-it-properties.props.dir.main" value="${project.build.directory}/${project.artifactId}/WEB-INF/classes/META-INF/hub"/>
-        <var name="hub-process-it-properties.props.dir.test" value="${project.build.directory}/${project.artifactId}-test/WEB-INF/classes/META-INF/hub"/>
-        
-        <for param="hub-process-it-properties.props.file">
-            <path>
-                <fileset file="${hub-process-it-properties.props.dir.main}/hub.properties"/>
-                <fileset file="${hub-process-it-properties.props.dir.test}/hub-test.properties"/>
-            </path>
-            <sequential>
-                <loadproperties srcfile="@{hub-process-it-properties.props.file}"/>
-            </sequential>
-        </for>
-        
-        <propertyselector property="hub-process-it-properties.props.names.main.constants" override="true"
-            match="^hub\.(?:crypto\.(?:cert\.type|prov\.name|(?:mgr\.(?:key|trust)|pair\.key|store\.key|rand\.sec|sig)\.alg|(?:ssl|tls)\.version)|ws\.(?:http\.header|name)|xml\.ns)\.[^$]+$"/>
-        <hub:write-properties file="${hub-process-it-properties.props.dir.main}/hub-constants.properties"
-            props="${hub-process-it-properties.props.names.main.constants}"/>
-    </target>
-    
-    <extension-point name="hub-process-it-components" depends="hub-init"/>
     
     <target name="hub-init">
         <property environment="env"/>
         
-        <var name="n" value="${line.separator}"/>
+        <var name="n" value="&#xA;"/>
     </target>
 </project>

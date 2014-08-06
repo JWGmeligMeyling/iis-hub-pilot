@@ -42,8 +42,8 @@
                 <beans:set>
                     <!--suppress SpringPlaceholdersInspection -->
                     <beans:bean parent="destImpl"
-                        c:id="${hub.dest.iis.dev.id}"
-                        c:uri="${hub.dest.iis.dev.uri}"/>
+                        c:id="${hub.data.dest.iis.dev.id}"
+                        c:uri="${hub.data.dest.iis.dev.uri}"/>
                 </beans:set>
             </beans:property>
         </beans:bean>

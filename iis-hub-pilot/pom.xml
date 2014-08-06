@@ -42,10 +42,6 @@
             <artifactId>annotations</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mchange</groupId>
-            <artifactId>c3p0</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
         </dependency>
@@ -133,11 +129,6 @@
             <artifactId>cxf-rt-ws-security</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.tomcat</groupId>
-            <artifactId>tomcat-coyote</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk15on</artifactId>
         </dependency>
@@ -177,10 +168,6 @@
         <dependency>
             <groupId>org.logback-extensions</groupId>
             <artifactId>logback-ext-spring</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -435,19 +422,13 @@
                                         <include>**/*.xml</include>
                                     </includes>
                                     <excludes>
-                                        <exclude>soapui/**</exclude>
                                         <exclude>spring/**</exclude>
-                                        <exclude>testng/**</exclude>
-                                        <exclude>tomcat/**</exclude>
                                     </excludes>
                                 </resource>
                                 <resource>
                                     <directory>${project.basedir}/src/test/resources/META-INF</directory>
                                     <excludes>
-                                        <exclude>soapui/**</exclude>
                                         <exclude>spring/**</exclude>
-                                        <exclude>testng/**</exclude>
-                                        <exclude>tomcat/**</exclude>
                                         <exclude>**/*.properties</exclude>
                                         <exclude>**/*.xml</exclude>
                                     </excludes>
@@ -474,6 +455,62 @@
                                 <resource>
                                     <directory>${project.basedir}/src/test/resources/META-INF/spring</directory>
                                     <excludes>
+                                        <exclude>**/*.xml</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-test-resources-it</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.itDirectory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.itSourceDirectory}</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>**/*.properties</include>
+                                        <include>**/*.xml</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>${project.build.itSourceDirectory}</directory>
+                                    <excludes>
+                                        <exclude>**/*.properties</exclude>
+                                        <exclude>**/*.xml</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-test-resources-db</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.dbDirectory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.dbSourceDirectory}</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>**/*.properties</include>
+                                        <include>**/*.sql</include>
+                                        <include>**/*.xml</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>${project.build.dbSourceDirectory}</directory>
+                                    <excludes>
+                                        <exclude>**/*.properties</exclude>
+                                        <exclude>**/*.sql</exclude>
                                         <exclude>**/*.xml</exclude>
                                     </excludes>
                                 </resource>
@@ -521,17 +558,17 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/testng</outputDirectory>
+                            <outputDirectory>${project.build.testngDirectory}</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${project.basedir}/src/test/resources/META-INF/testng</directory>
+                                    <directory>${project.build.testngSourceDirectory}</directory>
                                     <filtering>true</filtering>
                                     <includes>
                                         <include>**/*.xml</include>
                                     </includes>
                                 </resource>
                                 <resource>
-                                    <directory>${project.basedir}/src/test/resources/META-INF/testng</directory>
+                                    <directory>${project.build.testngSourceDirectory}</directory>
                                     <excludes>
                                         <exclude>**/*.xml</exclude>
                                     </excludes>
@@ -573,7 +610,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/soapui/ext</outputDirectory>
+                            <outputDirectory>${project.build.soapuiDirectory}/ext</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${project.build.directory}/${project.artifactId}/WEB-INF/lib</directory>
@@ -621,7 +658,7 @@
                         <id>default-test</id>
                         <configuration>
                             <suiteXmlFiles>
-                                <suiteXmlFile>${project.build.directory}/testng/testng-hub.xml</suiteXmlFile>
+                                <suiteXmlFile>${project.build.testngDirectory}/testng-hub.xml</suiteXmlFile>
                             </suiteXmlFiles>
                             <systemPropertyVariables>
                                 <hub.log.context.name>${project.artifactId}-test</hub.log.context.name>
@@ -630,9 +667,11 @@
                     </execution>
                     <execution>
                         <id>integration-test</id>
+                        <!-- TEMP: dev -->
+                        <phase>none</phase>
                         <configuration>
                             <suiteXmlFiles>
-                                <suiteXmlFile>${project.build.directory}/testng/testng-hub-it.xml</suiteXmlFile>
+                                <suiteXmlFile>${project.build.testngDirectory}/testng-hub-it.xml</suiteXmlFile>
                             </suiteXmlFiles>
                             <systemPropertyVariables>
                                 <hub.log.context.name>${project.artifactId}-test-it</hub.log.context.name>
@@ -667,7 +706,7 @@
     
     <profiles>
         <profile>
-            <id>test-integration-components</id>
+            <id>integration-test-invoke</id>
             <activation>
                 <property>
                     <name>!skipTests</name>
@@ -676,152 +715,48 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.github.redfish4ktc.soapui</groupId>
-                        <artifactId>maven-soapui-extension-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>integration-test</id>
-                                <phase>integration-test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <outputFolder>${project.build.directory}/surefire-reports</outputFolder>
-                                    <projectFile>${project.build.soapuiDirectory}/soapui-project-hub.xml</projectFile>
-                                    <settingsFile>${project.build.soapuiDirectory}/soapui-settings-hub.xml</settingsFile>
-                                    <soapuiProperties>
-                                        <property>
-                                            <name>java.security.egd</name>
-                                            <value>file:/dev/urandom</value>
-                                        </property>
-                                        <!--
-                                        <property>
-                                            <name>javax.net.ssl.keyStore</name>
-                                            <value>${project.build.directory}/surefire-data/ssl/${project.artifactId}_store_key.jks</value>
-                                        </property>
-                                        <property>
-                                            <name>javax.net.ssl.keyStorePassword</name>
-                                            <value>storepass</value>
-                                        </property>
-                                        <property>
-                                            <name>javax.net.ssl.keyStoreProvider</name>
-                                            <value>SUN</value>
-                                        </property>
-                                        <property>
-                                            <name>javax.net.ssl.keyStoreType</name>
-                                            <value>JKS</value>
-                                        </property>
-                                        <property>
-                                            <name>javax.net.ssl.trustStore</name>
-                                            <value>${project.build.directory}/surefire-data/ssl/${project.artifactId}_store_trust.jks</value>
-                                        </property>
-                                        <property>
-                                            <name>javax.net.ssl.trustStorePassword</name>
-                                            <value>storepass</value>
-                                        </property>
-                                        <property>
-                                            <name>javax.net.ssl.trustStoreProvider</name>
-                                            <value>SUN</value>
-                                        </property>
-                                        <property>
-                                            <name>javax.net.ssl.trustStoreType</name>
-                                            <value>JKS</value>
-                                        </property>
-                                        -->
-                                        <property>
-                                            <name>jdk.tls.client.protocols</name>
-                                            <value>TLSv1.2</value>
-                                        </property>
-                                        <property>
-                                            <name>jdk.tls.ephemeralDHKeySize</name>
-                                            <value>2048</value>
-                                        </property>
-                                        <property>
-                                            <name>soapui.https.protocols</name>
-                                            <value>TLSv1.2</value>
-                                        </property>
-                                        <property>
-                                            <name>soapui.https.session.invalidate</name>
-                                            <value>true</value>
-                                        </property>
-                                        <property>
-                                            <name>soapui.properties</name>
-                                            <value>${project.build.soapuiDirectory}/soapui-project-hub.properties</value>
-                                        </property>
-                                        <property>
-                                            <name>soapui.sslcontext.algorithm</name>
-                                            <value>TLSv1.2</value>
-                                        </property>
-                                    </soapuiProperties>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>test-verify</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>test-verify</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>process-configs</id>
-                                <phase>process-test-classes</phase>
+                                <id>process-it-components</id>
+                                <phase>pre-integration-test</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <ant antfile="${project.build.scriptSourceDirectory}/ant-hub.xml" target="hub-process-it-components" inheritRefs="true"
-                                            useNativeBasedir="true"/>
+                                        <ant antfile="${project.build.scriptSourceDirectory}/ant-hub-it.xml" target="hub-it-process-components"
+                                            inheritRefs="true" useNativeBasedir="true"/>
                                     </target>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.apache.tomcat.maven</groupId>
-                        <artifactId>tomcat7-maven-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-invoker-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>pre-integration-test-tomcat-run-war</id>
-                                <phase>pre-integration-test</phase>
+                                <id>integration-test</id>
                                 <goals>
-                                    <goal>run-war-only</goal>
+                                    <goal>integration-test</goal>
                                 </goals>
                                 <configuration>
-                                    <fork>true</fork>
-                                    <jarScanAllDirectories>false</jarScanAllDirectories>
-                                    <systemProperties>
-                                        <hub.data.dir>${project.build.directory}/surefire-data</hub.data.dir>
-                                        <hub.log.console.term>true</hub.log.console.term>
-                                        <hub.log.context.name>${project.artifactId}-test-it-tomcat</hub.log.context.name>
-                                        <hub.log.dir>${project.build.directory}/surefire-logs</hub.log.dir>
-                                        <hub.mode>dev</hub.mode>
-                                        <java.security.egd>file:/dev/urandom</java.security.egd>
-                                        <!--
-                                        <javax.net.ssl.trustStore>${project.build.directory}/surefire-data/ssl/${project.artifactId}_store_trust.jks</javax.net.ssl.trustStore>
-                                        <javax.net.ssl.trustStorePassword>storepass</javax.net.ssl.trustStorePassword>
-                                        <javax.net.ssl.trustStoreProvider>SUN</javax.net.ssl.trustStoreProvider>
-                                        <javax.net.ssl.trustStoreType>JKS</javax.net.ssl.trustStoreType>
-                                        -->
-                                        <jdk.tls.client.protocols>TLSv1.2</jdk.tls.client.protocols>
-                                        <jdk.tls.ephemeralDHKeySize>2048</jdk.tls.ephemeralDHKeySize>
-                                    </systemProperties>
-                                    <serverXml>${project.build.tomcatDirectory}/conf/server-hub.xml</serverXml>
-                                    <uriEncoding>${project.build.sourceEncoding}</uriEncoding>
-                                    <useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader>
+                                    <addTestClassPath>true</addTestClassPath>
+                                    <noLog>true</noLog>
+                                    <pomIncludes>
+                                        <pomInclude>${project.artifactId}-it/pom.xml</pomInclude>
+                                    </pomIncludes>
+                                    <projectsDirectory>${project.build.itDirectory}</projectsDirectory>
+                                    <showErrors>true</showErrors>
+                                    <streamLogs>true</streamLogs>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>post-integration-test-tomcat-shutdown</id>
-                                <phase>post-integration-test</phase>
+                                <id>verify</id>
                                 <goals>
-                                    <goal>shutdown</goal>
+                                    <goal>verify</goal>
                                 </goals>
                             </execution>
                         </executions>

@@ -5,6 +5,35 @@
     xmlns:res-cmp="antlib:org.apache.tools.ant.types.resources.comparators"
     xmlns:res-sel="antlib:org.apache.tools.ant.types.resources.selectors">
     
+    <current:scriptcomponentdef name="propertylist" language="beanshell"><![CDATA[
+        import java.util.Iterator;
+        import java.util.Set;
+        import java.util.LinkedHashSet;
+        import java.util.TreeSet;
+        import org.apache.commons.lang3.StringUtils;
+        import org.apache.tools.ant.ProjectHelper;
+        import org.apache.tools.ant.types.PropertySet;
+        import org.apache.tools.ant.types.resources.StringResource;
+        
+        public class PropertyList extends PropertySet {
+            public Iterator iterator() {
+                Set propNameResources = new LinkedHashSet();
+                
+                for (String propName : new TreeSet(this.getPropertyMap().keySet())) {
+                    propNameResources.add(new StringResource(propName));
+                }
+                
+                return propNameResources.iterator();
+            }
+            
+            public String toString() {
+                return StringUtils.join(this.iterator(), ",");
+            }
+        }
+        
+        return PropertyList.class;
+    ]]></current:scriptcomponentdef>
+    
     <presetdef name="isempty">
         <length length="0"/>
     </presetdef>
@@ -13,63 +42,18 @@
         <var unset="true"/>
     </presetdef>
     
-    <macrodef name="write-properties">
-        <attribute name="file"/>
-        <attribute name="props"/>
-        <attribute name="append" default="false"/>
-        <attribute name="encoding" default="${project.build.sourceEncoding}"/>
-        <attribute name="sort" default="true"/>
-        <element name="write-properties.elements" optional="true" implicit="true"/>
-        <text name="write-properties.text" optional="true"/>
-        <sequential>
-            <var name="write-properties.props" value="@{props},@{write-properties.text}"/>
-            
-            <if>
-                <istrue value="@{sort}"/>
-                <then>
-                    <sortlist property="write-properties.props" override="true" value="${write-properties.props}"/>
-                </then>
-            </if>
-            
-            <var name="write-properties.props.content"/>
-            
-            <for list="${write-properties.props}" param="write-properties.prop" trim="true">
-                <sequential>
-                    <if>
-                        <and>
-                            <not><current:isempty string="@{write-properties.prop}"/></not>
-                            <isset property="@{write-properties.prop}"/>
-                        </and>
-                        <then>
-                            <var name="write-properties.props.content"
-                                value="${write-properties.props.content}@{write-properties.prop}=${@{write-properties.prop}}${n}"/>
-                        </then>
-                    </if>
-                </sequential>
-            </for>
-            
-            <current:write-file file="@{file}" append="@{append}" encoding="@{encoding}">
-                <resources>
-                    <propertyresource name="write-properties.props.content"/>
-                </resources>
-            </current:write-file>
-        </sequential>
-    </macrodef>
-    
     <macrodef name="filter-file">
         <attribute name="file"/>
         <attribute name="encoding" default="${project.build.sourceEncoding}"/>
         <element name="filter-file.elements" implicit="true"/>
         <sequential>
+            <local name="filter-file.file.content"/>
+            
             <current:read-file file="@{file}" property="filter-file.file.content" encoding="@{encoding}">
-                <filterchain>
-                    <filter-file.elements/>
-                </filterchain>
+                <filter-file.elements/>
             </current:read-file>
             <current:write-file file="@{file}" encoding="@{encoding}">
-                <resources>
-                    <propertyresource name="filter-file.file.content"/>
-                </resources>
+                <propertyresource name="filter-file.file.content"/>
             </current:write-file>
         </sequential>
     </macrodef>
@@ -90,7 +74,7 @@
         <attribute name="file"/>
         <attribute name="property"/>
         <attribute name="encoding" default="${project.build.sourceEncoding}"/>
-        <element name="read-file.elements" optional="true" implicit="true"/>
+        <element name="read-file.elements" implicit="true"/>
         <sequential>
             <current:unset name="@{property}"/>
             

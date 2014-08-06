@@ -27,7 +27,7 @@
         <repository>
             <id>central</id>
             <name>Maven Repository Switchboard</name>
-            <url>http://repo1.maven.org/maven2</url>
+            <url>https://repo1.maven.org/maven2</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -53,7 +53,7 @@
         <pluginRepository>
             <id>central</id>
             <name>Maven Plugin Repository</name>
-            <url>http://repo1.maven.org/maven2</url>
+            <url>https://repo1.maven.org/maven2</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -84,12 +84,24 @@
         <project.basedir.parent>${project.basedir}/${project.parent.relativePath}</project.basedir.parent>
         <!-- Project build CXF source properties -->
         <project.build.cxfSourceDirectory>${project.build.directory}/generated-sources/cxf</project.build.cxfSourceDirectory>
+        <!-- Project build database properties -->
+        <project.build.dbDirectory>${project.build.directory}/db</project.build.dbDirectory>
+        <!-- Project build database source properties -->
+        <project.build.dbSourceDirectory>${project.basedir}/src/db</project.build.dbSourceDirectory>
+        <!-- Project build integration test properties -->
+        <project.build.itDirectory>${project.build.directory}/it</project.build.itDirectory>
+        <!-- Project build integration test source properties -->
+        <project.build.itSourceDirectory>${project.basedir}/src/it</project.build.itSourceDirectory>
         <!-- Project build SoapUI properties -->
         <project.build.soapuiDirectory>${project.build.directory}/soapui</project.build.soapuiDirectory>
         <!-- Project build SoapUI source properties -->
         <project.build.soapuiSourceDirectory>${project.basedir}/src/soapui</project.build.soapuiSourceDirectory>
         <!-- Project build source properties -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Project build TestNG properties -->
+        <project.build.testngDirectory>${project.build.directory}/testng</project.build.testngDirectory>
+        <!-- Project build TestNG source properties -->
+        <project.build.testngSourceDirectory>${project.basedir}/src/testng</project.build.testngSourceDirectory>
         <!-- Project build Tomcat properties -->
         <project.build.tomcatDirectory>${project.build.directory}/tomcat</project.build.tomcatDirectory>
         <!-- Project build Tomcat source properties -->
@@ -118,11 +130,6 @@
                 <groupId>com.google.code.findbugs</groupId>
                 <artifactId>annotations</artifactId>
                 <version>2.0.3</version>
-            </dependency>
-            <dependency>
-                <groupId>com.mchange</groupId>
-                <artifactId>c3p0</artifactId>
-                <version>0.9.5-pre8</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>
@@ -277,12 +284,6 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>tomcat-coyote</artifactId>
-                <version>7.0.54</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcpkix-jdk15on</artifactId>
                 <version>1.50</version>
@@ -338,11 +339,6 @@
                 <groupId>org.logback-extensions</groupId>
                 <artifactId>logback-ext-spring</artifactId>
                 <version>0.1.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.postgresql</groupId>
-                <artifactId>postgresql</artifactId>
-                <version>9.3-1101-jdbc41</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -644,6 +640,11 @@
                             </exclusions>
                         </dependency>
                         <dependency>
+                            <groupId>commons-io</groupId>
+                            <artifactId>commons-io</artifactId>
+                            <version>2.4</version>
+                        </dependency>
+                        <dependency>
                             <groupId>org.apache.ant</groupId>
                             <artifactId>ant</artifactId>
                             <version>1.9.4</version>
@@ -652,23 +653,41 @@
                             <groupId>org.apache.ant</groupId>
                             <artifactId>ant-apache-bcel</artifactId>
                             <version>1.9.4</version>
+                            <exclusions>
+                                <exclusion>
+                                    <groupId>bcel</groupId>
+                                    <artifactId>bcel</artifactId>
+                                </exclusion>
+                            </exclusions>
                         </dependency>
                         <dependency>
-                            <groupId>org.mozilla</groupId>
-                            <artifactId>rhino</artifactId>
-                            <version>1.7R4</version>
+                            <groupId>org.apache.ant</groupId>
+                            <artifactId>ant-apache-bsf</artifactId>
+                            <version>1.9.4</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.bcel</groupId>
+                            <artifactId>bcel</artifactId>
+                            <version>5.2</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.commons</groupId>
+                            <artifactId>commons-lang3</artifactId>
+                            <version>3.3.2</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.beanshell</groupId>
+                            <artifactId>bsh</artifactId>
+                            <version>2.0b5</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.kuali.common</groupId>
+                            <artifactId>kuali-antprops</artifactId>
+                            <version>1.0.1-alpha</version>
                         </dependency>
                     </dependencies>
                     <configuration>
                         <customTaskPrefix>mvn</customTaskPrefix>
-                        <target>
-                            <path id="maven.classpath">
-                                <path refid="maven.compile.classpath"/>
-                                <path refid="maven.plugin.classpath"/>
-                                <path refid="maven.runtime.classpath"/>
-                                <path refid="maven.test.classpath"/>
-                            </path>
-                        </target>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -729,6 +748,12 @@
                             </configuration>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-invoker-plugin</artifactId>
+                    <version>1.9</version>
+                    <inherited>true</inherited>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -864,6 +889,11 @@
                     <inherited>true</inherited>
                     <dependencies>
                         <dependency>
+                            <groupId>org.apache.derby</groupId>
+                            <artifactId>derbyclient</artifactId>
+                            <version>10.10.2.0</version>
+                        </dependency>
+                        <dependency>
                             <groupId>org.apache.tomcat</groupId>
                             <artifactId>tomcat-api</artifactId>
                             <version>7.0.54</version>
@@ -939,6 +969,29 @@
                     </configuration>
                 </plugin>
                 <plugin>
+                    <groupId>org.carlspring.maven</groupId>
+                    <artifactId>derby-maven-plugin</artifactId>
+                    <version>1.10</version>
+                    <inherited>true</inherited>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.derby</groupId>
+                            <artifactId>derby</artifactId>
+                            <version>10.10.2.0</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.derby</groupId>
+                            <artifactId>derbyclient</artifactId>
+                            <version>10.10.2.0</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.derby</groupId>
+                            <artifactId>derbynet</artifactId>
+                            <version>10.10.2.0</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>versions-maven-plugin</artifactId>
                     <version>2.1</version>
@@ -965,6 +1018,19 @@
                             </configuration>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.kuali.maven.plugins</groupId>
+                    <artifactId>sql-maven-plugin</artifactId>
+                    <version>1.0.15</version>
+                    <inherited>true</inherited>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.derby</groupId>
+                            <artifactId>derbyclient</artifactId>
+                            <version>10.10.2.0</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
             </plugins>
         </pluginManagement>

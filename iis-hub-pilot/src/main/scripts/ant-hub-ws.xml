@@ -27,7 +27,7 @@
                 </fileset>
             </path>
             <sequential>
-                <hub-java:suppress-class-warnings file="@{cxf.factory.file}" warnings="rawtypes,unchecked"/>
+                <hub-java:add-class-suppress-warnings file="@{cxf.factory.file}" warnings="rawtypes,unchecked"/>
             </sequential>
         </for>
         
@@ -39,20 +39,26 @@
             </path>
             <sequential>
                 <hub:filter-file file="@{cxf.factory.obj.file}">
-                    <tokenfilter>
-                        <scriptfilter language="javascript" classpath="${maven.classpath}"><![CDATA[
-                            var token = self.getToken(), tokenMatches;
+                    <filterchain>
+                        <scriptfilter language="beanshell" classpath="${maven.classpath}"><![CDATA[
+                            import java.util.regex.Matcher;
+                            import java.util.regex.Pattern;
                             
-                            if ((tokenMatches = /^(\s+)private(\s+final\s+static\s+QName\s+)_(\w+)(_QNAME\s+=\s+[^$]+$)/.exec(token)) !== null) {
-                                token = tokenMatches[1] + "public" + tokenMatches[2] + tokenMatches[3].replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase() +
-                                    tokenMatches[4];
-                            } else if ((tokenMatches = /^([^$]+)_(\w+)(_QNAME[^$]+)$/.exec(token)) !== null) {
-                                token = tokenMatches[1] + tokenMatches[2].replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase() + tokenMatches[3];
+                            String token = self.getToken();
+                            Matcher tokenMatcher = 
+                                Pattern.compile("^(\\s+)private(\\s+final\\s+static\\s+QName\\s+)_(\\w+)(_QNAME\\s+=\\s+[^$]+$)").matcher(token);
+                            
+                            if (tokenMatcher.matches()) {
+                                token = tokenMatcher.group(1) + "public" + tokenMatcher.group(2) + 
+                                    tokenMatcher.group(3).replaceAll("([a-z])([A-Z])", "$1_$2").toUpperCase() + tokenMatcher.group(4);
+                            } else if ((tokenMatcher = Pattern.compile("^([^$]+)_(\\w+)(_QNAME[^$]+)$").matcher(token)).matches()) {
+                                token = tokenMatcher.group(1) + tokenMatcher.group(2).replaceAll("([a-z])([A-Z])", "$1_$2").toUpperCase() + 
+                                    tokenMatcher.group(3);
                             }
                             
                             self.setToken(token);
                         ]]></scriptfilter>
-                    </tokenfilter>
+                    </filterchain>
                 </hub:filter-file>
             </sequential>
         </for>

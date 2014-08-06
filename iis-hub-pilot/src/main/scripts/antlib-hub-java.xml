@@ -7,50 +7,99 @@
     xmlns:res-sel="antlib:org.apache.tools.ant.types.resources.selectors">
     
     <macrodef name="load-class-constant-properties">
-        <attribute name="file"/>
-        <attribute name="prefix"/>
-        <element name="extract-class-constants.elements" optional="true" implicit="true"/>
+        <attribute name="className"/>
+        <attribute name="classPathRef" default="maven.compile.classpath"/>
+        <attribute name="encoding" default="${project.build.sourceEncoding}"/>
+        <attribute name="prefix" default=""/>
+        <attribute name="prefixValues" default=""/>
+        <element name="load-class-constant-properties.elements" optional="true" implicit="true"/>
         <sequential>
-            <loadproperties srcfile="@{file}" encoding="ISO-8859-1">
-                <filterchain>
-                    <classconstants/>
-                    <scriptfilter language="javascript" classpath="${maven.classpath}"><![CDATA[
-                        var tokenMatches = /^([^=]+)(=[^$]*)$/.exec(self.getToken());
-                        
-                        self.setToken(tokenMatches[1].toLowerCase() + tokenMatches[2]);
-                    ]]></scriptfilter>
-                    <linecontainsregexp negate="true">
-                        <regexp pattern="^(?:\w+_)?(?:delim|(?:pre|suf)fix)="/>
-                    </linecontainsregexp>
-                    <extract-class-constants.elements/>
-                    <replacestring from="_" to="."/>
-                    <prefixlines prefix="@{prefix}"/>
-                </filterchain>
-            </loadproperties>
+            <hub:unset name="load-class-constant-properties.class.const.names"/>
+            
+            <var name="load-class-constant-properties.class.name" value="@{className}"/>
+            
+            <if>
+                <not>
+                    <resourceexists>
+                        <javaresource id="load-class-constant-properties.class.resource" name="${load-class-constant-properties.class.name//\./\/}.class"
+                            classpathref="@{classPathRef}"/>
+                    </resourceexists>
+                </not>
+                <then>
+                    <fail>Java class (name=@{className}) file resource not found in referenced class path: @{classPathRef}</fail>
+                </then>
+            </if>
+            
+            <script language="beanshell"><![CDATA[
+                import java.io.InputStreamReader;
+                import java.util.ArrayList;
+                import org.apache.bcel.classfile.ClassParser;
+                import org.apache.bcel.classfile.Field;
+                import org.apache.bcel.classfile.JavaClass;
+                import org.apache.bcel.generic.BasicType;
+                import org.apache.bcel.generic.Type;
+                import org.apache.commons.io.FileUtils;
+                import org.apache.commons.io.IOUtils;
+                import org.apache.commons.lang3.StringUtils;
+                import org.apache.tools.ant.Project;
+                import org.apache.tools.ant.util.LoaderUtils;
+                import org.apache.tools.ant.util.ResourceUtils;
+                
+                Field[] classFields = new ClassParser(project.getReference("load-class-constant-properties.class.resource")
+                    .getInputStream(), StringUtils.EMPTY).parse().fields;
+                ArrayList classConstNames = new ArrayList(classFields.length);
+                Type classFieldType;
+                
+                for (Field classField : classFields) {
+                    if ((classField != null) && (((classFieldType = classField.type) instanceof BasicType) || classFieldType.equals(Type.STRING)) && 
+                        classField.isPublic() && classField.isFinal() && classField.isStatic()) {
+                        classConstNames.add(classField.name);
+                    }
+                }
+                
+                project.setProperty("load-class-constant-properties.class.const.names", StringUtils.join(classConstNames, ","));
+            ]]></script>
+            
+            <for list="${load-class-constant-properties.class.const.names}" param="classConstName">
+                <sequential>
+                    <hub:unset name="load-class-constant-properties.class.const.value"/>
+                    
+                    <var name="load-class-constant-properties.class.const.name" value="@{classConstName}"/>
+                    <var name="load-class-constant-properties.class.const.name" value="${load-class-constant-properties.class.const.name,,}"/>
+                    <var name="load-class-constant-properties.class.const.name" value="${load-class-constant-properties.class.const.name//_/.}"/>
+                    
+                    <loadresource property="load-class-constant-properties.class.const.value">
+                        <javaconstantresource id="load-class-constant-properties.const.resource" name="@{className}.@{classConstName}"
+                            classpathref="@{classPathRef}"/>
+                    </loadresource>
+                    
+                    <loadproperties encoding="@{encoding}" prefix="@{prefix}" prefixValues="@{prefixValues}">
+                        <string>${load-class-constant-properties.class.const.name}=${load-class-constant-properties.class.const.value}</string>
+                        <load-class-constant-properties.elements/>
+                    </loadproperties>
+                </sequential>
+            </for>
         </sequential>
     </macrodef>
     
-    <macrodef name="suppress-class-warnings">
+    <macrodef name="add-class-suppress-warnings">
         <attribute name="file"/>
         <attribute name="warnings"/>
         <sequential>
-            <var name="suppress-class-warnings.value"/>
+            <hub:unset name="add-class-suppress-warnings.warnings.value"/>
             
-            <for list="@{warnings}" param="warning">
+            <for list="@{warnings}" param="warning" trim="true">
                 <sequential>
-                    <if>
-                        <not><hub:isempty string="${suppress-class-warnings.value}"/></not>
-                        <then>
-                            <var name="suppress-class-warnings.value" value="${suppress-class-warnings.value}, "/>
-                        </then>
-                    </if>
-                    <var name="suppress-class-warnings.value" value="${suppress-class-warnings.value}&quot;@{warning}&quot;"/>
+                    <var name="add-class-suppress-warnings.warnings.value"
+                        value="${add-class-suppress-warnings.warnings.value:-}${add-class-suppress-warnings.warnings.value:+~, }&quot;@{warning}&quot;"/>
                 </sequential>
             </for>
             
             <hub:filter-file file="@{file}">
-                <replaceregex pattern="^((?:(?:public|protected|private)\s+)class\s+[a-zA-Z]+\s+)"
-                    replace="@SuppressWarnings({ ${suppress-class-warnings.value} })${n}\1"/>
+                <filterchain>
+                    <replaceregex pattern="^((?:(?:public|protected|private)\s+)?class\s+[a-zA-Z]+\s+)"
+                        replace="@SuppressWarnings({ ${add-class-suppress-warnings.warnings.value} })${n}\1"/>
+                </filterchain>
             </hub:filter-file>
         </sequential>
     </macrodef>

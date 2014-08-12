@@ -11,7 +11,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-@Cache(usage = CacheConcurrencyStrategy.NONE)
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
 @Cacheable
 @Entity(name = "dest")
 @Table(name = "destinations")

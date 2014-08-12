@@ -1,7 +1,6 @@
 package gov.hhs.onc.iishubpilot.interceptor.impl;
 
 import gov.hhs.onc.iishubpilot.ws.HubHttpHeaders;
-import gov.hhs.onc.iishubpilot.ws.utils.HubWsUtils;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -12,8 +11,17 @@ import javax.xml.namespace.QName;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
+import org.apache.cxf.service.model.BindingOperationInfo;
+import org.apache.cxf.transport.http.Headers;
+import org.springframework.beans.factory.annotation.Value;
 
 public abstract class AbstractDevActionInterceptor extends AbstractPhaseInterceptor<Message> {
+    @Value("${hub.data.dest.iis.dev.id}")
+    protected String devDestId;
+
+    @Value("${hub.data.dest.iis.dev.uri}")
+    protected String devDestUri;
+
     protected QName opQname;
     protected Set<String> actionValues = new LinkedHashSet<>();
 
@@ -30,11 +38,13 @@ public abstract class AbstractDevActionInterceptor extends AbstractPhaseIntercep
 
     @Override
     public void handleMessage(Message msg) throws Fault {
-        if (!msg.getExchange().getBindingOperationInfo().getOperationInfo().getName().equals(this.opQname)) {
+        BindingOperationInfo bindingOpInfo = msg.getExchange().getBindingOperationInfo();
+
+        if ((bindingOpInfo == null) || !bindingOpInfo.getOperationInfo().getName().equals(this.opQname)) {
             return;
         }
 
-        Map<String, List<String>> msgHttpHeaders = HubWsUtils.getHttpHeaders(msg);
+        Map<String, List<String>> msgHttpHeaders = Headers.getSetProtocolHeaders(msg);
         List<String> msgActionValues;
         String msgActionValue;
 

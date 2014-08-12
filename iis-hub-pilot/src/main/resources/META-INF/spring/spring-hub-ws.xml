@@ -118,13 +118,6 @@
                     <beans:bean class="org.apache.cxf.feature.LoggingFeature" parent="feature"/>
                 </beans:list>
             </beans:property>
-            <beans:property name="inInterceptors">
-                <beans:list>
-                    <beans:bean class="gov.hhs.onc.iishubpilot.interceptor.impl.MessageTooLargeDevFaultActionInterceptor"
-                        c:opQname="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SUBMIT_SINGLE_MSG_OP }"
-                        c:phase="#{ T(org.apache.cxf.phase.Phase).PRE_INVOKE }"/>
-                </beans:list>
-            </beans:property>
         </beans:bean>
     </beans:beans>
     

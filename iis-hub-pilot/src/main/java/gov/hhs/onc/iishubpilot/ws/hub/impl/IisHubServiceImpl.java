@@ -39,6 +39,7 @@ import org.apache.cxf.jaxws.context.WrappedMessageContext;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
+import org.apache.cxf.transport.http.Headers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -95,14 +96,14 @@ public class IisHubServiceImpl extends AbstractIisService implements IisHubServi
         clientIisFactoryBean.setAddress(destUri.toString());
 
         Map<String, List<String>> httpReqHeaders =
-            HubWsUtils.getHttpHeaders(reqMsg).entrySet().stream()
+            Headers.getSetProtocolHeaders(reqMsg).entrySet().stream()
                 .filter(((Entry<String, List<String>> httpReqHeaderEntry) -> httpReqHeaderEntry.getKey().equalsIgnoreCase(HubHttpHeaders.DEV_ACTION_NAME)))
                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
         clientIisFactoryBean.getOutInterceptors().add(new AbstractPhaseInterceptor<Message>(Phase.PRE_STREAM) {
             @Override
             public void handleMessage(Message clientReqMsg) throws Fault {
-                HubWsUtils.getHttpHeaders(clientReqMsg).putAll(httpReqHeaders);
+                Headers.getSetProtocolHeaders(clientReqMsg).putAll(httpReqHeaders);
             }
         });
 

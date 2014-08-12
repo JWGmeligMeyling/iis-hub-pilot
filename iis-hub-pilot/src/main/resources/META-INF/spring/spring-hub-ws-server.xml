@@ -97,7 +97,7 @@
     = SERVERS: IIS HUB
     =====================================================================================================-->
     <!--suppress SpringPlaceholdersInspection -->
-    <beans:bean id="serverIisHub" parent="serverJaxWs"
+    <beans:bean id="serverIisHub" parent="serverJaxWs" abstract="true"
         p:address="${hub.ws.iis.hub.path}"
         p:endpointName="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).PORT_HUB }"
         p:serviceBean-ref="serviceIisHubImpl"
@@ -121,6 +121,46 @@
         <!--suppress SpringPlaceholdersInspection -->
         <beans:bean id="serverIisDev" parent="serverIis"
             p:address="${hub.ws.iis.dev.path}"
-            p:serviceBean-ref="serviceIisDevImpl"/>
+            p:serviceBean-ref="serviceIisDevImpl">
+            <beans:property name="inInterceptors">
+                <beans:list>
+                    <beans:bean class="gov.hhs.onc.iishubpilot.interceptor.impl.MessageTooLargeDevFaultActionInterceptor"
+                        c:opQname="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SUBMIT_SINGLE_MSG_OP }"
+                        c:phase="#{ T(org.apache.cxf.phase.Phase).PRE_INVOKE }"/>
+                    <beans:bean class="gov.hhs.onc.iishubpilot.interceptor.impl.SecurityFaultActionInterceptor"
+                        c:opQname="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SUBMIT_SINGLE_MSG_OP }"
+                        c:phase="#{ T(org.apache.cxf.phase.Phase).PRE_INVOKE }"/>
+                </beans:list>
+            </beans:property>
+        </beans:bean>
+        
+        <!--====================================================================================================
+        = SERVERS: IIS HUB
+        =====================================================================================================-->
+        <beans:bean id="serverIisHubDev" parent="serverIisHub">
+            <beans:property name="inInterceptors">
+                <beans:list merge="true">
+                    <beans:bean class="gov.hhs.onc.iishubpilot.interceptor.impl.DestinationConnectionFaultActionInterceptor"
+                        c:opQname="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SUBMIT_SINGLE_MSG_OP_HUB }"
+                        c:phase="#{ T(org.apache.cxf.phase.Phase).PRE_INVOKE }"/>
+                    <beans:bean class="gov.hhs.onc.iishubpilot.interceptor.impl.HubClientFaultActionInterceptor"
+                        c:opQname="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SUBMIT_SINGLE_MSG_OP_HUB }"
+                        c:phase="#{ T(org.apache.cxf.phase.Phase).PRE_INVOKE }"/>
+                    <beans:bean class="gov.hhs.onc.iishubpilot.interceptor.impl.UnknownDestinationFaultActionInterceptor"
+                        c:opQname="#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SUBMIT_SINGLE_MSG_OP_HUB }"
+                        c:phase="#{ T(org.apache.cxf.phase.Phase).PRE_INVOKE }"/>
+                </beans:list>
+            </beans:property>
+        </beans:bean>
+    </beans:beans>
+    
+    <!--====================================================================================================
+    = PROFILE: PRODUCTION
+    =====================================================================================================-->
+    <beans:beans profile="!hub.mode.dev,hub.mode.prod">
+        <!--====================================================================================================
+        = SERVERS: IIS HUB
+        =====================================================================================================-->
+        <beans:bean id="serverIisHubProd" parent="serverIisHub"/>
     </beans:beans>
 </beans:beans>

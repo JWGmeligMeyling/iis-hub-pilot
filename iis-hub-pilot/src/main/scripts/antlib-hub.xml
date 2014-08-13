@@ -42,6 +42,76 @@
         <var unset="true"/>
     </presetdef>
     
+    <macrodef name="write-properties">
+        <attribute name="file"/>
+        <attribute name="propertyNames"/>
+        <attribute name="append" default="false"/>
+        <attribute name="encoding" default="${project.build.sourceEncoding}"/>
+        <attribute name="expand" default="false"/>
+        <element name="write-properties.elements" optional="true" implicit="true"/>
+        <sequential>
+            <var name="write-properties.props.expand" value="@{expand}"/>
+            
+            <resources id="write-properties.props.resources"/>
+            
+            <for list="@{propertyNames}" param="propName">
+                <sequential>
+                    <var name="write-properties.prop.name" value="@{propName}"/>
+                    <script language="beanshell"><![CDATA[
+                        import org.apache.commons.lang3.StringUtils;
+                        import org.apache.tools.ant.Project;
+                        import org.apache.tools.ant.types.resources.Resources;
+                        import org.apache.tools.ant.types.resources.StringResource;
+                        
+                        String propName = project.getProperty("write-properties.prop.name"), propValue = project.getProperty(propName);
+                        
+                        if (Project.toBoolean(project.getProperty("write-properties.props.expand"))) {
+                            String prevPropValue;
+                            
+                            do {
+                                propValue = project.replaceProperties((prevPropValue = propValue));
+                            } while (!prevPropValue.equals(propValue));
+                        }
+                        
+                        ((Resources) project.getReference("write-properties.props.resources")).add(new StringResource(propName + "=" + propValue + 
+                            StringUtils.LF));
+                    ]]></script>
+                </sequential>
+            </for>
+            
+            <current:write-file file="@{file}" append="@{append}" encoding="@{encoding}">
+                <resources refid="write-properties.props.resources"/>
+                <write-properties.elements/>
+            </current:write-file>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="read-properties">
+        <element name="read-properties.elements" implicit="true"/>
+        <sequential>
+            <path id="read-properties.props.path">
+                <read-properties.elements/>
+            </path>
+            <script language="beanshell"><![CDATA[
+                import java.io.FileInputStream;
+                import java.util.Properties;
+                import org.apache.tools.ant.types.Path;
+                import org.apache.tools.ant.types.Resource;
+                
+                Properties props;
+                
+                for (String propsFilePath : ((Path) project.getReference("read-properties.props.path")).list()) {
+                    props = new Properties();
+                    props.load(new FileInputStream(propsFilePath));
+                    
+                    for (String propName : props.stringPropertyNames()) {
+                        project.setProperty(propName, props.getProperty(propName));
+                    }
+                }
+            ]]></script>
+        </sequential>
+    </macrodef>
+    
     <macrodef name="filter-file">
         <attribute name="file"/>
         <attribute name="encoding" default="${project.build.sourceEncoding}"/>

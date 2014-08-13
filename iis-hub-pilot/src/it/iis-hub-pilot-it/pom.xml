@@ -177,8 +177,8 @@
                                 </goals>
                                 <configuration>
                                     <outputFolder>${project.build.directory}/surefire-reports</outputFolder>
-                                    <projectFile>${project.build.soapuiDirectory}/soapui-project-hub.xml</projectFile>
-                                    <settingsFile>${project.build.soapuiDirectory}/soapui-settings-hub.xml</settingsFile>
+                                    <projectFile>${project.build.soapuiProjectFile}</projectFile>
+                                    <settingsFile>${project.build.soapuiSettingsFile}</settingsFile>
                                     <soapuiProperties>
                                         <property>
                                             <name>java.security.egd</name>
@@ -234,7 +234,7 @@
                                         </property>
                                         <property>
                                             <name>soapui.properties</name>
-                                            <value>${project.build.soapuiDirectory}/soapui-project-hub.properties</value>
+                                            <value>${project.build.soapuiPropertiesFile}</value>
                                         </property>
                                         <property>
                                             <name>soapui.sslcontext.algorithm</name>

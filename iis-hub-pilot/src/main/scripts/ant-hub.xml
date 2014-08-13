@@ -139,6 +139,78 @@
     <taskdef file="antlib-hub.xml" uri="antlib:gov.hhs.onc.iishubpilot.ant"/>
     <taskdef file="antlib-hub-java.xml" uri="antlib:gov.hhs.onc.iishubpilot.ant.java"/>
     
+    <target name="hub-process-properties" extensionOf="hub-process-components">
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.context.HubProfiles" prefix="hub.context.profile.">
+            <filterchain>
+                <replaceregex pattern="^([\w\.]+)\.(context|mode)(=[^$]+)$" replace="\2.\1\3"/>
+            </filterchain>
+        </hub-java:load-class-constant-properties>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.context.HubProperties" prefix="hub.context.props.">
+            <filterchain>
+                <replaceregex pattern="^([\w\.]+)\.(mode)\.(name|value)(=[^$]+)$" replace="\2.\3.\1\4"/>
+            </filterchain>
+        </hub-java:load-class-constant-properties>
+        
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubCertificateTypes" prefix="hub.crypto.cert.type."/>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubCryptoProviders" prefix="hub.crypto.prov.name.">
+            <filterchain>
+                <replaceregex pattern="^([\w\.]+)\.name(=[^$]+)$" replace="\1\2"/>
+            </filterchain>
+        </hub-java:load-class-constant-properties>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubKeyManagerAlgorithms" prefix="hub.crypto.mgr.key.alg."/>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubKeyPairAlgorithms" prefix="hub.crypto.pair.key.alg."/>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubKeyStoreTypes" prefix="hub.crypto.store.key.type."/>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubSecureRandomSeedSources"
+            prefix="hub.crypto.rand.sec.seed.src.device.">
+            <filterchain>
+                <replaceregex pattern="^([\w\.]+)\.device(=[^$]+)$" replace="\1\2"/>
+            </filterchain>
+        </hub-java:load-class-constant-properties>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubSecureRandomAlgorithms" prefix="hub.crypto.rand.sec.alg."/>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubSignatureAlgorithms" prefix="hub.crypto.sig.alg."/>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubTlsVersions" prefix="hub.crypto.">
+            <filterchain>
+                <replaceregex pattern="^(ssl|tls)((?:\.\d)+)\.name(=[^$]+)$" replace="\1.version\2\3"/>
+            </filterchain>
+        </hub-java:load-class-constant-properties>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.crypto.HubTrustManagerAlgorithms" prefix="hub.crypto.mgr.trust.alg."/>
+        
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.ws.HubHttpHeaders" prefix="hub.ws.http.header.">
+            <filterchain>
+                <replaceregex pattern="^([\w\.]+)\.(name|value)(=[^$]+)$" replace="\2.\1\3"/>
+            </filterchain>
+        </hub-java:load-class-constant-properties>
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.ws.HubWsNames" prefix="hub.ws.name."/>
+        
+        <hub-java:load-class-constant-properties className="gov.hhs.onc.iishubpilot.xml.HubXmlNs" prefix="hub.xml.ns."/>
+        
+        <propertyset id="hub-process-properties.props.consts">
+            <propertyref prefix="hub.context.profile."/>
+            <propertyref prefix="hub.context.props."/>
+            <propertyref prefix="hub.crypto.cert.type."/>
+            <propertyref prefix="hub.crypto.prov.name."/>
+            <propertyref prefix="hub.crypto.mgr.key.alg."/>
+            <propertyref prefix="hub.crypto.pair.key.alg."/>
+            <propertyref prefix="hub.crypto.store.key.type."/>
+            <propertyref prefix="hub.crypto.rand.sec.alg."/>
+            <propertyref prefix="hub.crypto.rand.sec.seed.src.device."/>
+            <propertyref prefix="hub.crypto.sig.alg."/>
+            <propertyref regex="^hub\.crypto.(?:ssl|tls)\.version"/>
+            <propertyref prefix="hub.crypto.mgr.trust.alg."/>
+            <propertyref prefix="hub.ws.http.header."/>
+            <propertyref prefix="hub.ws.name."/>
+            <propertyref prefix="hub.xml.ns."/>
+        </propertyset>
+        <hub:propertylist id="hub-process-properties.props.list.consts">
+            <propertyset refid="hub-process-properties.props.consts"/>
+        </hub:propertylist>
+        
+        <hub:write-properties file="${project.build.directory}/${project.artifactId}/WEB-INF/classes/META-INF/hub/hub-consts.properties"
+            propertyNames="${toString:hub-process-properties.props.list.consts}"/>
+    </target>
+    
+    <extension-point name="hub-process-components" depends="hub-init"/>
+    
     <target name="hub-init">
         <property environment="env"/>
         

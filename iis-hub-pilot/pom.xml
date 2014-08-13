@@ -316,6 +316,19 @@
                             </target>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>process-components</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <ant antfile="${project.build.scriptSourceDirectory}/ant-hub.xml" target="hub-process-components" inheritRefs="true"
+                                    useNativeBasedir="true"/>
+                            </target>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>

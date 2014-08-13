@@ -206,14 +206,8 @@
                     <if>
                         <not><hub:isempty string="@{generate-certificate.exts.line}"/></not>
                         <then>
-                            <if>
-                                <not><hub:isempty string="${generate-certificate.exts.args}"/></not>
-                                <then>
-                                    <var name="generate-certificate.exts.args" value="${generate-certificate.exts.args} "/>
-                                </then>
-                            </if>
                             <var name="generate-certificate.exts.args"
-                                value="${generate-certificate.exts.args}-ext &quot;@{generate-certificate.exts.line}&quot;"/>
+                                value="${generate-certificate.exts.args}${generate-certificate.exts.args:+~ }-ext &quot;@{generate-certificate.exts.line}&quot;"/>
                         </then>
                     </if>
                 </sequential>

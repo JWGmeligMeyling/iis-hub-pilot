@@ -90,10 +90,14 @@
         <project.build.dbSourceDirectory>${project.basedir}/src/db</project.build.dbSourceDirectory>
         <!-- Project build integration test properties -->
         <project.build.itDirectory>${project.build.directory}/it</project.build.itDirectory>
+        <project.build.itSystemPropertiesFile>${project.build.itDirectory}/${project.artifactId}-it/test.properties</project.build.itSystemPropertiesFile>
         <!-- Project build integration test source properties -->
         <project.build.itSourceDirectory>${project.basedir}/src/it</project.build.itSourceDirectory>
         <!-- Project build SoapUI properties -->
         <project.build.soapuiDirectory>${project.build.directory}/soapui</project.build.soapuiDirectory>
+        <project.build.soapuiProjectFile>${project.build.soapuiDirectory}/soapui-project-hub.xml</project.build.soapuiProjectFile>
+        <project.build.soapuiPropertiesFile>${project.build.soapuiDirectory}/soapui-project-hub.properties</project.build.soapuiPropertiesFile>
+        <project.build.soapuiSettingsFile>${project.build.soapuiDirectory}/soapui-settings-hub.xml</project.build.soapuiSettingsFile>
         <!-- Project build SoapUI source properties -->
         <project.build.soapuiSourceDirectory>${project.basedir}/src/soapui</project.build.soapuiSourceDirectory>
         <!-- Project build source properties -->

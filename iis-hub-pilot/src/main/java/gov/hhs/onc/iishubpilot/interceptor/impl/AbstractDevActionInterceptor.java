@@ -1,15 +1,18 @@
 package gov.hhs.onc.iishubpilot.interceptor.impl;
 
 import gov.hhs.onc.iishubpilot.ws.HubHttpHeaders;
+import gov.hhs.onc.iishubpilot.ws.hub.HubRequestHeaderType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.xml.namespace.QName;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Message;
+import org.apache.cxf.message.MessageContentsList;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.transport.http.Headers;
@@ -39,8 +42,15 @@ public abstract class AbstractDevActionInterceptor extends AbstractPhaseIntercep
     @Override
     public void handleMessage(Message msg) throws Fault {
         BindingOperationInfo bindingOpInfo = msg.getExchange().getBindingOperationInfo();
+        MessageContentsList msgContentsList;
+        HubRequestHeaderType hubReqHeader;
 
-        if ((bindingOpInfo == null) || !bindingOpInfo.getOperationInfo().getName().equals(this.opQname)) {
+        if ((bindingOpInfo == null)
+            || !bindingOpInfo.getOperationInfo().getName().equals(this.opQname)
+            || ((msgContentsList = MessageContentsList.getContentsList(msg)) == null)
+            || ((hubReqHeader =
+                ((HubRequestHeaderType) msgContentsList.stream().filter(((Object msgContentObj) -> (msgContentObj instanceof HubRequestHeaderType)))
+                    .findFirst().get())) == null) || !Objects.equals(hubReqHeader.getDestinationId(), this.devDestId)) {
             return;
         }
 

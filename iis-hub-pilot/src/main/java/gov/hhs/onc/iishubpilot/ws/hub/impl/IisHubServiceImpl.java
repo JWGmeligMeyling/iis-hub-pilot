@@ -30,7 +30,6 @@ import javax.jws.WebService;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.ws.Holder;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.cxf.binding.soap.SoapMessage;
@@ -41,7 +40,6 @@ import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.transport.http.Headers;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 
 @WebService(portName = HubWsNames.PORT_HUB, serviceName = HubWsNames.SERVICE_HUB, targetNamespace = HubXmlNs.IIS_HUB)
 public class IisHubServiceImpl extends AbstractIisService implements IisHubService, IisHubPortType {
@@ -116,11 +114,6 @@ public class IisHubServiceImpl extends AbstractIisService implements IisHubServi
         }
 
         return new MutablePair<>(clientIis.submitSingleMessage(reqParams), new HubResponseHeaderTypeImpl(destId, destUriStr));
-    }
-
-    @Scheduled(fixedRate = (DateUtils.MILLIS_PER_MINUTE * 5))
-    private void evictDestinationCache() {
-        this.destReg.evictCache();
     }
 
     @Override

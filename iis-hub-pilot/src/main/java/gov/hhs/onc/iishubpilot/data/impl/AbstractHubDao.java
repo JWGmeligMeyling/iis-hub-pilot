@@ -25,11 +25,6 @@ public abstract class AbstractHubDao<T extends Serializable, U extends HubEntity
     }
 
     @Override
-    public void evictCache() {
-        this.sessionFactory.getCache().evictEntityRegion(this.entityImplClass);
-    }
-
-    @Override
     public List<U> findAll() {
         return this.findByCriteria();
     }

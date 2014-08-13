@@ -21,11 +21,6 @@ public abstract class AbstractHubDataService<T extends Serializable, U extends H
     }
 
     @Override
-    public void evictCache() {
-        this.dao.evictCache();
-    }
-
-    @Override
     public List<U> findAll() {
         return this.dao.findAll();
     }

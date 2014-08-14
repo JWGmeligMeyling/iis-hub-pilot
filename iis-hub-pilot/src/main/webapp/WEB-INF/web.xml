@@ -67,7 +67,19 @@
     </listener>
     
     <!--====================================================================================================
-    = LOGIN CONFIG
+    = SESSION CONFIGURATION
+    =====================================================================================================-->
+    <session-config>
+        <session-timeout>1</session-timeout>
+        <cookie-config>
+            <http-only>true</http-only>
+            <secure>true</secure>
+        </cookie-config>
+        <tracking-mode>SSL</tracking-mode>
+    </session-config>
+    
+    <!--====================================================================================================
+    = LOGIN CONFIGURATION
     =====================================================================================================-->
     <login-config>
         <auth-method>CLIENT-CERT</auth-method>

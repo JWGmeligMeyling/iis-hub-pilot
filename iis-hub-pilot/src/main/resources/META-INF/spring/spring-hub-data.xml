@@ -55,7 +55,6 @@
                 <beans:prop key="#{ T(org.hibernate.cfg.AvailableSettings).CACHE_REGION_FACTORY }">org.hibernate.cache.ehcache.EhCacheRegionFactory</beans:prop>
                 <!--suppress SpringPlaceholdersInspection -->
                 <beans:prop key="#{ T(org.hibernate.cfg.AvailableSettings).DIALECT }">${hub.data.db.hibernate.dialect}</beans:prop>
-                <beans:prop key="#{ T(org.hibernate.cfg.AvailableSettings).FORMAT_SQL }">true</beans:prop>
                 <beans:prop key="#{ T(org.hibernate.cfg.AvailableSettings).SHOW_SQL }">true</beans:prop>
             </beans:props>
         </beans:property>

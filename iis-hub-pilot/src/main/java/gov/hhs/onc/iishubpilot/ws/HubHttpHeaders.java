@@ -1,8 +1,13 @@
 package gov.hhs.onc.iishubpilot.ws;
 
+import org.apache.commons.lang3.StringUtils;
+
 public final class HubHttpHeaders {
     private final static String PREFIX = "X-IIS-Hub-";
     private final static String DEV_PREFIX = PREFIX + "Dev-";
+
+    public final static String DELIM = StringUtils.CR + StringUtils.LF;
+    public final static String ENTRY_DELIM = ": ";
 
     public final static String DEV_ACTION_NAME = DEV_PREFIX + "Action";
 

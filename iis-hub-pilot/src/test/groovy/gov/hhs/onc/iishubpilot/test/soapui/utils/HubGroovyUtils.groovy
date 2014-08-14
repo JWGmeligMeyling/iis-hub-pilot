@@ -1,10 +1,15 @@
 package gov.hhs.onc.iishubpilot.test.soapui.utils
 
 import com.eviware.soapui.support.GroovyUtils
+import gov.hhs.onc.iishubpilot.crypto.HubCryptoProviders
 import java.nio.file.Paths
 
 final class HubGroovyUtils {
     private final static DATA_DIR_NAME = "data";
+    
+    static {
+        HubCryptoProviders.resetProviders();
+    }
     
     private HubGroovyUtils() {
     }

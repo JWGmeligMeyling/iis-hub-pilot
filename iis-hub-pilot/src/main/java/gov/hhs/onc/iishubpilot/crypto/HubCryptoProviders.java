@@ -15,10 +15,20 @@ public final class HubCryptoProviders {
     public final static Provider SUN_JSSE = Security.getProvider(SUN_JSSE_NAME);
 
     static {
-        Security.removeProvider(SUN_NAME);
-        Security.insertProviderAt(SUN, 1);
+        resetProviders();
     }
 
     private HubCryptoProviders() {
+    }
+
+    public static void resetProviders() {
+        Security.removeProvider(SUN_NAME);
+        Security.insertProviderAt(SUN, 1);
+
+        Security.removeProvider(SUN_JSSE_NAME);
+        Security.insertProviderAt(SUN_JSSE, 2);
+
+        Security.removeProvider(BC_NAME);
+        Security.insertProviderAt(BC, 3);
     }
 }

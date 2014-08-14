@@ -1,27 +1,28 @@
 package gov.hhs.onc.iishubpilot.interceptor.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.xml.namespace.QName;
+import gov.hhs.onc.iishubpilot.interceptor.DevFaultActionInterceptor;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.message.MessageUtils;
 
-public abstract class AbstractDevFaultActionInterceptor extends AbstractDevActionInterceptor {
-    protected AbstractDevFaultActionInterceptor(String phase, QName opQname, String ... actionValues) {
-        super(phase, opQname, actionValues);
-    }
+public abstract class AbstractDevFaultActionInterceptor<T extends RuntimeException> extends AbstractDevActionInterceptor implements
+    DevFaultActionInterceptor<T> {
+    protected Class<T> faultClass;
 
-    protected AbstractDevFaultActionInterceptor(String phase, QName opQname, Set<String> actionValues) {
-        super(phase, opQname, actionValues);
+    protected AbstractDevFaultActionInterceptor(String phase, Class<T> faultClass) {
+        super(phase);
+
+        this.faultClass = faultClass;
     }
 
     @Override
-    protected void handleAction(Message msg, Map<String, List<String>> msgHttpHeaders, String msgActionValue) throws Exception {
-        if (!MessageUtils.isFault(msg)) {
-            throw this.handleActionFault(msg, msgHttpHeaders, msgActionValue);
-        }
+    protected void handleActionMessage(Message msg, String msgActionValue) throws Exception {
+        throw this.createActionFault(msg, msgActionValue);
     }
 
-    protected abstract RuntimeException handleActionFault(Message msg, Map<String, List<String>> msgHttpHeaders, String msgActionValue) throws Exception;
+    protected abstract T createActionFault(Message msg, String msgActionValue);
+
+    @Override
+    protected boolean canHandleMessage(Message msg) {
+        return (!MessageUtils.isFault(msg) && super.canHandleMessage(msg));
+    }
 }

@@ -1,76 +1,71 @@
 package gov.hhs.onc.iishubpilot.interceptor.impl;
 
+import gov.hhs.onc.iishubpilot.interceptor.DevActionInterceptor;
 import gov.hhs.onc.iishubpilot.ws.HubHttpHeaders;
 import gov.hhs.onc.iishubpilot.ws.hub.HubRequestHeaderType;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import javax.xml.namespace.QName;
-import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.message.MessageContentsList;
-import org.apache.cxf.phase.AbstractPhaseInterceptor;
-import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.transport.http.Headers;
 import org.springframework.beans.factory.annotation.Value;
 
-public abstract class AbstractDevActionInterceptor extends AbstractPhaseInterceptor<Message> {
+public abstract class AbstractDevActionInterceptor extends AbstractHubOperationInterceptor<Message> implements DevActionInterceptor {
     @Value("${hub.data.dest.iis.dev.id}")
     protected String devDestId;
 
     @Value("${hub.data.dest.iis.dev.uri}")
     protected String devDestUri;
 
-    protected QName opQname;
     protected Set<String> actionValues = new LinkedHashSet<>();
 
-    protected AbstractDevActionInterceptor(String phase, QName opQname, String ... actionValues) {
-        this(phase, opQname, Arrays.asList(actionValues));
-    }
-
-    protected AbstractDevActionInterceptor(String phase, QName opQname, Collection<String> actionValues) {
+    protected AbstractDevActionInterceptor(String phase) {
         super(phase);
-
-        this.opQname = opQname;
-        this.actionValues.addAll(actionValues);
     }
 
     @Override
-    public void handleMessage(Message msg) throws Fault {
-        BindingOperationInfo bindingOpInfo = msg.getExchange().getBindingOperationInfo();
+    protected void handleMessageInternal(Message msg) throws Exception {
+        this.handleActionMessage(msg, ((String) msg.get(HubHttpHeaders.DEV_ACTION_NAME)));
+    }
+
+    protected abstract void handleActionMessage(Message msg, String msgActionValue) throws Exception;
+
+    @Override
+    protected boolean canHandleMessage(Message msg) {
         MessageContentsList msgContentsList;
         HubRequestHeaderType hubReqHeader;
-
-        if ((bindingOpInfo == null)
-            || !bindingOpInfo.getOperationInfo().getName().equals(this.opQname)
-            || ((msgContentsList = MessageContentsList.getContentsList(msg)) == null)
-            || ((hubReqHeader =
-                ((HubRequestHeaderType) msgContentsList.stream().filter(((Object msgContentObj) -> (msgContentObj instanceof HubRequestHeaderType)))
-                    .findFirst().get())) == null) || !Objects.equals(hubReqHeader.getDestinationId(), this.devDestId)) {
-            return;
-        }
-
-        Map<String, List<String>> msgHttpHeaders = Headers.getSetProtocolHeaders(msg);
+        Map<String, List<String>> msgHttpHeaders;
         List<String> msgActionValues;
         String msgActionValue;
 
-        if (!msgHttpHeaders.containsKey(HubHttpHeaders.DEV_ACTION_NAME) || (msgActionValues = msgHttpHeaders.get(HubHttpHeaders.DEV_ACTION_NAME)).isEmpty()
+        if (!super.canHandleMessage(msg)
+            || ((msgContentsList = MessageContentsList.getContentsList(msg)) == null)
+            || ((hubReqHeader =
+                ((HubRequestHeaderType) msgContentsList.stream().filter(((Object msgContentObj) -> (msgContentObj instanceof HubRequestHeaderType)))
+                    .findFirst().get())) == null) || !Objects.equals(hubReqHeader.getDestinationId(), this.devDestId)
+            || !(msgHttpHeaders = Headers.getSetProtocolHeaders(msg)).containsKey(HubHttpHeaders.DEV_ACTION_NAME)
+            || (msgActionValues = msgHttpHeaders.get(HubHttpHeaders.DEV_ACTION_NAME)).isEmpty()
             || !this.actionValues.contains((msgActionValue = msgActionValues.get(0)))) {
-            return;
-        }
+            return false;
+        } else {
+            msg.put(HubHttpHeaders.DEV_ACTION_NAME, msgActionValue);
 
-        try {
-            this.handleAction(msg, msgHttpHeaders, msgActionValue);
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to handle message action.", e);
+            return true;
         }
     }
 
-    protected abstract void handleAction(Message msg, Map<String, List<String>> msgHttpHeaders, String msgActionValue) throws Exception;
+    @Override
+    public Set<String> getActionValues() {
+        return this.actionValues;
+    }
+
+    @Override
+    public void setActionValues(Collection<String> actionValues) {
+        this.actionValues.clear();
+        this.actionValues.addAll(actionValues);
+    }
 }

@@ -1,32 +1,55 @@
 package gov.hhs.onc.iishubpilot.ws.utils;
 
-import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
-import org.apache.cxf.headers.Header;
 import org.apache.cxf.jaxws.context.WrappedMessageContext;
+import org.apache.cxf.message.Message;
 import org.apache.cxf.transport.http.AbstractHTTPDestination;
 
 public final class HubWsUtils {
     private HubWsUtils() {
     }
 
-    @SuppressWarnings({ "unchecked" })
-    public static List<Header> getSoapHeaders(MessageContext msgContext) {
-        return ((List<Header>) msgContext.get(Header.HEADER_LIST));
+    @Nullable
+    public static HttpServletResponse getHttpServletResponse(Message msg) {
+        return getProperty(msg, AbstractHTTPDestination.HTTP_RESPONSE, HttpServletResponse.class);
     }
 
+    @Nullable
     public static HttpServletResponse getHttpServletResponse(MessageContext msgContext) {
-        return ((HttpServletResponse) msgContext.get(AbstractHTTPDestination.HTTP_RESPONSE));
+        return getProperty(msgContext, AbstractHTTPDestination.HTTP_RESPONSE, HttpServletResponse.class);
     }
 
+    @Nullable
+    public static HttpServletRequest getHttpServletRequest(Message msg) {
+        return getProperty(msg, AbstractHTTPDestination.HTTP_REQUEST, HttpServletRequest.class);
+    }
+
+    @Nullable
     public static HttpServletRequest getHttpServletRequest(MessageContext msgContext) {
-        return ((HttpServletRequest) msgContext.get(AbstractHTTPDestination.HTTP_REQUEST));
+        return getProperty(msgContext, AbstractHTTPDestination.HTTP_REQUEST, HttpServletRequest.class);
+    }
+
+    @Nullable
+    public static <T> T getProperty(Message msg, String propName, Class<T> propValueClass) {
+        return getPropertyInternal(msg, propName, propValueClass);
+    }
+
+    @Nullable
+    public static <T> T getProperty(MessageContext msgContext, String propName, Class<T> propValueClass) {
+        return getPropertyInternal(msgContext, propName, propValueClass);
     }
 
     public static WrappedMessageContext getMessageContext(WebServiceContext wsContext) {
         return ((WrappedMessageContext) wsContext.getMessageContext());
+    }
+
+    @Nullable
+    private static <T> T getPropertyInternal(Map<String, Object> props, String propName, Class<T> propValueClass) {
+        return propValueClass.cast(props.get(propName));
     }
 }

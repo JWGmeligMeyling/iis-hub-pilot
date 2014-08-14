@@ -81,17 +81,42 @@
     =====================================================================================================-->
     <beans:bean id="interceptor" class="org.apache.cxf.interceptor.Interceptor" abstract="true"/>
     
-    <!--====================================================================================================
-    = INTERCEPTORS: PHASE
-    =====================================================================================================-->
     <beans:bean id="interceptorPhase" class="org.apache.cxf.phase.PhaseInterceptor" parent="interceptor" abstract="true"/>
     
+    <!--====================================================================================================
+    = INTERCEPTORS: OPERATIONS
+    =====================================================================================================-->
+    <beans:bean id="interceptorOp" class="gov.hhs.onc.iishubpilot.interceptor.HubOperationInterceptor" parent="interceptorPhase" abstract="true"/>
+    
+    <!--====================================================================================================
+    = INTERCEPTORS: XML
+    =====================================================================================================-->
     <beans:bean id="interceptorXmlCdata" class="gov.hhs.onc.iishubpilot.interceptor.impl.CdataAwareXmlInterceptor" parent="interceptorPhase">
         <beans:constructor-arg name="cdataElemQnames">
             <beans:set>
                 <beans:value>#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).CXF_FAULT_ROOT_STACK_TRACE }</beans:value>
             </beans:set>
         </beans:constructor-arg>
+    </beans:bean>
+    
+    <!--====================================================================================================
+    = INTERCEPTORS: AUDIT
+    =====================================================================================================-->
+    <beans:bean id="interceptorAudit" class="gov.hhs.onc.iishubpilot.interceptor.AuditInterceptor" parent="interceptorOp" abstract="true"/>
+    
+    <beans:bean id="interceptorAuditSubmitSingleMsg" class="gov.hhs.onc.iishubpilot.interceptor.impl.SubmitSingleMessageAuditInterceptor"
+        parent="interceptorAudit" abstract="true"/>
+    
+    <!--====================================================================================================
+    = INTERCEPTORS: IIS HUB AUDIT
+    =====================================================================================================-->
+    <beans:bean id="interceptorAuditSubmitSingleMsgIisHub" parent="interceptorAuditSubmitSingleMsg" abstract="true">
+        <beans:constructor-arg name="auditEventSender" ref="auditEventSenderSubmitSingleMsg"/>
+        <beans:property name="operationQnames">
+            <beans:set>
+                <beans:value>#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SUBMIT_SINGLE_MSG_OP_HUB }</beans:value>
+            </beans:set>
+        </beans:property>
     </beans:bean>
     
     <!--====================================================================================================

@@ -6,6 +6,8 @@ import javax.annotation.Nullable;
 import org.hibernate.criterion.Criterion;
 
 public interface HubDataAccessor<T extends Serializable, U extends HubEntity<T>> {
+    public void save(U entity);
+
     public List<U> findAll();
 
     public List<U> findByCriteria(Criterion ... criterions);

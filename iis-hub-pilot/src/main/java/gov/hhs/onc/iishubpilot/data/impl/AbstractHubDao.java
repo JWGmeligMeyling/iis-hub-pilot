@@ -25,6 +25,11 @@ public abstract class AbstractHubDao<T extends Serializable, U extends HubEntity
     }
 
     @Override
+    public void save(U entity) {
+        this.getSession().save(entity);
+    }
+
+    @Override
     public List<U> findAll() {
         return this.findByCriteria();
     }

@@ -59,8 +59,8 @@ public class IisHubServiceImpl extends AbstractIisService implements IisHubServi
         MessageTooLargeFault, SecurityFault, UnknownDestinationFault {
         Pair<SubmitSingleMessageResponseType, HubResponseHeaderType> respPair = this.submitSingleMessageInternal(reqParams, hubReqHeader);
 
-        this.auditor.auditSubmitSingleMessage(this.wsContext, reqParams, hubReqHeader, (respParams.value = respPair.getLeft()),
-            (hubRespHeader.value = respPair.getRight()));
+        respParams.value = respPair.getLeft();
+        hubRespHeader.value = respPair.getRight();
     }
 
     private Pair<SubmitSingleMessageResponseType, HubResponseHeaderType> submitSingleMessageInternal(SubmitSingleMessageRequestType reqParams,
@@ -80,6 +80,7 @@ public class IisHubServiceImpl extends AbstractIisService implements IisHubServi
 
         if (!destUri.isAbsolute()) {
             try {
+                // noinspection ConstantConditions
                 destUriStr =
                     (destUri =
                         destUri.relativize(new URI(httpServletReq.getScheme(), null, httpServletReq.getServerName(), httpServletReq.getServerPort(),

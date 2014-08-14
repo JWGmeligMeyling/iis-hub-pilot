@@ -1,6 +1,5 @@
 package gov.hhs.onc.iishubpilot.ws.impl;
 
-import gov.hhs.onc.iishubpilot.audit.HubAuditor;
 import gov.hhs.onc.iishubpilot.ws.ConnectivityTestRequestType;
 import gov.hhs.onc.iishubpilot.ws.ConnectivityTestResponseType;
 import gov.hhs.onc.iishubpilot.ws.IisService;
@@ -17,15 +16,10 @@ public abstract class AbstractIisService implements IisService {
 
     protected AbstractApplicationContext appContext;
     protected ObjectFactory objFactory;
-    protected HubAuditor auditor;
 
     @Override
     public ConnectivityTestResponseType connectivityTest(ConnectivityTestRequestType reqParams) throws UnsupportedOperationFault {
-        ConnectivityTestResponseType respParams = this.connectivityTestInternal(reqParams);
-
-        this.auditor.auditConnectivityTest(this.wsContext, reqParams, respParams);
-
-        return respParams;
+        return this.connectivityTestInternal(reqParams);
     }
 
     protected ConnectivityTestResponseType connectivityTestInternal(ConnectivityTestRequestType reqParams) {
@@ -38,16 +32,6 @@ public abstract class AbstractIisService implements IisService {
     @Override
     public void setApplicationContext(ApplicationContext appContext) throws BeansException {
         this.appContext = ((AbstractApplicationContext) appContext);
-    }
-
-    @Override
-    public HubAuditor getAuditor() {
-        return this.auditor;
-    }
-
-    @Override
-    public void setAuditor(HubAuditor auditor) {
-        this.auditor = auditor;
     }
 
     @Override

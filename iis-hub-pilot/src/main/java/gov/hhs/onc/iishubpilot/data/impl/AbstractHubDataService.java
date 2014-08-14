@@ -21,6 +21,12 @@ public abstract class AbstractHubDataService<T extends Serializable, U extends H
     }
 
     @Override
+    @Transactional(readOnly = false)
+    public void save(U entity) {
+        this.dao.save(entity);
+    }
+
+    @Override
     public List<U> findAll() {
         return this.dao.findAll();
     }

@@ -1,21 +1,21 @@
 package gov.hhs.onc.iishubpilot.audit.impl;
 
-import gov.hhs.onc.iishubpilot.audit.HubAuditDao;
+import gov.hhs.onc.iishubpilot.audit.HubAuditEventDao;
 import gov.hhs.onc.iishubpilot.audit.HubAuditEvent;
 import gov.hhs.onc.iishubpilot.audit.HubAuditEventListener;
-import gov.hhs.onc.iishubpilot.audit.HubAuditService;
+import gov.hhs.onc.iishubpilot.audit.HubAuditEventService;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
-public abstract class AbstractHubAuditEventListener<T extends HubAuditEvent, U extends HubAuditDao<T>, V extends HubAuditService<T, U>> implements
+public abstract class AbstractHubAuditEventListener<T extends HubAuditEvent, U extends HubAuditEventDao<T>, V extends HubAuditEventService<T, U>> implements
     HubAuditEventListener<T, U, V> {
     protected Class<T> auditEventClass;
-    protected V auditService;
+    protected V auditEventService;
 
-    protected AbstractHubAuditEventListener(Class<T> auditEventClass, V auditService) {
+    protected AbstractHubAuditEventListener(Class<T> auditEventClass, V auditEventService) {
         this.auditEventClass = auditEventClass;
-        this.auditService = auditService;
+        this.auditEventService = auditEventService;
     }
 
     @Override

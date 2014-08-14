@@ -1,6 +1,5 @@
 package gov.hhs.onc.iishubpilot.audit;
 
-import java.net.URI;
 import javax.annotation.Nullable;
 
 public interface SubmitSingleMessageAuditEvent extends HubAuditEvent {
@@ -21,7 +20,7 @@ public interface SubmitSingleMessageAuditEvent extends HubAuditEvent {
     public boolean hasResponseDestinationUri();
 
     @Nullable
-    public URI getResponseDestinationUri();
+    public String getResponseDestinationUri();
 
-    public void setResponseDestinationUri(@Nullable URI respDestUri);
+    public void setResponseDestinationUri(@Nullable String respDestUri);
 }

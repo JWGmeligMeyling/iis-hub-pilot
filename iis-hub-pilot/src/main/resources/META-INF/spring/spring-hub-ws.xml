@@ -105,13 +105,15 @@
     <beans:bean id="interceptorAudit" class="gov.hhs.onc.iishubpilot.interceptor.AuditInterceptor" parent="interceptorOp" abstract="true"/>
     
     <beans:bean id="interceptorAuditSubmitSingleMsg" class="gov.hhs.onc.iishubpilot.interceptor.impl.SubmitSingleMessageAuditInterceptor"
-        parent="interceptorAudit" abstract="true"/>
+        parent="interceptorAudit" abstract="true">
+        <beans:constructor-arg name="jmsDest" ref="queueAudit"/>
+        <beans:constructor-arg name="jmsTemplate" ref="templateJmsAuditSubmitSingleMsg"/>
+    </beans:bean>
     
     <!--====================================================================================================
     = INTERCEPTORS: IIS HUB AUDIT
     =====================================================================================================-->
     <beans:bean id="interceptorAuditSubmitSingleMsgIisHub" parent="interceptorAuditSubmitSingleMsg" abstract="true">
-        <beans:constructor-arg name="auditEventSender" ref="auditEventSenderSubmitSingleMsg"/>
         <beans:property name="operationQnames">
             <beans:set>
                 <beans:value>#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SUBMIT_SINGLE_MSG_OP_HUB }</beans:value>

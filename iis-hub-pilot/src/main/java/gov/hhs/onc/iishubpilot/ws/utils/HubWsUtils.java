@@ -8,10 +8,19 @@ import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 import org.apache.cxf.jaxws.context.WrappedMessageContext;
 import org.apache.cxf.message.Message;
+import org.apache.cxf.message.MessageContentsList;
 import org.apache.cxf.transport.http.AbstractHTTPDestination;
 
 public final class HubWsUtils {
     private HubWsUtils() {
+    }
+
+    @Nullable
+    public static <T> T getMessageContentPart(Message msg, Class<T> msgContentPartClass) {
+        MessageContentsList msgContents = MessageContentsList.getContentsList(msg);
+
+        return ((msgContents != null) ? msgContentPartClass.cast(msgContents.stream()
+            .filter(((Object msgContentPart) -> (msgContentPartClass.isAssignableFrom(msgContentPart.getClass())))).findFirst().orElse(null)) : null);
     }
 
     @Nullable

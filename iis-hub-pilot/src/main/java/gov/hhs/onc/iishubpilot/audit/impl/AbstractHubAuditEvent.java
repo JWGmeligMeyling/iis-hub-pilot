@@ -10,6 +10,8 @@ import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @MappedSuperclass
 public abstract class AbstractHubAuditEvent extends AbstractHubEntity<BigInteger> implements HubAuditEvent {
@@ -20,6 +22,7 @@ public abstract class AbstractHubAuditEvent extends AbstractHubEntity<BigInteger
     protected int reqLocalPort;
     protected String reqMethod;
     protected String reqMsgId;
+    protected String reqPath;
     protected String reqProtocol;
     protected String reqQuery;
     protected String reqRemoteName;
@@ -127,6 +130,23 @@ public abstract class AbstractHubAuditEvent extends AbstractHubEntity<BigInteger
         this.reqMethod = reqMethod;
     }
 
+    @Override
+    public boolean hasRequestPath() {
+        return (this.reqPath != null);
+    }
+
+    @Column(name = "req_path")
+    @Nullable
+    @Override
+    public String getRequestPath() {
+        return this.reqPath;
+    }
+
+    @Override
+    public void setRequestPath(@Nullable String reqPath) {
+        this.reqPath = reqPath;
+    }
+
     @Column(name = "req_protocol", nullable = false)
     @Override
     public String getRequestProtocol() {
@@ -225,6 +245,7 @@ public abstract class AbstractHubAuditEvent extends AbstractHubEntity<BigInteger
 
     @Column(name = "req_timestamp", nullable = false)
     @Override
+    @Temporal(TemporalType.TIMESTAMP)
     public Date getRequestTimestamp() {
         return this.reqTimestamp;
     }

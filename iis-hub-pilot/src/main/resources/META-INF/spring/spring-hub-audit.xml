@@ -20,35 +20,44 @@
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
     
     <!--====================================================================================================
-    = ACTIVEMQ BROKERS
+    = ACTIVEMQ BROKER SERVICES
     =====================================================================================================-->
-    <amq:broker id="brokerAudit" brokerName="brokerAudit" persistent="false" schedulerSupport="false" useJmx="false" useShutdownHook="false">
-        <amq:managementContext>
-            <amq:managementContext createConnector="false" createMBeanServer="false" useMBeanServer="false"/>
-        </amq:managementContext>
-        <amq:plugins>
-            <amq:statisticsBrokerPlugin/>
-        </amq:plugins>
-        <amq:systemUsage>
-            <amq:systemUsage>
-                <amq:memoryUsage>
-                    <amq:memoryUsage limit="128M"/>
-                </amq:memoryUsage>
-            </amq:systemUsage>
-        </amq:systemUsage>
-        <amq:transportConnectors>
-            <amq:transportConnector enableStatusMonitor="true" uri="nio://#{ T(java.net.InetAddress).localHost.hostName }:0?closeAsync=false"/>
-        </amq:transportConnectors>
-    </amq:broker>
+    <beans:bean id="brokerService" class="org.apache.activemq.broker.BrokerService" abstract="true"
+        p:enableStatistics="true"
+        p:persistent="false"
+        p:schedulerSupport="false"
+        p:useJmx="false"
+        p:useShutdownHook="false">
+        <beans:property name="managementContext">
+            <beans:bean class="org.apache.activemq.broker.jmx.ManagementContext"
+                p:createConnector="false"
+                p:createMBeanServer="false"
+                p:useMBeanServer="false"/>
+        </beans:property>
+    </beans:bean>
     
-    <beans:bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean" depends-on="brokerAudit"
+    <beans:bean id="brokerServiceAudit" parent="brokerService"
+        p:brokerName="brokerAudit">
+        <beans:property name="transportConnectors">
+            <beans:list>
+                <beans:bean class="org.apache.activemq.broker.TransportConnector"
+                    p:enableStatusMonitor="true"
+                    p:uri="nio://#{ T(java.net.InetAddress).localHost.hostName }:0?closeAsync=false"/>
+            </beans:list>
+        </beans:property>
+    </beans:bean>
+    
+    <beans:bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean" depends-on="brokerServiceAudit"
         p:targetClass="gov.hhs.onc.iishubpilot.crypto.HubCryptoProviders"
         p:targetMethod="resetProviders"/>
     
     <!--====================================================================================================
     = ACTIVEMQ QUEUES
     =====================================================================================================-->
-    <amq:queue id="queueAudit" physicalName="queueAudit"/>
+    <beans:bean id="queue" class="org.apache.activemq.command.ActiveMQQueue" abstract="true"/>
+    
+    <beans:bean id="queueAudit" parent="queue"
+        p:physicalName="queueAudit"/>
     
     <!--====================================================================================================
     = JMS CONNECTION FACTORIES
@@ -60,16 +69,16 @@
     =====================================================================================================-->
     <beans:bean id="connFactoryJmsActiveMq" class="org.apache.activemq.spring.ActiveMQConnectionFactory" parent="connFactoryJms" abstract="true"/>
     
-    <beans:bean id="connFactoryJmsActiveMqAudit" parent="connFactoryJmsActiveMq" depends-on="brokerAudit"
-        p:brokerURL="vm://#{ brokerAudit.brokerName }?create=false"/>
+    <beans:bean id="connFactoryJmsActiveMqAudit" parent="connFactoryJmsActiveMq" depends-on="brokerServiceAudit"
+        p:brokerURL="vm://#{ brokerServiceAudit.brokerName }?create=false"/>
     
     <!--====================================================================================================
-    = JMS CONNECTION FACTORIES: POOLED
+    = JMS CONNECTION FACTORIES: CACHING
     =====================================================================================================-->
-    <beans:bean id="connFactoryJmsPooled" class="org.apache.activemq.pool.PooledConnectionFactoryBean" parent="connFactoryJms" abstract="true"/>
+    <beans:bean id="connFactoryJmsCaching" class="org.springframework.jms.connection.CachingConnectionFactory" parent="connFactoryJms" abstract="true"/>
     
-    <beans:bean id="connFactoryJmsPooledAudit" parent="connFactoryJmsPooled"
-        p:connectionFactory-ref="connFactoryJmsActiveMqAudit"/>
+    <beans:bean id="connFactoryJmsCachingAudit" parent="connFactoryJmsCaching"
+        p:targetConnectionFactory-ref="connFactoryJmsActiveMqAudit"/>
     
     <!--====================================================================================================
     = JMS TRANSACTION MANAGEMENT
@@ -79,25 +88,32 @@
         p:validateExistingTransaction="true"/>
     
     <beans:bean id="mgrTxJmsAudit" parent="mgrTxJms"
-        p:connectionFactory-ref="connFactoryJmsPooledAudit"/>
+        p:connectionFactory-ref="connFactoryJmsCachingAudit"/>
     
     <!--====================================================================================================
     = JMS TEMPLATES
     =====================================================================================================-->
     <beans:bean id="templateJms" class="org.springframework.jms.core.JmsTemplate" abstract="true"/>
     
-    <beans:bean id="templateJmsAudit" parent="templateJms"
-        c:connectionFactory-ref="connFactoryJmsPooledAudit"/>
+    <beans:bean id="templateJmsAudit" parent="templateJms" abstract="true">
+        <beans:constructor-arg name="connectionFactory" ref="connFactoryJmsCachingAudit"/>
+    </beans:bean>
+    
+    <beans:bean id="templateJmsAuditSubmitSingleMsg" parent="templateJmsAudit"
+        p:messageConverter-ref="auditEventConvSubmitSingleMsg"/>
     
     <!--====================================================================================================
     = JMS MESSAGE LISTENER CONTAINERS
     =====================================================================================================-->
     <beans:bean id="listenerMsgContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer" abstract="true"/>
     
-    <beans:bean id="listenerAuditEventContainer" parent="listenerMsgContainer" abstract="true"
-        p:connectionFactory-ref="connFactoryJmsPooledAudit"
-        p:destination-ref="queueAudit"/>
+    <beans:bean id="auditEventContainer" parent="listenerMsgContainer" abstract="true"
+        p:concurrentConsumers="5"
+        p:connectionFactory-ref="connFactoryJmsCachingAudit"
+        p:destination-ref="queueAudit"
+        p:maxConcurrentConsumers="20"
+        p:transactionManager-ref="mgrTxJmsAudit"/>
     
-    <beans:bean id="listenerAuditEventContainerSubmitSingleMsg" parent="listenerAuditEventContainer"
-        p:messageListener-ref="listenerAuditEventSubmitSingleMsg"/>
+    <beans:bean id="auditEventContainerSubmitSingleMsg" parent="auditEventContainer"
+        p:messageListener-ref="auditEventListenerSubmitSingleMsg"/>
 </beans:beans>

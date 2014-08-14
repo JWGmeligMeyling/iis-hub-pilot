@@ -1,7 +1,6 @@
 package gov.hhs.onc.iishubpilot.audit.impl;
 
 import gov.hhs.onc.iishubpilot.audit.SubmitSingleMessageAuditEvent;
-import java.net.URI;
 import javax.annotation.Nullable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,7 +13,7 @@ public class SubmitSingleMessageAuditEventImpl extends AbstractHubAuditEvent imp
 
     private String reqDestId;
     private String respDestId;
-    private URI respDestUri;
+    private String respDestUri;
 
     @Override
     public boolean hasRequestDestinationId() {
@@ -58,12 +57,12 @@ public class SubmitSingleMessageAuditEventImpl extends AbstractHubAuditEvent imp
     @Column(name = "resp_dest_uri")
     @Nullable
     @Override
-    public URI getResponseDestinationUri() {
+    public String getResponseDestinationUri() {
         return this.respDestUri;
     }
 
     @Override
-    public void setResponseDestinationUri(@Nullable URI respDestUri) {
+    public void setResponseDestinationUri(@Nullable String respDestUri) {
         this.respDestUri = respDestUri;
     }
 }

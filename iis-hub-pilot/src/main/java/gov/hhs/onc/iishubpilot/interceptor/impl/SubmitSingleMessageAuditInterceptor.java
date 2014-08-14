@@ -1,17 +1,11 @@
 package gov.hhs.onc.iishubpilot.interceptor.impl;
 
 import gov.hhs.onc.iishubpilot.audit.SubmitSingleMessageAuditEvent;
-import gov.hhs.onc.iishubpilot.audit.SubmitSingleMessageAuditEventSender;
-import gov.hhs.onc.iishubpilot.audit.impl.SubmitSingleMessageAuditEventImpl;
-import org.apache.cxf.binding.soap.SoapMessage;
+import javax.jms.Destination;
+import org.springframework.jms.core.JmsTemplate;
 
-public class SubmitSingleMessageAuditInterceptor extends AbstractAuditInterceptor<SubmitSingleMessageAuditEvent, SubmitSingleMessageAuditEventSender> {
-    public SubmitSingleMessageAuditInterceptor(String phase, SubmitSingleMessageAuditEventSender auditEventSender) {
-        super(phase, auditEventSender);
-    }
-
-    @Override
-    protected SubmitSingleMessageAuditEvent createAuditEvent(SoapMessage msg) throws Exception {
-        return new SubmitSingleMessageAuditEventImpl();
+public class SubmitSingleMessageAuditInterceptor extends AbstractAuditInterceptor<SubmitSingleMessageAuditEvent> {
+    public SubmitSingleMessageAuditInterceptor(String phase, JmsTemplate jmsTemplate, Destination jmsDest) {
+        super(phase, jmsTemplate, jmsDest);
     }
 }

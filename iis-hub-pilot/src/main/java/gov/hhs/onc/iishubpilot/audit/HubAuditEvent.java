@@ -40,6 +40,13 @@ public interface HubAuditEvent extends HubEntity<BigInteger>, Serializable {
 
     public void setRequestMethod(String reqMethod);
 
+    public boolean hasRequestPath();
+
+    @Nullable
+    public String getRequestPath();
+
+    public void setRequestPath(@Nullable String reqPath);
+
     public String getRequestProtocol();
 
     public void setRequestProtocol(String reqProtocol);

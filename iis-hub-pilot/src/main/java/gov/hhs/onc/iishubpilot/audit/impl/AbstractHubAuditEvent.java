@@ -8,6 +8,7 @@ import javax.annotation.Nonnegative;
 import javax.annotation.Nullable;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Temporal;
@@ -50,7 +51,7 @@ public abstract class AbstractHubAuditEvent extends AbstractHubEntity<BigInteger
     }
 
     @Column(name = "event_id")
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Override
     public BigInteger getId() {

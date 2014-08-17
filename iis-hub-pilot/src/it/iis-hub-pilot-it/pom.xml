@@ -133,6 +133,7 @@
                                         <hub.log.dir>${project.build.directory}/surefire-logs</hub.log.dir>
                                         <hub.mode>${hub.context.props.mode.value.dev}</hub.mode>
                                         <java.security.egd>${hub.crypto.rand.sec.seed.src.device.urand}</java.security.egd>
+                                        <javax.net.debug>${hub.crypto.debug}</javax.net.debug>
                                         <javax.net.ssl.trustStore>${hub.crypto.mgr.trust.store.file}</javax.net.ssl.trustStore>
                                         <javax.net.ssl.trustStorePassword>${hub.crypto.mgr.trust.store.pass}</javax.net.ssl.trustStorePassword>
                                         <javax.net.ssl.trustStoreProvider>${hub.crypto.prov.name.sun}</javax.net.ssl.trustStoreProvider>

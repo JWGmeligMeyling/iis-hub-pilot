@@ -77,6 +77,7 @@
     </target>
     
     <target name="hub-it-process-properties" extensionOf="hub-it-process-components">
+        <var name="hub.crypto.debug" value="${hub.crypto.debug:-}"/>
         <var name="hub.data.dir" value="${project.build.directory}/surefire-data"/>
         
         <var name="hub-it-process-properties.props.dir.main" value="${project.build.directory}/${project.artifactId}/WEB-INF/classes/META-INF/hub"/>

@@ -30,7 +30,9 @@
     <!--====================================================================================================
     = BROKER SERVICES
     =====================================================================================================-->
+    <!--suppress SpringPlaceholdersInspection -->
     <beans:bean id="brokerService" class="org.apache.activemq.broker.BrokerService" abstract="true"
+        p:dataDirectory="${hub.data.audit.dir}"
         p:enableStatistics="true"
         p:persistent="false"
         p:schedulerSupport="false"

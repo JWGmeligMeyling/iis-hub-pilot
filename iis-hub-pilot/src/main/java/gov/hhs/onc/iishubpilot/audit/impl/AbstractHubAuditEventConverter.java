@@ -13,8 +13,12 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrBuilder;
+import org.apache.cxf.binding.soap.Soap12;
+import org.apache.cxf.binding.soap.SoapFault;
 import org.apache.cxf.binding.soap.SoapMessage;
+import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.ws.addressing.AddressingProperties;
 import org.apache.cxf.ws.addressing.AttributedURIType;
 import org.apache.cxf.ws.addressing.ContextUtils;
@@ -103,6 +107,21 @@ public abstract class AbstractHubAuditEventConverter<T extends HubAuditEvent> im
         // noinspection ConstantConditions
         auditEvent.setResponseCode(httpServletResp.getStatus());
         auditEvent.setResponseHeaders(buildHeadersValue(new ServletServerHttpResponse(httpServletResp).getHeaders().toSingleValueMap()));
+
+        // noinspection ThrowableResultOfMethodCallIgnored
+        Exception faultException = soapMsg.getContent(Exception.class);
+        // noinspection ThrowableResultOfMethodCallIgnored
+        faultException = ((faultException != null) ? faultException : soapMsg.getExchange().getOutMessage().getContent(Exception.class));
+
+        if (faultException != null) {
+            Fault fault = ((faultException instanceof Fault) ? ((Fault) faultException) : new Fault(faultException));
+            // noinspection ThrowableResultOfMethodCallIgnored
+            SoapFault soapFault = ((fault instanceof SoapFault) ? ((SoapFault) fault) : SoapFault.createFault(fault, Soap12.getInstance()));
+
+            auditEvent.setResponseFaultCode(soapFault.getFaultCode().toString());
+            auditEvent.setResponseFaultReason(soapFault.getReason());
+            auditEvent.setResponseFaultSubcodes(StringUtils.join(soapFault.getSubCodes(), StringUtils.LF));
+        }
 
         return auditEvent;
     }

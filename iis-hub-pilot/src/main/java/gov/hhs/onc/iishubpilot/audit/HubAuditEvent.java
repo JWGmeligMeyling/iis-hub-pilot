@@ -97,6 +97,27 @@ public interface HubAuditEvent extends HubEntity<BigInteger>, Serializable {
 
     public void setResponseCode(@Nonnegative int respCode);
 
+    public boolean hasResponseFaultCode();
+
+    @Nullable
+    public String getResponseFaultCode();
+
+    public void setResponseFaultCode(@Nullable String respFaultCode);
+
+    public boolean hasResponseFaultReason();
+
+    @Nullable
+    public String getResponseFaultReason();
+
+    public void setResponseFaultReason(@Nullable String respFaultReason);
+
+    public boolean hasResponseFaultSubcodes();
+
+    @Nullable
+    public String getResponseFaultSubcodes();
+
+    public void setResponseFaultSubcodes(@Nullable String respFaultSubcodes);
+
     public String getResponseHeaders();
 
     public void setResponseHeaders(String respHeaders);

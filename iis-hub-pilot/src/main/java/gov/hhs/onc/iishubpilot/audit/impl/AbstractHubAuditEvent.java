@@ -35,6 +35,9 @@ public abstract class AbstractHubAuditEvent extends AbstractHubEntity<BigInteger
     protected String reqUserPrincipal;
     protected Date reqTimestamp;
     protected int respCode;
+    protected String respFaultCode;
+    protected String respFaultReason;
+    protected String respFaultSubcodes;
     protected String respHeaders;
 
     private final static long serialVersionUID = 0L;
@@ -277,6 +280,57 @@ public abstract class AbstractHubAuditEvent extends AbstractHubEntity<BigInteger
     @Override
     public void setResponseCode(@Nonnegative int respCode) {
         this.respCode = respCode;
+    }
+
+    @Override
+    public boolean hasResponseFaultCode() {
+        return (this.respFaultCode != null);
+    }
+
+    @Column(name = "resp_fault_code")
+    @Nullable
+    @Override
+    public String getResponseFaultCode() {
+        return this.respFaultCode;
+    }
+
+    @Override
+    public void setResponseFaultCode(@Nullable String respFaultCode) {
+        this.respFaultCode = respFaultCode;
+    }
+
+    @Override
+    public boolean hasResponseFaultReason() {
+        return (this.respFaultReason != null);
+    }
+
+    @Column(name = "resp_fault_reason")
+    @Nullable
+    @Override
+    public String getResponseFaultReason() {
+        return this.respFaultReason;
+    }
+
+    @Override
+    public void setResponseFaultReason(@Nullable String respFaultReason) {
+        this.respFaultReason = respFaultReason;
+    }
+
+    @Override
+    public boolean hasResponseFaultSubcodes() {
+        return (this.respFaultSubcodes != null);
+    }
+
+    @Column(name = "resp_fault_subcodes")
+    @Nullable
+    @Override
+    public String getResponseFaultSubcodes() {
+        return this.respFaultSubcodes;
+    }
+
+    @Override
+    public void setResponseFaultSubcodes(@Nullable String respFaultSubcodes) {
+        this.respFaultSubcodes = respFaultSubcodes;
     }
 
     @Column(name = "resp_headers", nullable = false)

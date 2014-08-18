@@ -33,16 +33,18 @@
     </target>
     
     <target name="hub-it-process-db" extensionOf="hub-it-process-components" depends="hub-it-process-ssl">
-        <hub:filter-file file="${project.build.dbDirectory}/db-derby-hub-init.sql">
-            <filterchain>
-                <expandproperties/>
-            </filterchain>
-        </hub:filter-file>
-        <hub:filter-file file="${project.build.dbDirectory}/derby/derby.properties">
-            <filterchain>
-                <expandproperties/>
-            </filterchain>
-        </hub:filter-file>
+        <for param="dbInitSqlFile">
+            <fileset dir="${project.build.dbDirectory}">
+                <include name="db-hub-init*.sql"/>
+            </fileset>
+            <sequential>
+                <hub:filter-file file="@{dbInitSqlFile}">
+                    <filterchain>
+                        <expandproperties/>
+                    </filterchain>
+                </hub:filter-file>
+            </sequential>
+        </for>
     </target>
     
     <target name="hub-it-process-ssl" extensionOf="hub-it-process-components" depends="hub-it-process-properties">

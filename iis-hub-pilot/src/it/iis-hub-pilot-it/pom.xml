@@ -51,24 +51,28 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.carlspring.maven</groupId>
-                        <artifactId>derby-maven-plugin</artifactId>
+                        <groupId>fr.avianey.mojo</groupId>
+                        <artifactId>hsqldb-maven-plugin</artifactId>
                         <configuration>
-                            <derbyHome>${project.build.dbDirectory}/derby</derbyHome>
+                            <address>${hub.data.db.host}</address>
+                            <driver>${hub.data.db.jdbc.driver.class.name}</driver>
+                            <name>${hub.data.db.name}</name>
                             <password>${hub.test.data.db.user.admin.pass}</password>
+                            <path>${hub.test.data.db.path}</path>
                             <port>${hub.data.db.port}</port>
                             <username>${hub.test.data.db.user.admin.name}</username>
+                            <validationQuery>${hub.data.db.query.validation}</validationQuery>
                         </configuration>
                         <executions>
                             <execution>
-                                <id>start-derby-it</id>
+                                <id>start-hsqldb-it</id>
                                 <phase>pre-integration-test</phase>
                                 <goals>
                                     <goal>start</goal>
                                 </goals>
                             </execution>
                             <execution>
-                                <id>stop-derby-it</id>
+                                <id>stop-hsqldb-it</id>
                                 <phase>post-integration-test</phase>
                                 <goals>
                                     <goal>stop</goal>
@@ -81,18 +85,19 @@
                         <artifactId>sql-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>execute-derby-it</id>
+                                <id>execute-hsqldb-it</id>
                                 <phase>pre-integration-test</phase>
                                 <goals>
                                     <goal>execute</goal>
                                 </goals>
                                 <configuration>
                                     <driver>${hub.data.db.jdbc.driver.class.name}</driver>
-                                    <driverProperties>create=true</driverProperties>
                                     <forceMojoExecution>true</forceMojoExecution>
                                     <password>${hub.test.data.db.user.admin.pass}</password>
                                     <resourceLocations>
-                                        <resourceLocation>file:${project.build.dbDirectory}/db-derby-hub-init.sql</resourceLocation>
+                                        <resourceLocation>file:${project.build.dbDirectory}/db-hub-init.sql</resourceLocation>
+                                        <resourceLocation>file:${project.build.dbDirectory}/db-hub-init-struct.sql</resourceLocation>
+                                        <resourceLocation>file:${project.build.dbDirectory}/db-hub-init-data.sql</resourceLocation>
                                     </resourceLocations>
                                     <showSql>true</showSql>
                                     <url>${hub.data.db.jdbc.url}</url>

@@ -20,7 +20,7 @@
             type="${hub.data.db.data.src.class.name}"
             url="${hub.data.db.jdbc.url}"
             username="${hub.data.db.user.tomcat.name}"
-            validationQuery="select 1"/>
+            validationQuery="${hub.data.db.query.validation}"/>
     </GlobalNamingResources>
     
     <Service name="Catalina">

@@ -104,14 +104,12 @@
         p:wsdlLocation="/META-INF/wsdl/cdc-iis-hub.wsdl">
         <beans:property name="outFaultInterceptors">
             <beans:list merge="true">
-                <beans:bean parent="interceptorAuditSubmitSingleMsgIisHub"
-                    c:phase="#{ T(org.apache.cxf.phase.Phase).SEND_ENDING }"/>
+                <beans:ref bean="interceptorAuditSubmitSingleMsgIisHub"/>
             </beans:list>
         </beans:property>
         <beans:property name="outInterceptors">
             <beans:list merge="true">
-                <beans:bean parent="interceptorAuditSubmitSingleMsgIisHub"
-                    c:phase="#{ T(org.apache.cxf.phase.Phase).SEND_ENDING }"/>
+                <beans:ref bean="interceptorAuditSubmitSingleMsgIisHub"/>
             </beans:list>
         </beans:property>
     </beans:bean>

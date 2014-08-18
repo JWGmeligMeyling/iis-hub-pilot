@@ -59,31 +59,35 @@
         <appender-ref ref="file"/>
     </logger>
     
-    <logger name="org.apache" level="info" additivity="false">
+    <logger name="org.apache" level="${hub.log.logger.lvl.apache:-info}" additivity="false">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
-    <logger name="org.apache.cxf" level="${hub.log.logger.lvl.cxf:-info}" additivity="false">
+    <logger name="org.apache.activemq" level="${hub.log.logger.lvl.apache.activemq:-info}" additivity="false">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
-    <logger name="org.apache.cxf.configuration.jsse" level="${hub.log.logger.lvl.cxf.config.jsse:-info}" additivity="false">
+    <logger name="org.apache.cxf" level="${hub.log.logger.lvl.apache.cxf:-info}" additivity="false">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
-    <logger name="org.apache.cxf.transport.http" level="${hub.log.logger.lvl.cxf.transport.http:-info}" additivity="false">
+    <logger name="org.apache.cxf.configuration.jsse" level="${hub.log.logger.lvl.apache.cxf.config.jsse:-info}" additivity="false">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
-    <logger name="org.apache.cxf.transport.https" level="${hub.log.logger.lvl.cxf.transport.https:-info}" additivity="false">
+    <logger name="org.apache.cxf.transport.http" level="${hub.log.logger.lvl.apache.cxf.transport.http:-info}" additivity="false">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
-    <logger name="org.hibernate" level="info" additivity="false">
+    <logger name="org.apache.cxf.transport.https" level="${hub.log.logger.lvl.apache.cxf.transport.https:-info}" additivity="false">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
-    <logger name="org.hibernate.SQL" level="debug" additivity="false">
+    <logger name="org.hibernate" level="${hub.log.logger.lvl.hibernate:-info}" additivity="false">
+        <appender-ref ref="console"/>
+        <appender-ref ref="file"/>
+    </logger>
+    <logger name="org.hibernate.SQL" level="${hub.log.logger.lvl.hibernate.sql:-debug}" additivity="false">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </logger>
@@ -96,7 +100,7 @@
         <appender-ref ref="file"/>
     </logger>
     
-    <root level="warn">
+    <root level="${hub.log.logger.lvl.root:-warn}">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </root>

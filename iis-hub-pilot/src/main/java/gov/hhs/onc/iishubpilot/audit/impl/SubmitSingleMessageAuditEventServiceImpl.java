@@ -6,7 +6,7 @@ import gov.hhs.onc.iishubpilot.audit.SubmitSingleMessageAuditEventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service("auditEventServiceSubmitSingleMsg")
+@Service("serviceAuditEventSubmitSingleMsg")
 public class SubmitSingleMessageAuditEventServiceImpl extends AbstractHubAuditEventService<SubmitSingleMessageAuditEvent, SubmitSingleMessageAuditEventDao>
     implements SubmitSingleMessageAuditEventService {
     @Autowired

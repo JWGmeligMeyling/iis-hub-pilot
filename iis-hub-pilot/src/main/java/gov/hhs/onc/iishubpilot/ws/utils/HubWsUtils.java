@@ -4,6 +4,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.ws.Holder;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 import org.apache.cxf.jaxws.context.WrappedMessageContext;
@@ -16,11 +17,23 @@ public final class HubWsUtils {
     }
 
     @Nullable
+    @SuppressWarnings({ "unchecked" })
     public static <T> T getMessageContentPart(Message msg, Class<T> msgContentPartClass) {
         MessageContentsList msgContents = MessageContentsList.getContentsList(msg);
+        Object msgContentPart =
+            ((msgContents != null) ? msgContents
+                .stream()
+                .filter(
+                    ((Object msgContentPartObj) -> {
+                        Class<?> msgContentPartObjClass = msgContentPartObj.getClass();
 
-        return ((msgContents != null) ? msgContentPartClass.cast(msgContents.stream()
-            .filter(((Object msgContentPart) -> (msgContentPartClass.isAssignableFrom(msgContentPart.getClass())))).findFirst().orElse(null)) : null);
+                        return (msgContentPartClass.isAssignableFrom(msgContentPartObjClass) || (Holder.class.isAssignableFrom(msgContentPartObjClass)
+                            && ((msgContentPartObj = ((Holder<?>) msgContentPartObj).value) != null) && msgContentPartClass.isAssignableFrom(msgContentPartObj
+                            .getClass())));
+                    })).findFirst().orElse(null) : null);
+
+        return msgContentPartClass.cast((((msgContentPart != null) && (Holder.class.isAssignableFrom(msgContentPart.getClass())))
+            ? ((Holder<T>) msgContentPart).value : msgContentPart));
     }
 
     @Nullable

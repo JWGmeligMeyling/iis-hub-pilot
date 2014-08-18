@@ -106,14 +106,16 @@
     
     <beans:bean id="interceptorAuditSubmitSingleMsg" class="gov.hhs.onc.iishubpilot.interceptor.impl.SubmitSingleMessageAuditInterceptor"
         parent="interceptorAudit" abstract="true">
-        <beans:constructor-arg name="jmsDest" ref="queueAudit"/>
-        <beans:constructor-arg name="jmsTemplate" ref="templateJmsAuditSubmitSingleMsg"/>
+        <!--suppress SpringPlaceholdersInspection -->
+        <beans:constructor-arg name="jmsDestName" value="${hub.audit.msg.producer.dest.name}"/>
+        <beans:constructor-arg name="jmsTemplate" ref="templateAuditSubmitSingleMsg"/>
+        <beans:constructor-arg name="phase" value="#{ T(org.apache.cxf.phase.Phase).SEND_ENDING }"/>
     </beans:bean>
     
     <!--====================================================================================================
     = INTERCEPTORS: IIS HUB AUDIT
     =====================================================================================================-->
-    <beans:bean id="interceptorAuditSubmitSingleMsgIisHub" parent="interceptorAuditSubmitSingleMsg" abstract="true">
+    <beans:bean id="interceptorAuditSubmitSingleMsgIisHub" parent="interceptorAuditSubmitSingleMsg">
         <beans:property name="operationQnames">
             <beans:set>
                 <beans:value>#{ T(gov.hhs.onc.iishubpilot.ws.HubWsQnames).SUBMIT_SINGLE_MSG_OP_HUB }</beans:value>

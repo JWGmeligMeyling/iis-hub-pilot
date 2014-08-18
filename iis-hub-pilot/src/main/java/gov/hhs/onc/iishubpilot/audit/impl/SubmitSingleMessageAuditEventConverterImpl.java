@@ -11,7 +11,7 @@ import org.apache.cxf.binding.soap.SoapMessage;
 import org.springframework.jms.support.converter.MessageConversionException;
 import org.springframework.stereotype.Component;
 
-@Component("auditEventConvSubmitSingleMsg")
+@Component("msgConvAuditEventSubmitSingleMsg")
 public class SubmitSingleMessageAuditEventConverterImpl extends AbstractHubAuditEventConverter<SubmitSingleMessageAuditEvent> implements
     SubmitSingleMessageAuditEventConverter {
     public SubmitSingleMessageAuditEventConverterImpl() {

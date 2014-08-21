@@ -29,6 +29,5 @@ public final class HubCryptoProviders {
         Security.insertProviderAt(SUN_JSSE, 2);
 
         Security.removeProvider(BC_NAME);
-        Security.insertProviderAt(BC, 3);
     }
 }

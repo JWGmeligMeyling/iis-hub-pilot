@@ -4,6 +4,7 @@ import gov.hhs.onc.iishubpilot.destination.HubDestination;
 import gov.hhs.onc.iishubpilot.destination.HubDestinationRegistry;
 import gov.hhs.onc.iishubpilot.jaxws.impl.HubJaxWsClientProxyFactoryBean;
 import gov.hhs.onc.iishubpilot.ws.HubHttpHeaders;
+import gov.hhs.onc.iishubpilot.ws.HubWsAddressingActions;
 import gov.hhs.onc.iishubpilot.ws.HubWsNames;
 import gov.hhs.onc.iishubpilot.ws.IisPortType;
 import gov.hhs.onc.iishubpilot.ws.MessageTooLargeFault;
@@ -33,12 +34,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.cxf.binding.soap.SoapMessage;
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.jaxws.context.WrappedMessageContext;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.transport.http.Headers;
+import org.apache.cxf.ws.addressing.AddressingProperties;
+import org.apache.cxf.ws.addressing.ContextUtils;
+import org.apache.cxf.ws.addressing.JAXWSAConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @WebService(portName = HubWsNames.PORT_HUB, serviceName = HubWsNames.SERVICE_HUB, targetNamespace = HubXmlNs.IIS_HUB)
@@ -113,6 +119,15 @@ public class IisHubServiceImpl extends AbstractIisService implements IisHubServi
         } catch (Exception e) {
             throw new HubClientFault("Unable to build IIS destination web service client.", new HubClientFaultTypeImpl(destId, destUriStr), e);
         }
+
+        Client clientIisObj = ClientProxy.getClient(clientIis);
+        clientIisObj.setThreadLocalRequestContext(true);
+
+        AddressingProperties reqAddrProps = ContextUtils.retrieveMAPs(reqMsg, true, false), clientReqAddrProps =
+            new AddressingProperties(reqAddrProps.getNamespaceURI());
+        clientReqAddrProps.setMessageID(reqAddrProps.getMessageID());
+        clientReqAddrProps.setAction(ContextUtils.getAttributedURI(HubWsAddressingActions.SUBMIT_SINGLE_MSG_REQ));
+        clientIisObj.getRequestContext().put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES, clientReqAddrProps);
 
         return new MutablePair<>(clientIis.submitSingleMessage(reqParams), new HubResponseHeaderTypeImpl(destId, destUriStr));
     }
